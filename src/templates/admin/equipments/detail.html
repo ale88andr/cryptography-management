@@ -1,0 +1,101 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}{{ page_header }}{% endblock %}
+{% block breadcrumb %}{% include 'admin/common/breadcrumbs.html' %}{% endblock %}
+{% block page_header %}{{ page_header }}{% endblock %}
+{% block page_header_help %}{{ page_header_help }}{% endblock %}
+
+{% block content %}
+
+    <div class="col col-12">
+        <div class="card" style="border-radius: 15px;">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4 text-body">
+                    <h6 class="lead fw-normal mb-0 text-success">
+                        Сведения об оборудовании
+                    </h6>
+                    <p class="mb-0">
+                        <a href="{{ url_for('edit_equipment_admin', equipment_id=equipment.id) }}" class="btn btn-outline-primary ms-2">
+                            <i class="bi bi-pencil-square"></i> Редактировать
+                        </a>
+                    </p>
+                </div>
+                <hr class="mt-0 mb-4">
+                <div class="row pt-1">
+                    <div class="col-3">
+                        <h6>Инвентарный номер:</h6>
+                        <p class="text-muted text-uppercase">
+                            <strong>{{ equipment.id }}</strong>
+                        </p>
+                    </div>
+                    <div class="col-3">
+                        <h6>Серийный номер:</h6>
+                        <p class="text-muted text-uppercase">
+                            {{ equipment.serial }}
+                        </p>
+                    </div>
+                    <div class="col-3">
+                        <h6>Номер стикера:</h6>
+                        <p class="text-muted text-uppercase">
+                            {% if equipment.sticker %}
+                                {{ equipment.sticker }}
+                            {% else %}
+                                <span class="badge bg-danger">Нет данных</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="col-3">
+                        <h6>Описание:</h6>
+                        <p class="text-muted text-uppercase">
+                            {% if equipment.description %}
+                                {{ equipment.description }}
+                            {% else %}
+                                <span class="badge bg-danger">Нет данных</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="h-100 mt-4">
+        <div class="row d-flex justify-content-center">
+            <div class="col col-lg-12 mb-4 mb-lg-0">
+                <div class="card mb-2" style="border-radius: .5rem;">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-2 text-body">
+                            <p class="lead fw-normal mb-0 text-success">
+                                Аппаратный журнал учета СКЗИ
+                            </p>
+                            <p class="mb-0">
+                                <a href="{{ url_for('add_hardware_logbook_admin', equipment_id=equipment.id) }}" class="btn btn-info ms-2">
+                                    <i class="bi bi-plus-lg"></i> Добавить запись
+                                </a>
+                                <a href="{{ url_for('download_hardware_logbook_admin', equipment_id=equipment.id) }}" class="btn btn-success ms-2">
+                                    <i class="bi bi-download"></i> Скачать
+                                </a>
+                            </p>
+                        </div>
+                        <hr class="mt-0 mb-1">
+                        <div class="d-flex justify-content-between align-items-center mt-2 text-body">
+                            <p class="fw-normal text-body-tertiary mb-0">
+                                <strong>Оборудование инв.№ {{ equipment.id }}</strong>
+                            </p>
+                            <p class="mb-0">
+                                <span class="text-body-tertiary">Показано элементов:</span>
+                                <span class="badge bg-success">
+                                    {{ equipment.hw_logs|length }}
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        {% include 'admin/equipments/detail_hardware_logbook.html' %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

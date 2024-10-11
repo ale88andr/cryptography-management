@@ -1,0 +1,157 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}{{ page_header }}{% endblock %}
+{% block breadcrumb %}{% include 'admin/common/breadcrumbs.html' %}{% endblock %}
+{% block page_header_text %}{{ page_header }}{% endblock %}
+{% block page_header_help_text %}{{ page_header_help }}{% endblock %}
+
+{% from "admin/common/form_macros.html" import input_field, select_field, date_field %}
+
+{% block content %}
+
+    <form method="POST" class="custom">
+        {% if not is_created %}
+            {% set disabled=True %}
+            {% if not remove_act_record_id %}
+                <div class="alert alert-dismissible alert-primary">
+                    <strong>Внимание!</strong> При изменении ключевых параметров экземпляра СКЗИ - изменится акт ввода в эксплуатацию</a>.
+                </div>
+            {% endif %}
+        {% endif %}
+        <div class="card">
+            <div class="card-body">
+                {% if remove_act_record_id %}
+                    <div class="alert alert-dismissible alert-warning">
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        <h4 class="alert-heading">Редактирование недоступно!</h4>
+                        <p class="mb-0">Экземпляр СКЗИ выведен из эксплуатации</a>.</p>
+                    </div>
+                {% endif %}
+                <fieldset {% if remove_act_record_id %}disabled="disabled"{% endif %}>
+                    <legend class="text-success">
+                        <strong>Параметры СКЗИ</strong>
+                        <div class="float-end">
+                            {% if not remove_act_record_id and not is_created %}
+                                <a href="{{ url_for('decommissioning_cversion_admin', cversion_id=id) }}" class="btn btn-outline-danger">
+                                    <i class="bi bi-calendar2-x me-1"></i> Вывести СКЗИ из эксплуатации
+                                </a>
+                            {% endif %}
+                        </div>
+                    </legend>
+                    <hr class="mt-0 mb-4">
+                    <div class="row mb-3">
+                        <div class="col-lg-6">
+                            {{ input_field("version", "Версия СКЗИ:", errors, version, "Введите номер версии") }}
+                        </div>
+
+                        <div class="col-lg-3">
+                            <a href="{{ url_for('add_cmodel_admin') }}" class="text-decoration-none">&#10133;</a>
+                            {{ select_field("model_id", "Модель СКЗИ:", models, errors, model_id, disabled) }}
+                        </div>
+
+                        <div class="col-lg-3 ">
+                            <label for="grade" class="form-label mb-4">Класс СКЗИ : </label>
+                            <select
+                                class="form-select {% if 'grade' in errors %}is-invalid{% endif %}"
+                                id="grade"
+                                name="grade"
+                                {% if remove_action %}disabled{% endif %}
+                            >
+                                {% for item in grades %}
+                                    <option value="{{ loop.index-1 }}" {% if grade and loop.index-1 == grade.value %}selected{% endif %}>{{ item }}</option>
+                                {% endfor %}
+                            </select>
+                            {% if "grade" in errors %}
+                                <div class="text-danger font-weight-bold">{{ errors["grade"] }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+
+                        <div class="col-lg-3 ">
+                            {{ input_field("serial", "Серийный номер СКЗИ:", errors, serial, "Введите серийный номер") }}
+                        </div>
+
+                        <div class="col-lg-3 ">
+                            {{ input_field("dist_num", "Номер дистрибутива СКЗИ:", errors, dist_num, "Введите номер дистрибутива") }}
+                        </div>
+
+                        <div class="col-lg-3 ">
+                            {{ input_field("form", "Формуляр:", errors, form, "Формуляр") }}
+                        </div>
+
+                        <div class="col-lg-3 ">
+                            {{ input_field("license", "Лицензия:", errors, license, "Лицензия") }}
+                        </div>
+
+                    </div>
+
+                    <legend class="text-success">
+                        <strong>Сведения о сертификате соответствия</strong>
+                    </legend>
+                    <hr class="mt-0 mb-4">
+
+                    <div class="row mb-3">
+                        <div class="col-lg-6 ">
+                            {{ input_field("certificate", "Сертификат:", errors, certificate, "Введите номер сертификата соответствия") }}
+                        </div>
+
+                        <div class="col-lg-6 ">
+                            {{ date_field("certificate_expired_at", "Срок действия сертификата:", errors, certificate_expired_at) }}
+                        </div>
+                    </div>
+
+                    <legend class="text-success">
+                        <strong>Ввод в эксплуатацию</strong>
+                    </legend>
+                    <hr class="mt-0 mb-4">
+
+                    <div class="row mb-3">
+                        <div class="col-lg-3">
+                            <a href="{{ url_for('add_employee_admin') }}" class="text-decoration-none">&#10133;</a>
+                            {{ select_field("responsible_user_id", "Ответственный пользователь СКЗИ:", responsible_users, errors, responsible_user_id, disabled) }}
+                        </div>
+
+                        <div class="col-lg-3">
+                            {{ date_field("happened_at", "Дата ввода в эксплуатацию:", errors, happened_at, disabled) }}
+                        </div>
+
+                        <div class="col-lg-6">
+                            {{ input_field("comment", "Комментарий:", errors, comment, "Примечание") }}
+                        </div>
+                    </div>
+
+                    <legend class="text-success">
+                        <strong>Дополнительные реквизиты</strong>
+                    </legend>
+                    <hr class="mt-0 mb-4">
+
+                    <div class="row mb-3">
+                        <div class="col-lg-4">
+                            {{ input_field("received_from", "От кого получено СКЗИ:", errors, received_from, "Отправитель") }}
+                        </div>
+
+                        <div class="col-lg-4">
+                            {{ input_field("received_num", "№ сопроводительного письма:", errors, received_num, "Реквизиты сопроводительного письма") }}
+                        </div>
+
+                        <div class="col-lg-4">
+                            {{ date_field("received_at", "Дата получения сопроводительного письма:", errors, received_at) }}
+                        </div>
+                    </div>
+                </fieldset>
+            </div>
+        </div>
+
+        {% if remove_act_record_id %}
+            <div class="card mt-4 mb-4">
+                <div class="card-body">
+                    {% include 'admin/common/form_cancel_button.html' %}
+                </div>
+            </div>
+        {% else %}
+            {% include 'admin/common/form_buttons.html' %}
+        {% endif %}
+    </form>
+{% endblock %}

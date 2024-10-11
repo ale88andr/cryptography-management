@@ -1,0 +1,45 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}{{ page_header }}{% endblock %}
+{% block breadcrumb %}{% include 'admin/common/breadcrumbs.html' %}{% endblock %}
+{% block page_header_text %}{{ page_header }}{% endblock %}
+{% block page_header_help_text %}{{ page_header_help }}{% endblock %}
+
+{% block content %}
+    <div class="col-12">
+        <div class="card border-success mb-3">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <p class="fw-normal card-subtitle text-muted">
+                    {{ organisation.short_name }}
+                </p>
+                <p class="mb-1">
+                    <a href="{{ url_for('edit_organisation_admin', organisation_id=organisation.id) }}" class="btn btn-success">
+                        <i class="bi bi-pencil-square"></i> Редактировать данные организации
+                    </a>
+                </p>
+            </div>
+            <div class="col-md-12">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4 text-body">
+                        <h6 class="lead fw-normal mb-0"><i class="bi bi-buildings me-1"></i> Сведения об организации</h6>
+                    </div>
+                    <hr class="mt-0 mb-4">
+                    <div class="row pt-1">
+                        <div class="col-4 mb-3">
+                            <h6>Наименование:</h6>
+                            <p class="text-muted text-uppercase">{{ organisation.name }}</p>
+                        </div>
+                        <div class="col-4 mb-3">
+                            <h6>Адрес:</h6>
+                            <p class="text-muted text-uppercase">{{ organisation.address }}</p>
+                        </div>
+                        <div class="col-4 mb-3">
+                            <h6>Руководитель:</h6>
+                            <p class="text-muted text-uppercase">{{ organisation.chief }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

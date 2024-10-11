@@ -1,0 +1,480 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}{{ page_header }}{% endblock %}
+
+{% from "admin/common/macros.html" import no_data, pagination_page_info, display_pagination_pages, shortener, format_date, empty_value %}
+{% from "admin/common/form_macros.html" import select_filter, search_field %}
+
+{% block content %}
+
+    <div class="col-lg-12 col-md-12">
+
+        <div class="row">
+
+            <div class="col-xxl-12 mb-12 order-0">
+                <div class="card">
+                    <div class="d-flex align-items-start row">
+                        <div class="col-sm-8">
+                            <div class="card-body">
+                                <p class="text-welcome mb-3">Панель администратора криптографической защиты информации</p>
+                                <h5 class="text-secondary-emphasis mb-5">
+                                    {{ organisation.name }}
+                                </h5>
+
+                                <div class="btn-group" role="group" aria-label="Button group with nested dropdown">
+                                    <button type="button" class="btn btn-success"><i class="bi bi-card-checklist me-1"></i> Журналы учета</button>
+                                    <div class="btn-group" role="group">
+                                        <button id="btnGroupDrop2" type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
+                                        <div class="dropdown-menu" aria-labelledby="btnGroupDrop2">
+                                            <a href="{{ url_for('get_clogbook_admin') }}" class="dropdown-item">
+                                                <i class="bi bi-card-checklist me-1"></i> Журнал учета СКЗИ
+                                            </a>
+                                            <a href="{{ url_for('get_cilogbook_admin') }}" class="dropdown-item">
+                                                <i class="bi bi-card-checklist me-1"></i> Журнал поэкземплярного учета
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <a href="{{ url_for('get_cversions_admin') }}" class="btn btn-outline-dark"><i class="bi bi-code-square me-1"></i> Версии СКЗИ</a>
+                                <a href="{{ url_for('get_key_documents_admin') }}" class="btn btn-outline-info"><i class="bi bi-key me-1"></i> Ключевые документы</a>
+                            </div>
+                        </div>
+                        <div class="col-sm-4 text-center text-sm-left">
+                            <div class="card-body pb-0 px-0 px-md-6">
+                                <img
+                                    src="{{ url_for('static', path='img/welcome.png') }}"
+                                    height="175"
+                                    class="scaleX-n1-rtl"
+                                    alt="Приветствие"
+                                >
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="row mt-4">
+
+            <div class="col-lg-2 col-md-12 col-2 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="card-title d-flex align-items-start justify-content-between mb-4">
+                            <div class="avatar flex-shrink-0">
+                                <img src="{{ url_for('static', path='img/emp.png') }}" alt="chart success" class="rounded">
+                            </div>
+                            <div class="dropdown">
+                                <button class="btn p-0" type="button" id="cardOpt3" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <i class="bi bi-three-dots-vertical text-muted"></i>
+                                </button>
+                                <div class="dropdown-menu dropdown-menu-end" aria-labelledby="cardOpt3">
+                                    <a class="dropdown-item" href="{{ url_for('add_employee_admin') }}"><i class="bi bi-person-plus me-2"></i> Добавить пользователя</a>
+                                    <a class="dropdown-item" href="#"><i class="bi bi-people-fill me-2"></i> Список пользователей СКЗИ</a>
+                                    <a class="dropdown-item" href="{{ url_for('get_employees_admin') }}"><i class="bi bi-people me-2"></i> Список всех пользователей</a>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="mb-1">Пользователи криптосредств</p>
+                        <h4 class="card-title mb-2">{{ total_users }}</h4>
+                        <small class="text-{% if today_users > 0 %}success{% else %}muted{% endif %} fw-medium">
+                            {% if today_users > 0 %}<i class="bi bi-arrow-up"></i> +{% endif %} <strong>{{ today_users }}</strong> новых сегодня
+                        </small>
+                        <br>
+                        <small class="text-{% if month_users > 0 %}success{% else %}muted{% endif %} fw-medium">
+                            {% if month_users > 0 %}<i class="bi bi-arrow-up"></i> +{% endif %} <strong>{{ month_users }} </strong>новых за месяц
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-2 col-md-12 col-2 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="card-title d-flex align-items-start justify-content-between mb-4">
+                            <div class="avatar flex-shrink-0">
+                                <img src="{{ url_for('static', path='img/key.png') }}" alt="chart success" class="rounded">
+                            </div>
+                            <div class="dropdown">
+                                <button class="btn p-0" type="button" id="cardOpt3" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <i class="bi bi-three-dots-vertical text-muted"></i>
+                                </button>
+                                <div class="dropdown-menu dropdown-menu-end" aria-labelledby="cardOpt3">
+                                    <a href="{{ url_for('get_key_documents_admin') }}" class="dropdown-item">
+                                        <i class="bi bi-key me-2"></i> Ключевые документы
+                                    </a>
+                                    <a href="{{ url_for('get_cilogbook_admin') }}" class="dropdown-item">
+                                        <i class="bi bi-card-list me-2"></i> Журнал поэкземплярного учета
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="mb-1">Ключевые документы</p>
+                        <h4 class="card-title mb-2">{{ total_keys }}</h4>
+                        <small class="text-{% if today_users > 0 %}success{% else %}muted{% endif %} fw-medium">
+                            {% if today_keys > 0 %}<i class="bi bi-arrow-up"></i> +{% endif %} <strong>{{ today_keys }}</strong> новых сегодня
+                        </small>
+                        <br>
+                        <small class="text-{% if month_keys > 0 %}success{% else %}muted{% endif %} fw-medium">
+                            {% if month_keys > 0 %}<i class="bi bi-arrow-up"></i> +{% endif %} <strong>{{ month_keys }} </strong>новых за месяц
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-12 col-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="card-title d-flex align-items-start justify-content-between mb-4">
+                            <div class="avatar flex-shrink-0">
+                                <img src="{{ url_for('static', path='img/version.png') }}" alt="chart success" class="rounded">
+                            </div>
+                            <div class="dropdown">
+                                <button class="btn p-0" type="button" id="cardOpt3" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <i class="bi bi-three-dots-vertical text-muted"></i>
+                                </button>
+                                <div class="dropdown-menu dropdown-menu-end" aria-labelledby="cardOpt3">
+                                    <a href="{{ url_for('get_cversions_admin') }}" class="dropdown-item">
+                                        <i class="bi bi-diagram-3 me-2"></i> Версии СКЗИ
+                                    </a>
+                                    <a href="{{ url_for('get_cmodels_admin') }}" class="dropdown-item">
+                                        <i class="bi bi-box me-2"></i> Модели СКЗИ
+                                    </a>
+                                    <a href="{{ url_for('get_cmanufacturers_admin') }}" class="dropdown-item">
+                                        <i class="bi bi-grid-3x3-gap me-2"></i> Производители СКЗИ
+                                    </a>
+                                    <a href="{{ url_for('get_clogbook_admin') }}" class="dropdown-item">
+                                        <i class="bi bi-card-list me-2"></i> Журнал учета СКЗИ
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="mb-1">Криптографические средства защиты информации</p>
+                        <h4 class="card-title mb-2">{{ total_versions }}</h4>
+                        <br>
+                        <small class="text-warning fw-medium">
+                            <span class="badge bg-label-warning text-uppercase">
+                                Выведены из эксплуатации:
+                            </span> <strong>{{ total_unused_versions }}</strong>
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-12 col-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="card-title d-flex align-items-start justify-content-between mb-4">
+                            <div class="avatar flex-shrink-0">
+                                <img src="{{ url_for('static', path='img/act.png') }}" alt="chart success" class="rounded">
+                            </div>
+                            <div class="dropdown">
+                                <button class="btn p-0" type="button" id="cardOpt3" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <i class="bi bi-three-dots-vertical text-muted"></i>
+                                </button>
+                                <div class="dropdown-menu dropdown-menu-end" aria-labelledby="cardOpt3">
+                                    <a href="{{ url_for('get_cilogbook_admin') }}" class="dropdown-item">
+                                        <i class="bi bi-card-list me-2"></i> Журнал поэкземплярного учета
+                                    </a>
+                                    <a href="{{ url_for('get_clogbook_admin') }}" class="dropdown-item">
+                                        <i class="bi bi-card-list me-2"></i> Журнал учета СКЗИ
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="mb-1">
+                            Действия произведенные с СКЗИ и ключевыми документами
+                            <span class="badge bg-label-warning text-uppercase">
+                                за {{ now.year }} год
+                            </span>
+                        </p>
+                        <h4 class="card-title mb-2">{{ total_year_action }}</h4>
+                        <small class="text-{% if total_year_install > 0 %}success{% else %}muted{% endif %} fw-medium">
+                            Установка : {% if total_year_install > 0 %}<i class="bi bi-arrow-up"></i> +{% endif %} <strong>{{ total_year_install }}</strong>
+                        </small>
+                        <br>
+                        <small class="text-{% if total_year_remove > 0 %}danger{% else %}muted{% endif %} fw-medium">
+                            Изъятие(уничтожение): {% if total_year_remove > 0 %}<i class="bi bi-arrow-up"></i> +{% endif %} <strong>{{ total_year_remove }}</strong>
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="row">
+
+            <div class="col-12 col-lg-8 col-xxl-8">
+                <div class="card h-100">
+                    <div class="card-header d-flex align-items-center justify-content-between">
+                        <h5 class="card-title m-0 me-2">Последние добавленные пользователи СКЗИ</h5>
+                        <div class="dropdown">
+                            <button class="btn p-0" type="button" id="cardOpt3" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="bi bi-three-dots-vertical text-muted"></i>
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-end" aria-labelledby="cardOpt3">
+                                <a class="dropdown-item" href="{{ url_for('add_employee_admin') }}"><i class="bi bi-person-plus me-2"></i> Добавить пользователя</a>
+                                <a class="dropdown-item" href="#"><i class="bi bi-people-fill me-2"></i> Список пользователей СКЗИ</a>
+                                <a class="dropdown-item" href="{{ url_for('get_employees_admin') }}"><i class="bi bi-people me-2"></i> Список всех пользователей</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body pt-2">
+                        <ul class="p-0 m-0">
+                            {% for employee in latest_users %}
+                                <li class="d-flex align-items-center mb-3">
+                                    <div class="avatar flex-shrink-0 me-3">
+                                        <img src="{{ url_for('static', path='img/emp.png') }}" alt="User" class="rounded">
+                                    </div>
+                                    <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                                        <div class="me-2">
+                                            <a href="{{ url_for('detail_employee_admin', employee_id=employee.id) }}">
+                                                <strong>{{ employee.short_name }}</strong>
+                                            </a>
+                                            <h6 class="fw-normal mb-1 text-muted">{{ employee.position }}</h6>
+                                            <h6 class="fw-normal mb-1">{{ employee.department }}</h6>
+                                        </div>
+                                        <div class="user-progress d-flex align-items-center gap-2">
+                                            <h6 class="fw-normal mb-1"><i class="bi bi-calendar2-plus me-1"></i> {{ format_date(employee.created_at) }}</h6>
+                                        </div>
+                                    </div>
+                                </li>
+                            {% else %}
+                                {{ no_data(5) }}
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-lg-4 col-xxl-4 d-flex">
+                <div class="card flex-fill">
+                    <div class="card-header">
+                        <div class="card-actions float-end">
+                            <div class="dropdown position-relative">
+                                <button class="btn p-0" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <i class="bi bi-three-dots-vertical text-muted"></i>
+                                </button>
+
+                                <div class="dropdown-menu dropdown-menu-end">
+                                    <a class="dropdown-item" href="#">Добавить версию СКЗИ</a>
+                                    <a class="dropdown-item" href="#">Добавить модель СКЗИ</a>
+                                    <a class="dropdown-item" href="#">Добавить производителя СКЗИ</a>
+                                    <a class="dropdown-item" href="#">Список версий СКЗИ</a>
+                                    <a class="dropdown-item" href="#">Список моделей СКЗИ</a>
+                                    <a class="dropdown-item" href="#">Список производителей СКЗИ</a>
+                                </div>
+                            </div>
+                        </div>
+                        <h5 class="card-title m-0 me-2">Версии СКЗИ</h5>
+                    </div>
+                    <div><canvas id="versions"></canvas></div><br>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="row mt-4 mb-4">
+
+            <div class="col-12 col-lg-4 col-xxl-4 d-flex">
+                <div class="card flex-fill">
+                    <div class="card-header">
+                        <div class="card-actions float-end">
+                            <div class="dropdown position-relative">
+                                <button class="btn p-0" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <i class="bi bi-three-dots-vertical text-muted"></i>
+                                </button>
+
+                                <div class="dropdown-menu dropdown-menu-end">
+                                    <a href="{{ url_for('add_cilogbook_admin') }}" class="dropdown-item">
+                                        <i class="bi bi-plus-lg me-2"></i>{{ add_page_header }}
+                                    </a>
+                                    <a href="{{ url_for('get_cilogbook_admin') }}" class="dropdown-item">
+                                        <i class="bi bi-card-list me-2"></i> Журнал поэкземплярного учета
+                                    </a>
+                                    <a href="{{ url_for('download_cilogbook_admin') }}" class="dropdown-item">
+                                        <i class="bi bi-download me-2"></i> Выгрузить журнал
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <h5 class="card-title m-0 me-2">Подключение СКЗИ</h5>
+                    </div>
+                    <div class="mb-2"><canvas class="ms-3 me-3" id="acts"></canvas></div><br>
+                </div>
+            </div>
+
+            <div class="col-12 col-lg-8 col-xxl-8 d-flex">
+                <div class="card flex-fill">
+                    <div class="card-header d-flex align-items-center justify-content-between">
+                        <h5 class="card-title m-0 me-2">Последние записи журнала поэкземплярного учета СКЗИ</h5>
+                        <a href="{{ url_for('add_cilogbook_admin') }}" class="btn btn-sm btn-outline-success dropdown-menu-end">
+                            <i class="bi bi-person-plus"></i> Добавить
+                        </a>
+                    </div>
+
+                    <table class="table align-items-center table-flush">
+                        <thead class="thead-light">
+                            <tr>
+                                <th scope="col">Криптографическое средство</th>
+                                <th scope="col">Серийные номера ключевых документов</th>
+                                <th scope="col">Пользователь СКЗИ</th>
+                                <th scope="col">Актовая запись</th>
+                                <th scope="col">Дата подключения</th>
+                            </tr>
+                        </thead>
+                        {% for record in latest_logbook %}
+                            <tr>
+                                <td>
+                                    <ul class="list-unstyled mb-0">
+                                        <li class="mb-1">
+                                            <a href="{{ url_for('edit_cversion_admin', cversion_id=record.cryptography_version_id) }}">
+                                                {{ record.cryptography_version.model.name }} {{ record.cryptography_version.version }}
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </td>
+                                <td class="text-nowrap">
+                                    <div class="d-flex align-items-center">
+                                        <div>
+                                            <p class="fw-bold">
+                                                <ul class="list-unstyled mb-0">
+                                                    <li class="mb-1">
+                                                        <a href="{{ url_for('destruct_employee_cversion_admin', pk=record.id) }}">
+                                                            <strong>{{ record.serial }}</strong>
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-nowrap">
+                                    <a href="{{ url_for('detail_employee_admin', employee_id=record.owner_id) }}">
+                                        {{ record.owner.short_name }}
+                                    </a>
+                                </td>
+                                <td class="text-muted">
+                                    <a href="{{ url_for('download_instance_creation_act_admin', key_id=record.id) }}" class="text-nowrap">
+                                        {{ record.install_act }}
+                                    </a>
+                                </td>
+                                <td>
+                                    {{ format_date(record.install_act.action_date) }}
+                                </td>
+                            </tr>
+                        {% else %}
+                            {{ no_data(15) }}
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="row mt-4 mb-4">
+
+            <div class="col-12 col-lg-4 col-xxl-4 d-flex">
+                <div class="card flex-fill">
+                    <div class="card-header">
+                        <div class="card-actions float-end">
+                            <div class="dropdown position-relative">
+                                <button class="btn p-0" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <i class="bi bi-three-dots-vertical text-muted"></i>
+                                </button>
+
+                                <div class="dropdown-menu dropdown-menu-end">
+                                    <a class="dropdown-item" href="{{ url_for('add_ctype_admin') }}"><i class="bi bi-plus-lg me-1"></i> Добавить тип ключевого носителя</a>
+                                    <a class="dropdown-item" href="{{ url_for('add_carrier_admin') }}"><i class="bi bi-plus-lg me-1"></i> Добавить ключевой носитель</a>
+                                    <a class="dropdown-item" href="{{ url_for('get_carriers_admin') }}"><i class="bi bi-list me-1"></i> Ключевые носители</a>
+                                    <a class="dropdown-item" href="{{ url_for('get_ctypes_admin') }}"><i class="bi bi-list me-1"></i> Типы ключевых носителей</a>
+                                </div>
+                            </div>
+                        </div>
+                        <h5 class="card-title m-0 me-2">Типы ключевых носителей</h5>
+                    </div>
+                    <div class="mb-2"><canvas class="ms-3 me-3" id="keyCarriers"></canvas></div><br>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script src="{{ url_for('static', path='js/chart.umd.js') }}"></script>
+    <script>
+        let chrt1 = document.getElementById("versions").getContext("2d");
+        const version_labels = {{version_chart_labels|safe}}
+        const version_data = {{version_chart_data|safe}}
+        new Chart(chrt1, {
+            type: 'polarArea',
+            data: {
+                labels: version_labels,
+                datasets: [{
+                    label: "Ключевые документы",
+                    data: version_data,
+                    hoverOffset: 5
+                }],
+            },
+            options: {
+                responsive: true,
+            },
+        });
+
+        let chrt2 = document.getElementById("acts").getContext("2d");
+        const act_labels = {{act_chart_labels|safe}}
+        const act_data = {{act_chart_data|safe}}
+        new Chart(chrt2, {
+            type: "bar",
+            data: {
+                labels: act_labels,
+                datasets: [{
+                    label: "Кол-во подключений СКЗИ и/или ключевых документов",
+                    data: act_data,
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(255, 159, 64, 0.2)',
+                        'rgba(255, 205, 86, 0.2)',
+                        'rgba(75, 192, 192, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(153, 102, 255, 0.2)',
+                        'rgba(201, 203, 207, 0.2)'
+                    ],
+                    borderColor: [
+                        'rgb(255, 99, 132)',
+                        'rgb(255, 159, 64)',
+                        'rgb(255, 205, 86)',
+                        'rgb(75, 192, 192)',
+                        'rgb(54, 162, 235)',
+                        'rgb(153, 102, 255)',
+                        'rgb(201, 203, 207)'
+                    ],
+                    borderWidth: 1
+                }],
+            },
+            options: {
+                responsive: true,
+                indexAxis: "y",
+            },
+        });
+
+        let chrt3 = document.getElementById("keyCarriers").getContext("2d");
+        const carrier_labels = {{carrier_chart_labels|safe}}
+        const carrier_data = {{carrier_chart_data|safe}}
+        new Chart(chrt3, {
+            type: 'polarArea',
+            data: {
+                labels: carrier_labels,
+                datasets: [{
+                    label: "Ключевые документы",
+                    data: carrier_data,
+                    hoverOffset: 5
+                }],
+            },
+            options: {
+                responsive: true,
+            },
+        });
+    </script>
+
+{% endblock %}

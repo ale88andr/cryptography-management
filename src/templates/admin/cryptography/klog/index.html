@@ -1,0 +1,155 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}{{ page_header }}{% endblock %}
+{% block breadcrumb %}{% include 'admin/common/breadcrumbs.html' %}{% endblock %}
+{% block page_header_text %}{{ page_header }}{% endblock %}
+{% block page_header_help_text %}{{ page_header_help }}{% endblock %}
+
+{% from "admin/common/macros.html" import no_data, shortener, pagination_page_info, display_pagination_pages, print_default, empty_value, format_date %}
+
+{% block content %}
+
+    <div class="d-flex justify-content-between align-items-center mb-2 text-body">
+        <p class="fw-normal card-subtitle text-muted">
+            Показано элементов: <span class="badge bg-success">{{ counter * (page+1) }}</span> из <span class="badge bg-success">{{ total_records }}</span>
+        </p>
+        <p class="mb-2">
+            <a href="{{ url_for('add_cilogbook_admin') }}" class="btn btn-success">
+                <i class="bi bi-plus-lg me-1"></i>{{ add_page_header }}
+            </a>
+            <a href="{{ url_for('download_cilogbook_admin') }}" class="btn btn-outline-info">
+                <i class="bi bi-filetype-docx me-1"></i> Скачать журнал
+            </a>
+        </p>
+    </div>
+
+    {{ pagination_page_info(page, total_pages) }}
+
+    <table class="table table-hover align-middle logbook mb-4">
+        <thead class="thead-light">
+            <tr>
+                <th scope="col" class="align-middle" rowspan=2>#</th>
+                <th scope="col" class="align-middle" rowspan=2>Наименование СКЗИ, ключевых документов</th>
+                <th scope="col" class="align-middle" rowspan=2>Серийные номера СКЗИ номера серий ключевых документов</th>
+                <th scope="col" class="text-center" colspan=1>Отметка о получении</th>
+                <th scope="col" class="align-middle" rowspan=2>Ф.И.О. пользователя СКЗИ</th>
+                <th scope="col" class="text-center" colspan=3>Отметка о подключении (установке)</th>
+                <th scope="col" class="text-center" colspan=3>Отметка об изъятии СКЗИ, уничтожении ключевых документов</th>
+            </tr>
+            <tr>
+                <th scope="col">От кого / Дата</th>
+                <th scope="col">Произвел установку</th>
+                <th scope="col">Дата подключения (установки) и подписи лиц</th>
+                <th scope="col">Инвентарный номер оборудования</th>
+                <th scope="col">Дата изъятия (уничтожения)</th>
+                <th scope="col">Сотрудник, произведший изъятие (уничтожение)</th>
+                <th scope="col">Номер акта об уничтожении</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for object in objects %}
+                <tr>
+                    <th scope="row">{{ loop.index + page * limit }}</th>
+                    <td>
+                        <ul class="list-unstyled mb-0">
+                            <li class="mb-1">
+                                <a href="{{ url_for('edit_cversion_admin', cversion_id=object.cryptography_version_id) }}">
+                                    {{ object.cryptography_version.model.name }} {{ object.cryptography_version.version }}
+                                </a>
+                            </li>
+                            <li class="mb-1">
+                                <span class="badge bg-light">{{ object.key_carrier.carrier_type }}</span>
+                                <span class="badge bg-dark">{{ object.key_carrier.serial }}</span>
+                            </li>
+                        </ul>
+                    </td>
+                    <td class="text-nowrap">
+                        <div class="d-flex align-items-center">
+                            <div>
+                                <p class="fw-bold mb-0">
+                                    <ul class="list-unstyled mb-0">
+                                        <li class="mb-1">
+                                            <span class="badge bg-success">СКЗИ:</span> <span class="text-muted">{{ object.cryptography_version.serial }}</span>
+                                        </li>
+                                        <li class="mb-1">
+                                            <span class="badge bg-success">№ дист:</span> <span class="text-muted">{{ object.cryptography_version.dist_num }}</span>
+                                        </li>
+                                        <li class="mb-1">
+                                            <a href="{{ url_for('detail_key_document_admin', pk=object.id) }}">
+                                                <strong>{{ object.serial }}</strong>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </p>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="text-muted">
+                        {{ object.received_from }}
+                        <br>
+                        {% if object.received_date %}
+                            {{ object.received_date.strftime('%d.%m.%Y') }}
+                        {% else %}
+                            {{ empty_value() }}
+                        {% endif %}
+                    </td>
+                    <td class="text-nowrap">
+                        <a href="{{ url_for('detail_employee_admin', employee_id=object.owner_id) }}">
+                            {{ object.owner.short_name }}
+                        </a>
+                    </td>
+                    <td class="text-nowrap text-muted text-uppercase">
+                        {% if object.install_act %}
+                            {{ object.install_act.performer.short_name }}
+                        {% else %}
+                            {{ empty_value() }}
+                        {% endif %}
+                    </td>
+                    <td class="text-muted">
+                        <a href="{{ url_for('download_instance_creation_act_admin', key_id=object.id) }}" class="text-nowrap">
+                            {{ object.install_act }}
+                        </a>
+                        <br>от {{ format_date(object.install_act.action_date) }}
+                    </td>
+                    <td>
+                        {% if object.equipment_id %}
+                            <a href="{{ url_for('detail_equipment_admin', equipment_id=object.equipment_id) }}" title="{{ object.equipment_id }}">
+                                {{ shortener(object.equipment_id) }}
+                            </a>
+                        {% else %}
+                            {{ empty_value() }}
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if object.remove_action %}
+                            {{ format_date(object.remove_act.action_date) }}
+                        {% else %}
+                            {{ empty_value() }}
+                        {% endif %}
+                    </td>
+                    <td class="text-nowrap">
+                        {% if object.remove_action %}
+                            {{ object.remove_act.performer.short_name }}
+                        {% else %}
+                            {{ empty_value() }}
+                        {% endif %}
+                    </td>
+                    <td class="text-nowrap">
+                        {% if object.remove_act %}
+                            <a href="{{ url_for('download_instance_destruction_act_admin', record_id=object.id) }}">
+                                {{ object.remove_act }}
+                            </a>
+                        {% else %}
+                            {{ empty_value() }}
+                        {% endif %}
+                    </td>
+                </tr>
+            {% else %}
+                {{ no_data(15) }}
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {{ display_pagination_pages(limit, page, total_pages, sort) }}
+
+{% endblock %}

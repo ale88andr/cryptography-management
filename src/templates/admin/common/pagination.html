@@ -1,0 +1,17 @@
+{% if limit %}
+    <div class="d-flex justify-content-center">
+        <ul class="pagination pt-2 pb-2">
+            <li class="page-item {% if page < 1 %}disabled{% endif %}">
+                <a class="page-link" href="?{% if sort %}sort={{ sort }}{% endif %}&page=0&limit={{ limit }}">&laquo;</a>
+            </li>
+            {% for pg in range(total_pages) %}
+                <li class="page-item {% if page == pg %}active{% endif %}">
+                    <a class="page-link" href="?{% if sort %}sort={{ sort }}{% endif %}&page={{ pg }}&limit={{ limit }}">{{ pg + 1 }}</a>
+                </li>
+            {% endfor %}
+            <li class="page-item {% if page >= total_pages %}disabled{% endif %}">
+                <a class="page-link" href="?{% if sort %}sort={{ sort }}{% endif %}&page={{ total_pages-1 }}&limit={{ limit }}">&raquo;</a>
+            </li>
+        </ul>
+    </div>
+{% endif %}

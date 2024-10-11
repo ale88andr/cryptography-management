@@ -1,0 +1,56 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}{{ page_header }}{% endblock %}
+{% block breadcrumb %}{% include 'admin/common/breadcrumbs.html' %}{% endblock %}
+{% block page_header_text %}{{ page_header }}{% endblock %}
+{% block page_header_help_text %}{{ page_header_help }}{% endblock %}
+
+{% from "admin/common/form_macros.html" import input_field, select_field, date_field %}
+
+{% block content %}
+    <form method="POST" class="custom">
+        <div class="card">
+            <div class="card-body">
+                <fieldset>
+                    <legend class="text-success">
+                        <strong>Члены комиссии:</strong>
+                    </legend>
+                    <hr class="mt-0 mb-4">
+
+                    <div class="row mb-3">
+                        <div class="col-lg-4">
+                            {{ select_field("head_commision_member_id", "Председатель комиссии:", performers, errors, head_commision_member_id) }}
+                        </div>
+
+                        <div class="col-lg-4">
+                            {{ select_field("commision_member_id", "Член комиссии:", performers, errors, commision_member_id) }}
+                        </div>
+
+                        <div class="col-lg-4">
+                            {{ select_field("performer_id", "Администратор СКЗИ:", performers, errors, performer_id) }}
+                        </div>
+                    </div>
+
+                    <legend class="text-success">
+                        <strong>Вывод из эксплуатации</strong>
+                    </legend>
+                    <hr class="mt-0 mb-4">
+
+                    <div class="row mb-3">
+                        <div class="col-lg-9">
+                            {{ input_field("reason", "Причина вывода из эксплуатации:", errors, reason, "Укажите причину вывода") }}
+                        </div>
+
+                        <div class="col-lg-3">
+                            {{ date_field("action_date", "Дата вывода из эксплуатации:", errors, action_date) }}
+                        </div>
+                    </div>
+
+                </fieldset>
+            </div>
+        </div>
+
+        {% include 'admin/common/form_buttons.html' %}
+
+    </form>
+{% endblock %}

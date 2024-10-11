@@ -1,0 +1,57 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}{{ page_header }}{% endblock %}
+{% block breadcrumb %}{% include 'admin/common/breadcrumbs.html' %}{% endblock %}
+{% block page_header_text %}{{ page_header }}{% endblock %}
+{% block page_header_help_text %}{{ page_header_help }}{% endblock %}
+
+{% from "admin/common/form_macros.html" import input_field, checkbox %}
+
+{% block content %}
+    <form method="POST" class="custom">
+        <fieldset>
+            <div class="card">
+                <div class="card-body">
+                    <legend class="text-success">
+                        <strong>Реквизиты филиала</strong>
+                    </legend>
+
+                    <hr class="mt-0 mb-4">
+
+                    <div class="row mb-2">
+                        <div class="col-lg-12">
+                            {{ input_field("name", "Наименование филиала:", errors, name, "Введите наименование филиала") }}
+                        </div>
+                    </div>
+
+                    <legend class="text-success">
+                        <strong>Месторасположение</strong>
+                    </legend>
+
+                    <hr class="mt-0 mb-4">
+
+                    <div class="row mb-2">
+                        <div class="col-lg-3">
+                            {{ input_field("city", "Город:", errors, city, "Введите город") }}
+                        </div>
+
+                        <div class="col-lg-3">
+                            {{ input_field("street", "Улица:", errors, street, "Введите наименование улицы") }}
+                        </div>
+
+                        <div class="col-lg-3">
+                            {{ input_field("building", "Строение:", errors, building, "Введите номер строения") }}
+                        </div>
+
+                        <div class="col-lg-3">
+                            {{ input_field("index", "Индекс:", errors, index, "Введите индекс") }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% include 'admin/common/form_buttons.html' %}
+
+        </fieldset>
+    </form>
+{% endblock %}

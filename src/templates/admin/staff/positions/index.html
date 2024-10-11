@@ -1,0 +1,82 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}{{ page_header_text }}{% endblock %}
+{% block breadcrumb %}{% include 'admin/common/breadcrumbs.html' %}{% endblock %}
+{% block page_header_text %}{{ page_header_text }}{% endblock %}
+{% block page_header_help_text %}{{ page_header_help_text }}{% endblock %}
+
+{% from "admin/common/macros.html" import no_data %}
+{% from "admin/common/form_macros.html" import select_filter, search_field %}
+
+{% block content %}
+    <div class="d-flex justify-content-between align-items-center mb-2 text-body">
+        <p class="fw-normal card-subtitle text-muted">
+            Показано элементов: <span class="badge bg-success">{{ counter }}</span>
+        </p>
+        <p class="mb-2">
+            <a href="{{ url_for('add_position_admin') }}" class="btn btn-success">
+                <i class="bi bi-plus-lg"></i> Добавить должность
+            </a>
+        </p>
+    </div>
+
+    <table class="table table-hover align-middle mb-4">
+        <thead class="bg-light">
+            <tr>
+                <th scope="col" width="1px">#</th>
+                <th scope="col">Должность</th>
+                <th scope="col" class="col-1">Руководящая должность?</th>
+                <th scope="col" class="col-1">Действия</th>
+            </tr>
+            <tr>
+                <form method="get">
+                    <td scope="col"></td>
+                    <td scope="col">{{ search_field(value=q) }}</td>
+                    <td scope="col">
+                        <select class="form-select" name="is_leadership">
+                            <option value="all">Все</option>
+                            <option value="True" {% if is_leadership == 'True' %}selected{% endif %}>Да</option>
+                            <option value="False" {% if is_leadership == 'False' %}selected{% endif %}>Нет</option>
+                        </select>
+                    </td>
+                    <td scope="col">
+                        <a href="{{ url_for('get_positions_admin') }}" class="btn btn-sm btn-outline-danger me-1"><i class="bi bi-x-lg"></i></a>
+                        <button type="submit" class="btn btn-sm btn-outline-success"><i class="bi bi-check-lg"></i></button>
+                    </td>
+                </form>
+            </tr>
+        </thead>
+        <tbody>
+            {% for position in positions %}
+                <tr>
+                    <th scope="row">{{ loop.index }}</th>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <img
+                                src="{{ url_for('static', path='img/position.png') }}"
+                                alt=""
+                                style="width: 32px; height: 32px"
+                                />
+                            <div class="ms-3">
+                                <p class="fw-bold mb-1">
+                                    <a href="{{ url_for('edit_position_admin', position_id=position.id) }}">{{ position.name }}</a>
+                                </p>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="badge bg-{%if position.is_leadership%}success{%else%}light{%endif%}">
+                            {{ "Да" if position.is_leadership else "Нет" }}
+                        </span>
+                    </td>
+                    <td>
+                        <a href="{{ url_for('edit_position_admin', position_id=position.id) }}" class="btn btn-sm btn-outline-info me-1" title="Редактировать"><i class="bi bi-pencil-square"></i></a>
+                        <a href="{{ url_for('delete_position_admin', position_id=position.id) }}" class="btn btn-sm btn-outline-warning" title="Удалить"><i class="bi bi-trash"></i></a>
+                    </td>
+                </tr>
+            {% else %}
+                {{ no_data(4) }}
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

@@ -1,0 +1,249 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}{{ page_header }}{% endblock %}
+{% block breadcrumb %}{% include 'admin/common/breadcrumbs.html' %}{% endblock %}
+{% block page_header %}{{ page_header }}{% endblock %}
+{% block page_header_help %}{{ page_header_help }}{% endblock %}
+
+{% from "admin/common/macros.html" import format_date, print_default %}
+
+{% block content %}
+
+        <div class="col-lg-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <img src="{{ url_for('static', path='img/key_.png') }}"/>
+                    <h5 class="my-3">{{ key.serial }}</h5>
+                    <p class="mb-1"><span class="badge bg-primary">{{ key.key_carrier.serial }}</span></p>
+                    <p class="mb-4"><span class="badge bg-secondary">{{ key.key_carrier.key_carrier_type }}</span></p>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4 text-body">
+                        <h6 class="lead fw-normal mb-0 text-success">Сведения о ключевом документе</h6>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-5">
+                            <p class="mb-0">От кого получены:</p>
+                        </div>
+                        <div class="col-sm-7">
+                            <span class="text-muted">{{ key.received_from }}</span>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-sm-5">
+                            <p class="mb-0">Дата получения/изготовления:</p>
+                        </div>
+                        <div class="col-sm-7">
+                            <p class="text-muted mb-0">{{ format_date(key.received_date) }}</p>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-sm-5">
+                            <p class="mb-0">Владелец:</p>
+                        </div>
+                        <div class="col-sm-7">
+                            <a href="{{ url_for('detail_employee_admin', employee_id=key.owner_id) }}">
+                                {{ key.owner.short_name }}
+                            </a>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-sm-5">
+                            <p class="mb-0">Статус:</p>
+                        </div>
+                        <div class="col-sm-7">
+                            {% if key.remove_act %}
+                                <span class="badge bg-danger">Изъят</span>
+                            {% else %}
+                                <span class="badge bg-success">Введен в действие</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-sm-5">
+                            <p class="mb-0">Тип:</p>
+                        </div>
+                        <div class="col-sm-7">
+                            {% if key.is_unexpired %}
+                                <span class="badge bg-dark">Постоянный</span>
+                            {% else %}
+                                <span class="badge bg-info">Сменяемый</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row mb-2">
+                        <div class="col-sm-5">
+                            <p class="mb-0">OID:</p>
+                        </div>
+                        <div class="col-sm-7">
+                            <span class="badge bg-light">#{{ key.id }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4 text-body">
+                        <h6 class="lead fw-normal mb-0 text-success">Сведения об СКЗИ к которому подключен ключевой документ</h6>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-5">
+                            <p class="mb-0">Наименование:</p>
+                        </div>
+                        <div class="col-sm-7">
+                            <a href="{{ url_for('edit_cversion_admin', cversion_id=key.cryptography_version_id) }}">
+                                {{ key.cryptography_version.model }} {{ key.cryptography_version.version }}
+                            </a>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-sm-5">
+                            <p class="mb-0">Тип:</p>
+                        </div>
+                        <div class="col-sm-7">
+                            <span class="badge bg-primary">
+                                {{ cryptography_types[key.cryptography_version.model.type.value] }}
+                            </span>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-sm-5">
+                            <p class="mb-0">Класс:</p>
+                        </div>
+                        <div class="col-sm-7">
+                            <span class="badge bg-primary">
+                                {{ cryptography_grades[key.cryptography_version.grade.value] }}
+                            </span>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-sm-5">
+                            <p class="mb-0">Сертификат соответствия:</p>
+                        </div>
+                        <div class="col-sm-7">
+                            <p class="text-muted">
+                                <strong>{{ key.cryptography_version.certificate }}</strong>
+                                действителен до
+                                <strong><span class="text-muted">{{ format_date(key.cryptography_version.certificate_expired_at) }}</span></strong>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card h-100 mb-4 mb-md-0">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-4 text-body">
+                            <h6 class="lead fw-normal mb-0 text-success">Сведения о подключении (установке)</h6>
+                        </div>
+                        <div class="row pt-1">
+                            <div class="col-12">
+                                <h6>Номер акта:</h6>
+                                <p>
+                                    <a href="{{ url_for('download_instance_creation_act_admin', key_id=key.id) }}" class="btn btn-primary">
+                                        <i class="bi bi-filetype-docx"></i> {{ key.install_act }}
+                                    </a>
+                                </p>
+                            </div>
+                            <div class="col-12">
+                                <h6>Дата подключения (установки):</h6>
+                                <p class="text-muted text-uppercase">
+                                    {{ format_date(key.install_act.action_date) }}
+                                </p>
+                            </div>
+                            <div class="col-12">
+                                <h6>Произвел установку:</h6>
+                                <p class="text-muted text-uppercase">
+                                    {{ key.install_act.performer.short_name }}
+                                </p>
+                            </div>
+                            <div class="col-12">
+                                <h6>Инвентарный номер оборудования:</h6>
+                                <p>
+                                    <a href="{{ url_for('detail_equipment_admin', equipment_id=key.equipment_id) }}">
+                                        {{ key.equipment_id }}
+                                    </a>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card h-100 mb-4 mb-md-0">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-4 text-body">
+                            <h6 class="lead fw-normal mb-0 text-success">Сведения об изъятии (уничтожении)</h6>
+                        </div>
+                        <div class="row pt-1">
+                            <div class="col-12">
+                                <h6>Номер акта:</h6>
+                                <p>
+                                    {% if key.remove_act %}
+                                        <a href="{{ url_for('download_instance_destruction_act_admin', key_id=key.id) }}" class="btn btn-danger">
+                                            <i class="bi bi-filetype-docx"></i> {{ key.remove_act }}
+                                        </a>
+                                    {% else %}
+                                        {% if key.is_unexpired %}
+                                            <a href="{{ url_for('destruct_employee_cversion_admin', pk=key.id) }}" class="btn btn-danger">
+                                                <i class="bi bi-shield-x"></i> Изъять(уничтожить) СКЗИ
+                                            </a>
+                                        {% else %}
+                                            <a href="{{ url_for('destruction_key_document_admin', pk=key.id) }}" class="btn btn-danger">
+                                                <i class="bi bi-file-earmark-minus"></i> Изъять (уничтожить)
+                                            </a>
+                                        {% endif %}
+                                    {% endif %}
+                                </p>
+                            </div>
+                            <div class="col-12">
+                                <h6>Дата изъятия (уничтожения):</h6>
+                                <p class="text-muted text-uppercase">
+                                    {% if key.remove_act %}
+                                        {{ format_date(key.remove_act.action_date) }}
+                                    {% else %}
+                                        <span class="badge bg-light">Недоступно</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                            <div class="col-12">
+                                <h6>Произвел изъятие (уничтожение):</h6>
+                                <p class="text-muted text-uppercase">
+                                    {% if key.remove_act %}
+                                        {{ print_default(key.remove_act.performer.short_name) }}
+                                    {% else %}
+                                        <span class="badge bg-light">Недоступно</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                            <div class="col-12">
+                                <h6>Причина изъятия (уничтожения):</h6>
+                                <p class="text-muted text-uppercase">
+                                    {% if key.remove_act %}
+                                        {{ print_default(key.remove_act.reason) }}
+                                    {% else %}
+                                        <span class="badge bg-light">Недоступно</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

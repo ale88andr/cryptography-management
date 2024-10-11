@@ -1,0 +1,46 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}{{ page_header }}{% endblock %}
+{% block breadcrumb %}{% include 'admin/common/breadcrumbs.html' %}{% endblock %}
+{% block page_header_text %}{{ page_header }}{% endblock %}
+{% block page_header_help_text %}{{ page_header_help }}{% endblock %}
+
+{% from "admin/common/form_macros.html" import input_field, textarea, select_field %}
+
+{% block content %}
+    <form method="POST" class="custom">
+        <div class="card">
+            <div class="card-body">
+                <fieldset>
+                    <legend class="text-success">
+                        <strong>Реквизиты оборудования</strong>
+                    </legend>
+                    <hr class="mt-0 mb-4">
+
+                    <div class="row mb-2">
+                        <div class="col-lg-4">
+                            {{ input_field("id", "Инвентарный номер:", errors, id, "Введите инвентарный номер") }}
+                        </div>
+
+                        <div class="col-lg-4">
+                            {{ input_field("serial", "Серийный номер:", errors, serial, "Введите серийный номер") }}
+                        </div>
+
+                        <div class="col-lg-4">
+                            {{ input_field("sticker", "Номер защитной пломбы:", errors, sticker, "Введите номер стикера") }}
+                        </div>
+                    </div>
+
+                    <div class="row mb-2">
+                        <div class="col-lg-12">
+                            {{ input_field("description", "Краткие характеристики:", errors, description, "Описание") }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% include 'admin/common/form_buttons.html' %}
+
+        </fieldset>
+    </form>
+{% endblock %}

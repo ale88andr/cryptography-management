@@ -1,0 +1,101 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}{{ page_header }}{% endblock %}
+{% block breadcrumb %}{% include 'admin/common/breadcrumbs.html' %}{% endblock %}
+{% block page_header_text %}{{ page_header }}{% endblock %}
+{% block page_header_help_text %}{{ page_header_help }}{% endblock %}
+
+{% block content %}
+    <form method="POST">
+        <div class="card">
+            <div class="card-body">
+                <fieldset>
+                    <legend class="text-success">
+                        <strong>Реквизиты организации</strong>
+                    </legend>
+
+                    <hr class="mt-0 mb-4">
+
+                    <div class="row mb-4">
+                        <label for="name" class="col-3 col-form-label">Наименование организации: </label>
+                        <div class="col-9">
+                            <input type="text" class="form-control {% if 'name' in errors %}is-invalid{% endif %}" name="name" id="name" value="{{ name }}" placeholder="Введите наименование организации">
+                            {% if "name" in errors %}
+                                <div class="text-danger font-weight-bold">{{ errors["name"] }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <label for="short_name" class="col-3 col-form-label">Краткое наименование организации: </label>
+                        <div class="col-9">
+                            <input type="text" class="form-control {% if 'short_name' in errors %}is-invalid{% endif %}" name="short_name" id="short_name" value="{{ short_name }}" placeholder="Введите краткое наименование организации">
+                            {% if "short_name" in errors %}
+                                <div class="text-danger font-weight-bold">{{ errors["short_name"] }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <label for="chief" class="col-3 col-form-label">Руководитель организации: </label>
+                        <div class="col-9">
+                            <input type="text" class="form-control {% if 'chief' in errors %}is-invalid{% endif %}" name="chief" id="chief" value="{{ chief }}" placeholder="Введите ФИО руководителя">
+                            {% if "chief" in errors %}
+                                <div class="text-danger font-weight-bold">{{ errors["chief"] }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <legend class="text-success">
+                        <strong>Месторасположение</strong>
+                    </legend>
+
+                    <hr class="mt-0 mb-4">
+
+                    <div class="row mb-4">
+                        <label for="city" class="col-3 col-form-label">Город: </label>
+                        <div class="col-9">
+                            <input type="text" class="form-control {% if 'city' in errors %}is-invalid{% endif %}" name="city" id="city" value="{{ city }}" placeholder="Введите город">
+                            {% if "city" in errors %}
+                                <div class="text-danger font-weight-bold">{{ errors["city"] }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <label for="street" class="col-3 col-form-label">Улица: </label>
+                        <div class="col-9">
+                            <input type="text" class="form-control {% if 'street' in errors %}is-invalid{% endif %}" name="street" id="street" value="{{ street }}" placeholder="Введите наименование улицы">
+                            {% if "street" in errors %}
+                                <div class="text-danger font-weight-bold">{{ errors["street"] }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <label for="building" class="col-3 col-form-label">Строение: </label>
+                        <div class="col-9">
+                            <input type="text" class="form-control {% if 'building' in errors %}is-invalid{% endif %}" name="building" id="building" value="{{ building }}" placeholder="Введите номер строения">
+                            {% if "building" in errors %}
+                                <div class="text-danger font-weight-bold">{{ errors["building"] }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <label for="index" class="col-3 col-form-label">Индекс: </label>
+                        <div class="col-9">
+                            <input type="text" class="form-control {% if 'index' in errors %}is-invalid{% endif %}" name="index" id="index" value="{{ index }}" placeholder="Введите индекс">
+                            {% if "index" in errors %}
+                                <div class="text-danger font-weight-bold">{{ errors["index"] }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% include 'admin/common/form_buttons.html' %}
+
+        </fieldset>
+    </form>
+{% endblock %}

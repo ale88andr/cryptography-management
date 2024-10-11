@@ -1,0 +1,72 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}{{ page_header }}{% endblock %}
+{% block breadcrumb %}{% include 'admin/common/breadcrumbs.html' %}{% endblock %}
+{% block page_header_text %}{{ page_header }}{% endblock %}
+{% block page_header_help_text %}{{ page_header_help }}{% endblock %}
+
+{% from "admin/common/form_macros.html" import input_field, select_field, checkbox %}
+
+{% block content %}
+    <form method="POST" class="custom">
+        <div class="card">
+            <div class="card-body">
+                <fieldset>
+                    <legend class="text-success">
+                        <strong>Данные сотрудника</strong>
+                    </legend>
+                    <hr class="mt-0 mb-4">
+
+                    <div class="row mb-3">
+                        <div class="col-4">
+                            {{ input_field("surname", "Фамилия:", errors, surname, "Фамилия") }}
+                        </div>
+                        <div class="col-4">
+                            {{ input_field("name", "Имя:", errors, name, "Имя") }}
+                        </div>
+                        <div class="col-4">
+                            {{ input_field("middle_name", "Отчество:", errors, middle_name, "Отчество") }}
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-lg-4">
+                            <div class="float-end">
+                                <a href="{{ url_for('add_position_admin') }}" class="btn btn-sm btn-success">&#10133; Добавить должность</a>
+                            </div>
+                            {{ select_field("position_id", "Должность:", positions, errors, position_id) }}
+                        </div>
+
+                        <div class="col-lg-4">
+                            <div class="float-end">
+                                <a href="{{ url_for('add_department_admin') }}" class="btn btn-sm btn-success">&#10133; Добавить отдел</a>
+                            </div>
+                            {{ select_field("department_id", "Отдел:", departments, errors, department_id) }}
+                        </div>
+
+                        <div class="col-lg-4">
+                            <div class="float-end">
+                                <a href="{{ url_for('add_location_admin') }}" class="btn btn-sm btn-success">&#10133; Добавить рабочее место</a>
+                            </div>
+                            {{ select_field("location_id", "Рабочее место:", locations, errors, location_id) }}
+                        </div>
+
+                        {% if not is_created %}
+                            <legend class="text-success mt-3">
+                                <strong>Дополнительные сведения</strong>
+                            </legend>
+                            <hr class="mt-0 mb-4">
+                            <div class="col-lg-4">
+                                {{ checkbox("is_security_staff", "Сотрудник органа криптозащиты?", is_security_staff) }}
+                            </div>
+                        {% endif %}
+
+                    </div>
+                </fieldset>
+            </div>
+        </div>
+
+        {% include 'admin/common/form_buttons.html' %}
+
+    </form>
+{% endblock %}

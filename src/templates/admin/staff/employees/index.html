@@ -1,0 +1,95 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}{{ page_header }}{% endblock %}
+{% block breadcrumb %}{% include 'admin/common/breadcrumbs.html' %}{% endblock %}
+{% block page_header_text %}{{ page_header }}{% endblock %}
+{% block page_header_help_text %}{{ page_header_help }}{% endblock %}
+
+{% from "admin/common/macros.html" import no_data, pagination_page_info, display_pagination_pages %}
+{% from "admin/common/form_macros.html" import select_filter, search_field %}
+
+{% block content %}
+
+    <div class="d-flex justify-content-between align-items-center mb-2 text-body">
+        <p class="fw-normal card-subtitle text-muted">
+            Показано элементов: <span class="badge bg-success">{{ counter * (page+1) }}</span> из <span class="badge bg-success">{{ total_records }}</span>
+        </p>
+        <p class="mb-2">
+            <a href="{{ url_for('add_employee_admin') }}" class="btn btn-success">
+                <i class="bi bi-person-plus"></i> Добавить сотрудника
+            </a>
+        </p>
+    </div>
+
+    {{ pagination_page_info(page, total_pages) }}
+
+    <table class="table table-hover align-middle mb-4">
+        <thead class="bg-light">
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">
+                    Сотрудник
+                    <a href="?sort=surname{% if filter_position %}&filter_position={{ filter_position }}{% endif %}{% if filter_department %}&filter_department={{ filter_department }}{% endif %}{% if filter_location %}&filter_location={{ filter_location }}{% endif %}{% if q %}&q={{ q }}{% endif %}" class="ms-1 text-decoration-none"><i class="bi bi-sort-alpha-down"></i></a>
+                    <a href="?sort=surname+desc{% if filter_position %}&filter_position={{ filter_position }}{% endif %}{% if filter_department %}&filter_department={{ filter_department }}{% endif %}{% if filter_location %}&filter_location={{ filter_location }}{% endif %}{% if q %}&q={{ q }}{% endif %}" class="text-decoration-none"><i class="bi bi-sort-alpha-up"></i></a>
+                </th>
+                <th scope="col">Подразделение</th>
+                <th scope="col">Рабочее место</th>
+                <th scope="col" class="col-1">Действия</th>
+            </tr>
+            <tr>
+                <form method="get">
+                    <td scope="col"></td>
+                    <td scope="col">{{ search_field(value=q) }}</td>
+                    <td scope="col">
+                        {{ select_filter("filter_department", departments, filter_department) }}
+                    </td>
+                    <td scope="col">
+                        {{ select_filter("filter_location", locations, filter_location) }}
+                    </td>
+                    <td scope="col">
+                        <a href="{{ url_for('get_employees_admin') }}" class="btn btn-sm btn-outline-danger me-1"><i class="bi bi-x-lg"></i></a>
+                        <button type="submit" class="btn btn-sm btn-outline-success"><i class="bi bi-check-lg"></i></button>
+                    </td>
+                </form>
+            </tr>
+        </thead>
+        <tbody>
+            {% for employee in employees %}
+                <tr>
+                    <th scope="row">{{ loop.index }}</th>
+                    <td class="text-nowrap">
+                        <div class="d-flex align-items-center">
+                            <img
+                                src="{{ url_for('static', path='img/emp.png') }}"
+                                alt=""
+                                style="width: 32px; height: 32px"
+                                />
+                            <div class="ms-3">
+                                <p class="fw-bold mb-1">{{ employee.short_name }}</p>
+                                <p class="text-muted mb-0">{{ employee.position }}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td><strong>{{ employee.department }}</strong></td>
+                    <td class="text-nowrap">
+                        <div class="d-flex align-items-center">
+                            <div>
+                                <p class="fw-bold mb-1">{{ employee.location.name }}</p>
+                                <p class="text-muted mb-0">{{ employee.location.building.address }}</p>
+                            <div>
+                        </div>
+                    </td>
+                    <td>
+                        <a href="{{ url_for('detail_employee_admin', employee_id=employee.id) }}" class="btn btn-sm btn-outline-info me-1" title="Редактировать"><i class="bi bi-person"></i></a>
+                        <a href="#" class="btn btn-sm btn-outline-warning" title="Удалить"><i class="bi bi-person-x-fill"></i></a>
+                    </td>
+                </tr>
+            {% else %}
+                {{ no_data(5) }}
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {{ display_pagination_pages(limit, page, total_pages, sort) }}
+
+{% endblock %}

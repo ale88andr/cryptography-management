@@ -1,0 +1,146 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}{{ page_header }}{% endblock %}
+{% block breadcrumb %}{% include 'admin/common/breadcrumbs.html' %}{% endblock %}
+{% block page_header %}{{ page_header }}{% endblock %}
+{% block page_header_help %}{{ page_header_help }}{% endblock %}
+
+{% block content %}
+
+    <section id="employee-profile">
+        <div class="h-100">
+            <div class="row d-flex justify-content-center">
+                <div class="col col-lg-12 mb-4 mb-lg-0">
+                    <div class="card mb-3" style="border-radius: .5rem;">
+                        <div class="row g-0">
+                            <div
+                                class="col-md-3 gradient-custom text-center text-white"
+                                style="border-top-left-radius: .5rem; border-bottom-left-radius: .5rem;"
+                            >
+                                <img
+                                    src="{{ url_for('static', path='img/employee.png') }}"
+                                    alt="Avatar"
+                                    class="img-fluid my-5"
+                                    style="width: 100px;"
+                                />
+                                <h5>{{ employee.short_name }}</h5>
+                                <p>{{ employee.position }}</p>
+                                <a href="{{ url_for('edit_employee_admin', employee_id=employee.id) }}" class="btn btn-outline-light">
+                                    <i class="bi bi-pencil-square"></i> Редактировать
+                                </a>
+                            </div>
+                            <div class="col-md-9">
+                                <div class="card-body p-4">
+                                    <div class="d-flex justify-content-between align-items-center mb-4 text-body">
+                                        <h6 class="lead fw-normal mb-0">Сведения о сотруднике</h6>
+                                        {% if employee.is_worked %}
+                                            <p class="mb-0 text-muted">
+                                                <a href="#" class="btn btn-danger mt-2"><i class="bi bi-person-dash"></i> Уволить</a>
+                                            </p>
+                                        {% endif %}
+                                    </div>
+                                    <hr class="mt-0 mb-4">
+                                    <div class="row pt-1">
+                                        <div class="col-4 mb-3">
+                                            <h6>Фамилия</h6>
+                                            <p class="text-muted text-uppercase">
+                                                {{ employee.surname }}
+                                            </p>
+                                        </div>
+                                        <div class="col-4 mb-3">
+                                            <h6>Имя</h6>
+                                            <p class="text-muted text-uppercase">
+                                                {{ employee.name }}
+                                            </p>
+                                        </div>
+                                        <div class="col-4 mb-3">
+                                            <h6>Отчество</h6>
+                                            <p class="text-muted text-uppercase">
+                                                {{ employee.middle_name }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="row pt-1">
+                                        <div class="col-4 mb-3">
+                                            <h6>Подразделение</h6>
+                                            <a href="{{ url_for('edit_department_admin', department_id=employee.department_id) }}">
+                                                {{ employee.department }}
+                                            </a>
+                                        </div>
+                                        <div class="col-4 mb-3">
+                                            <h6>Должность</h6>
+                                            <a href="{{ url_for('edit_position_admin', position_id=employee.position_id) }}">
+                                                {{ employee.position }}
+                                            </a>
+                                        </div>
+                                        <div class="col-4 mb-3">
+                                            <h6>Организация</h6>
+                                            <a href="{{ url_for('edit_organisation_admin', organisation_id=employee.organisation_id) }}">
+                                                {{ employee.organisation.short_name  }}
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <h6>Место работы</h6>
+                                    <hr class="mt-0 mb-4">
+                                    <div class="row pt-1">
+                                        <div class="col-6 mb-3">
+                                            <h6>Помещение</h6>
+                                            <a href="{{ url_for('edit_location_admin', location_id=employee.location_id) }}">
+                                                {{ employee.location.name }}
+                                            </a>
+                                        </div>
+                                        <div class="col-6 mb-3">
+                                            <h6>Адрес</h6>
+                                            <a href="{{ url_for('edit_building_admin', building_id=employee.location.building_id) }}">
+                                                {{ employee.location.building.address }}
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="mt-4" id="employee-personal-account">
+        <div class="h-100">
+            <div class="row d-flex justify-content-center">
+                <div class="col col-lg-12 mb-4 mb-lg-0">
+                    <div class="card mb-3" style="border-radius: .5rem;">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-2 text-body">
+                                <p class="lead fw-normal mb-0">
+                                    Лицевой счет пользователя СКЗИ
+                                </p>
+                                <p class="mb-0">
+                                    <a href="{{ url_for('download_personal_account_admin', employee_id=employee.id) }}" class="btn btn-success ms-2">
+                                        <i class="bi bi-download"></i> Скачать
+                                    </a>
+                                </p>
+                            </div>
+                            <hr class="mt-0 mb-1">
+                            <div class="d-flex justify-content-between align-items-center mt-2 text-body">
+                                <p class="fw-normal text-body-tertiary mb-0">
+                                    <strong>{{ employee.full_name }}</strong>
+                                </p>
+                                <p class="mb-0">
+                                    <span class="text-body-tertiary">Показано элементов:</span>
+                                    <span class="badge bg-success">
+                                        {{ employee.key_document_set|length }}
+                                    </span>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            {% include 'admin/staff/employees/detail_personal_account.html' %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+{% endblock %}

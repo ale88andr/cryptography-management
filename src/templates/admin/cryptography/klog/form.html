@@ -1,0 +1,391 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}{{ page_header }}{% endblock %}
+{% block breadcrumb %}{% include 'admin/common/breadcrumbs.html' %}{% endblock %}
+{% block page_header_text %}{{ page_header }}{% endblock %}
+{% block page_header_help_text %}{{ page_header_help }}{% endblock %}
+
+{% from "admin/common/form_macros.html" import input_field, date_field, select_field %}
+
+{% block content %}
+    <form method="POST" class="custom">
+        <div class="card">
+            <div class="card-body">
+                <fieldset>
+                    <legend class="text-success">
+                        <strong>Сведения об установке</strong>
+                    </legend>
+                    <hr class="mt-0 mb-4">
+
+                    <div class="row mb-3">
+                        <div class="col-lg-4">
+                            {{ select_field("version_id", "Устанавливаемое СКЗИ:", cryptography_versions, errors, version_id) }}
+                        </div>
+
+                        <div class="col-lg-4">
+                            {{ select_field("equipment_id", "Оборудование на которое будет установлено СКЗИ:", equipments, errors, equipment_id) }}
+                        </div>
+
+                        <div class="col-lg-4">
+                            {{ select_field("responsible_user_id", "Пользователь СКЗИ:", employees, errors, responsible_user_id) }}
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-lg-4">
+                            {{ date_field("happened_at", "Дата установки СКЗИ:", errors, happened_at) }}
+                        </div>
+
+                        <div class="col-lg-4">
+                            {{ input_field("reason", "Основание для установки, № документа:", errors, reason, "Реквизиты документа") }}
+                        </div>
+
+                        <div class="col-lg-4">
+                            {{ date_field("reason_date", "Основание для установки, дата документа:", errors, reason_date) }}
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-lg-12">
+                            {{ input_field("comment", "Примечание:", errors, comment, "Дополнительные сведения об установке") }}
+                        </div>
+                    </div>
+
+                    <legend class="text-success">
+                        <strong>Сведения о ключевых документах</strong>
+                    </legend>
+                    <hr class="mt-0 mb-4">
+
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            {% if "key_document" in errors %}
+                                <div class="alert alert-dismissible alert-danger">
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                    <p class="mb-0"><strong>Ошибка!</strong> {{ errors["key_document"] }}</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-6 align-self-center">
+                            Добавление ключевых документов:
+                        </div>
+                        <div class="col-6 btn-group" role="group">
+                            <input
+                                type="checkbox"
+                                class="btn-check"
+                                name="key_document_is_unexpired"
+                                id="kd-unexpired"
+                                autocomplete="off"
+                                onchange="keyDocumentUnexpiredCheckboxState(this)"
+                                {% if key_document_is_unexpired %}checked{% endif %}
+                            >
+                            <label class="btn btn-outline-success" for="kd-unexpired">
+                                На весь срок эксплуатации
+                            </label>
+                            <input
+                                type="checkbox"
+                                class="btn-check"
+                                name="key_document_is_expired"
+                                id="kd-expired"
+                                autocomplete="off"
+                                onchange="keyDocumentExpiredCheckboxState(this)"
+                                {% if key_document_is_expired %}checked{% endif %}
+                            >
+                            <label class="btn btn-outline-success" for="kd-expired">
+                                Сменяемый
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="mt-3" id="kd-unexpired-form">
+                            <h6 class="text-success">
+                                Ключевой документ на весь срок эксплуатации
+                            </h6>
+                            <hr class="mt-0 mb-4">
+                            <div class="row">
+                                <div class="col-lg-3">
+                                    <label for="kd-unexpired-serial" class="form-label">
+                                        Серийный номер
+                                    </label>
+                                    <input
+                                        type="text"
+                                        class="form-control {% if 'key_document_unexpired_serial' in errors %}is-invalid{% endif %}"
+                                        name="key_document_unexpired_serial"
+                                        id="kd-unexpired-serial"
+                                        placeholder="Серийный номер"
+                                        value="{{key_document_unexpired_serial}}"
+                                    >
+                                    {% if "key_document_unexpired_serial" in errors %}
+                                        <div class="text-danger font-weight-bold">{{ errors["key_document_unexpired_serial"] }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="col-lg-3">
+                                    <label for="kd-unexpired-carrier-id" class="form-label">Ключевой носитель:</label><br>
+                                    <select
+                                        class="form-select"
+                                        id="kd-unexpired-carrier-id"
+                                        name="key_document_unexpired_carrier_id"
+                                    >
+                                        <option value="0">--- Выберите ключевой носитель ---</option>
+                                        {% for carrier in carriers %}
+                                            <option value="{{ carrier.id }}" {% if key_document_unexpired_carrier_id|default(0)|int == carrier.id %}selected{% endif %}>{{ carrier }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    {% if "key_document_unexpired_carrier_id" in errors %}
+                                        <div class="text-danger font-weight-bold">{{ errors["key_document_unexpired_carrier_id"] }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="col-lg-3">
+                                    <label for="kd-unexpired-received-from" class="form-label">От кого получены</label>
+                                    <input
+                                        type="text"
+                                        class="form-control {% if 'key_document_unexpired_received_from' in errors %}is-invalid{% endif %}"
+                                        name="key_document_unexpired_received_from"
+                                        id="kd-unexpired-received-from"
+                                        placeholder="Получен от"
+                                        value="{{key_document_unexpired_received_from}}"
+                                    >
+                                    {% if "key_document_unexpired_received_from" in errors %}
+                                        <div class="text-danger font-weight-bold">{{ errors["key_document_unexpired_received_from"] }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="col-lg-3">
+                                    <label for="kd-unexpired-received-at" class="form-label">Дата изготовления</label>
+                                    <input
+                                        type="date"
+                                        class="form-control {% if 'key_document_unexpired_received_at' in errors %}is-invalid{% endif %}"
+                                        name="key_document_unexpired_received_at"
+                                        id="kd-unexpired-received-at"
+                                        value="{{key_document_unexpired_received_at}}"
+                                    >
+                                    {% if "key_document_unexpired_received_at" in errors %}
+                                        <div class="text-danger font-weight-bold">{{ errors["key_document_unexpired_received_at"] }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4" id="kd-expired-form">
+                            <h6 class="text-success">Сменяемый ключевой документ</h6>
+                            <hr class="mt-0 mb-4">
+                            <div class="col-3 btn-group" role="group">
+                                <input
+                                    type="radio"
+                                    class="btn-check"
+                                    value="True"
+                                    name="key_document_expired_is_new"
+                                    id="kd-expired-new-radio"
+                                    onchange="keyDocumentExpiredRadioState(this)"
+                                    autocomplete="off"
+                                    checked
+                                >
+                                <label class="btn btn-sm btn-outline-success" for="kd-expired-new-radio">
+                                    Новый
+                                </label>
+                                <input
+                                    type="radio"
+                                    class="btn-check"
+                                    value="False"
+                                    name="key_document_expired_is_new"
+                                    id="kd-expired-exist-radio"
+                                    onchange="keyDocumentExpiredRadioState(this)"
+                                    autocomplete="off"
+                                    {% if key_document_expired_is_new == "False" %}checked{% endif %}
+                                >
+                                <label class="btn btn-sm btn-outline-success" for="kd-expired-exist-radio">
+                                    Существующий
+                                </label>
+                            </div>
+
+                            <div class="mt-3" id="kd-new-form">
+                                <div class="row">
+                                    <div class="col-lg-3">
+                                        <label for="key_document_expired_serial" class="form-label">
+                                            Серийный номер
+                                        </label>
+                                        <input
+                                            type="text"
+                                            class="form-control {% if 'key_document_expired_serial' in errors %}is-invalid{% endif %}"
+                                            name="key_document_expired_serial"
+                                            id="key_document_expired_serial"
+                                            placeholder="Серийный номер"
+                                            value="{{key_document_expired_serial}}"
+                                        >
+                                        {% if "key_document_expired_serial" in errors %}
+                                            <div class="text-danger font-weight-bold">{{ errors["key_document_expired_serial"] }}</div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="col-lg-3">
+                                        <label for="key_document_expired_carrier_id" class="form-label">
+                                            Ключевой носитель:
+                                        </label>
+                                        <select
+                                            class="form-select"
+                                            id="key_document_expired_carrier_id"
+                                            name="key_document_expired_carrier_id"
+                                        >
+                                            <option value="0">--- Выберите ключевой носитель ---</option>
+                                            {% for carrier in carriers %}
+                                                <option value="{{ carrier.id }}" {% if key_document_expired_carrier_id|default(0)|int == carrier.id %}selected{% endif %}>{{ carrier }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        {% if "key_document_expired_carrier_id" in errors %}
+                                            <div class="text-danger font-weight-bold">{{ errors["key_document_expired_carrier_id"] }}</div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="col-lg-3">
+                                        <label for="key_document_expired_received_from" class="form-label">
+                                            От кого получены
+                                        </label>
+                                        <input
+                                            type="text"
+                                            class="form-control {% if 'key_document_expired_received_from' in errors %}is-invalid{% endif %}"
+                                            name="key_document_expired_received_from"
+                                            id="key_document_expired_received_from"
+                                            placeholder="Получен от"
+                                            value="{{key_document_expired_received_from}}"
+                                        >
+                                        {% if "key_document_expired_received_from" in errors %}
+                                            <div class="text-danger font-weight-bold">{{ errors["key_document_expired_received_from"] }}</div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="col-lg-3">
+                                        <label for="key_document_expired_received_at" class="form-label">
+                                            Дата изготовления
+                                        </label>
+                                        <input
+                                            type="date"
+                                            class="form-control {% if 'key_document_expired_received_at' in errors %}is-invalid{% endif %}"
+                                            name="key_document_expired_received_at"
+                                            id="key_document_expired_received_at"
+                                            value="{{key_document_expired_received_at}}"
+                                        >
+                                        {% if "key_document_expired_received_at" in errors %}
+                                            <div class="text-danger font-weight-bold">{{ errors["key_document_expired_received_at"] }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mt-3" id="kd-exist-form">
+                                <div class="row">
+                                    <div class="col-lg-3">
+                                        <label for=key_document_id" class="form-label">
+                                            Ключевой документ:
+                                        </label>
+                                        <select
+                                            class="form-select"
+                                            id="key_document_id"
+                                            name="key_document_id"
+                                        >
+                                            <option value="0">--- Выберите ключевой документ ---</option>
+                                            {% for key_document in key_documents %}
+                                                <option value="{{ key_document.id }}">{{ key_document }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        {% if "key_document_id" in errors %}
+                                            <div class="text-danger font-weight-bold">{{ errors["key_document_id"] }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <legend class="text-success">
+                        <strong>Сведения о комиссии</strong>
+                    </legend>
+                    <hr class="mt-0 mb-4">
+
+                    <div class="row mb-3">
+                        <div class="col-lg-4">
+                            {{ select_field("head_commision_member_id", "Председатель комиссии:", security_staff_members, errors, head_commision_member_id) }}
+                        </div>
+
+                        <div class="col-lg-4">
+                            {{ select_field("commision_member_id", "Член комиссии:", leadership_members, errors, commision_member_id) }}
+                        </div>
+
+                        <div class="col-lg-4">
+                            {{ select_field("performer_id", "Исполнитель:", security_staff_members, errors, performer_id) }}
+                        </div>
+                    </div>
+                </fieldset>
+            </div>
+        </div>
+
+        {% if remove_action %}
+            <div class="card mt-4 mb-4">
+                <div class="card-body">
+                    <a href="{{ request.headers.referer }}" class="btn btn-secondary">&#10060; Отменить</a>
+                </div>
+            </div>
+        {% else %}
+            {% include 'admin/common/form_buttons.html' %}
+        {% endif %}
+    </form>
+
+    <script>
+
+        const hideClassName = "d-none";
+
+        function getById(elementId) {
+            return document.getElementById(elementId);
+        }
+
+        function show(elementId) {
+            element = getById(elementId);
+            if (element.classList.contains(hideClassName)){
+                element.classList.remove(hideClassName)
+            }
+        }
+
+        function hide(elementId) {
+            element = getById(elementId);
+            if (!element.classList.contains(hideClassName)){
+                element.classList.add(hideClassName);
+            }
+        }
+
+        function keyDocumentUnexpiredCheckboxState(checkbox) {
+            const formId = "kd-unexpired-form";
+            (checkbox.checked) ? show(formId) : hide(formId);
+        }
+
+        function keyDocumentExpiredCheckboxState(checkbox) {
+            const formId = "kd-expired-form";
+            (checkbox.checked) ? show(formId) : hide(formId);
+            keyDocumentExpiredRadioState(getById("kd-expired-new-radio"));
+            keyDocumentExpiredRadioState(getById("kd-expired-exist-radio"));
+        }
+
+        function keyDocumentExpiredRadioState(radio) {
+            const radioNew = "kd-expired-new-radio";
+            const radioExisting = "kd-expired-exist-radio";
+            const newFormId = "kd-new-form";
+            const existFormId = "kd-exist-form"
+            if (radio.checked & radio.id == radioNew) {
+                show(newFormId);
+                hide(existFormId);
+            } else if (radio.checked & radio.id == radioExisting) {
+                show(existFormId);
+                hide(newFormId);
+            }
+        }
+
+        window.onload = function() {
+            const unexpiredCheckbox = getById("kd-unexpired");
+            keyDocumentUnexpiredCheckboxState(unexpiredCheckbox);
+
+            const expiredCheckbox = getById("kd-expired");
+            keyDocumentExpiredCheckboxState(expiredCheckbox);
+        }
+    </script>
+
+{% endblock %}

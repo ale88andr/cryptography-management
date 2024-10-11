@@ -1,0 +1,59 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}{{ page_header }}{% endblock %}
+{% block breadcrumb %}{% include 'admin/common/breadcrumbs.html' %}{% endblock %}
+{% block page_header_text %}{{ page_header }}{% endblock %}
+{% block page_header_help_text %}{{ page_header_help }}{% endblock %}
+
+{% from "admin/common/form_macros.html" import input_field, date_field, select_field %}
+
+{% block content %}
+    <form method="POST" class="custom">
+        <div class="card">
+            <div class="card-body">
+                <fieldset>
+                    <legend class="text-success">
+                        <strong>Параметры события</strong>
+                    </legend>
+                    <hr class="mt-0 mb-4">
+
+                    <div class="row mb-2">
+                        <div class="col-lg-4">
+                            {{ date_field("happened_at", "Дата события записи журнала:", errors, happened_at) }}
+                        </div>
+
+                        <div class="col-lg-4">
+                            {{ select_field("cryptography_version_id", " СКЗИ:", versions, errors, cryptography_version_id) }}
+                        </div>
+
+                        <div class="col-lg-4">
+                            <label for="record_type" class="form-label">Тип события: </label>
+                            <select
+                                class="form-select {% if 'record_type' in errors %}is-invalid{% endif %}"
+                                id="record_type"
+                                name="record_type"
+                            >
+                                <option value="null">--- Выберите значение ---</option>
+                                {% for item in record_types %}
+                                    <option value="{{ loop.index-1 }}" {% if loop.index-1 == record_type|default(-1)|int %}selected{% endif %}>{{ item }}</option>
+                                {% endfor %}
+                            </select>
+                            {% if "record_type" in errors %}
+                                <div class="text-danger font-weight-bold">{{ errors["record_type"] }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row mb-2">
+                        <div class="col-lg-12">
+                            {{ input_field("comment", "Примечание:", errors, comment, "Примечание") }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% include 'admin/common/form_buttons.html' %}
+
+        </fieldset>
+    </form>
+{% endblock %}

@@ -1,0 +1,108 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}{{ page_header }}{% endblock %}
+{% block breadcrumb %}{% include 'admin/common/breadcrumbs.html' %}{% endblock %}
+{% block page_header_text %}{{ page_header }}{% endblock %}
+{% block page_header_help_text %}{{ page_header_help }}{% endblock %}
+
+{% from "admin/common/macros.html" import no_data %}
+
+{% block content %}
+
+    <div class="d-flex justify-content-between align-items-center mb-2 text-body">
+        <p class="fw-normal card-subtitle text-muted">
+            Показано элементов: <span class="badge bg-success">{{ counter }}</span>
+        </p>
+        <p class="mb-2">
+            <a href="{{ url_for('download_clogbook_admin') }}" class="btn btn-outline-info">
+                <i class="bi bi-filetype-docx"></i> Скачать журнал
+            </a>
+            <a href="{{ url_for('add_cversion_admin') }}" class="btn btn-success">
+                <i class="bi bi-plus-lg"></i> Добавить экземпляр СКЗИ
+            </a>
+        </p>
+    </div>
+
+    <div class="col-12">
+        <table class="table table-hover align-middle logbook">
+            <thead>
+                <tr class="table-light">
+                    <th scope="col" class="align-middle" rowspan=2>#</th>
+                    <th scope="col" class="text-center" colspan=2>Средства криптографической защиты информации</th>
+                    <th scope="col" class="text-center" colspan=2>Отметка о получении</th>
+                    <th scope="col" class="text-center" colspan=2>Отметка о подключении (установке)</th>
+                    <th scope="col" class="text-center" colspan=3>Отметка об изъятии СКЗИ, уничтожении ключевых документов</th>
+                    <th scope="col" class="align-middle" rowspan=2>Примечание</th>
+                </tr>
+                <tr class="table-light">
+                    <th scope="col">Наименование</th>
+                    <th scope="col">Серийные номера</th>
+                    <th scope="col">Получены от</th>
+                    <th scope="col">Дата и номер</th>
+                    <th scope="col">Ответственный пользователь</th>
+                    <th scope="col">Дата и расписка в получении</th>
+                    <th scope="col">Дата изъятия (уничтожения)</th>
+                    <th scope="col">Сотрудник, произведший изъятие (уничтожение)</th>
+                    <th scope="col">Номер акта об уничтожении</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for object in objects %}
+                    {% set subindex = 1 %}
+                    {% set rowspan = subindex %}
+                    {% if object.form %}
+                        {% set rowspan = rowspan + 1 %}
+                    {% endif %}
+                    {% if object.license %}
+                        {% set rowspan = rowspan + 1 %}
+                    {% endif %}
+                    <tr>
+                        <th scope="row">
+                            {{ loop.index }}{% if object.form or object.license %}.{{ subindex }}{% endif %}
+                        </th>
+                        <td>
+                            <a href="{{ url_for('edit_cversion_admin', cversion_id=object.id) }}">
+                                {{ object.model.name }} {{ object.version }}
+                            </a>
+                        </td>
+                        <td class="text-nowrap text-muted">
+                            <span class="badge bg-success">СКЗИ:</span> {{ object.serial }}
+                            <br>
+                            <span class="badge bg-success">Дист:</span> {{ object.dist_num }}
+                        </td>
+                        {% include 'admin/cryptography/vlog/row.html' %}
+                        <td rowspan="{{rowspan}}" class="align-middle">{{ object.comment }}</td>
+                    </tr>
+                    {% if object.form %}
+                        {% set subindex = subindex + 1 %}
+                        <tr>
+                            <th scope="row">{{ loop.index }}.{{ subindex }}</th>
+                            <td>
+                                <a href="{{ url_for('edit_cversion_admin', cversion_id=object.id) }}">
+                                    Формуляр {{ object.title }}
+                                </a>
+                            </td>
+                            <td class="text-muted">{{ object.form }}</td>
+                            {% include 'admin/cryptography/vlog/row.html' %}
+                        </tr>
+                    {% endif %}
+                    {% if object.license %}
+                        {% set subindex = subindex + 1 %}
+                        <tr>
+                            <th scope="row">{{ loop.index }}.{{ subindex }}</th>
+                            <td>
+                                <a href="{{ url_for('edit_cversion_admin', cversion_id=object.id) }}">
+                                    Лицензия {{ object.title }}
+                                </a>
+                            </td>
+                            <td class="text-muted">{{ object.license }}</td>
+                            {% include 'admin/cryptography/vlog/row.html' %}
+                        </tr>
+                    {% endif %}
+                {% else %}
+                    {{ no_data(12) }}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

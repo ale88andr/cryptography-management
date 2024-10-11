@@ -1,0 +1,79 @@
+{% macro input_field(name, label, errors, value='', placeholder='', disabled=False) %}
+    <label for="{{ name }}" class="form-label">{{ label }}</label>
+    <input
+        type="text"
+        class="form-control {% if name in errors %}is-invalid{% endif %}"
+        name="{{ name }}"
+        id="{{ name }}"
+        value="{{ value }}"
+        placeholder="{{ placeholder }}"
+        {% if disabled %}disabled{% endif %}
+    >
+    {% if name in errors %}
+        <div class="text-danger font-weight-bold">{{ errors[name] }}</div>
+    {% endif %}
+{% endmacro %}
+
+{% macro search_field(name='q', value='', placeholder='Поиск') %}
+    <input
+        class="form-control"
+        value="{% if value %}{{ value }}{% endif %}"
+        name="{{ name }}"
+        type="search"
+        placeholder="{{ placeholder }}..."
+    />
+{% endmacro %}
+
+{% macro date_field(name, label, errors, value='', disabled=False) %}
+    <label for="{{ name }}" class="form-label">{{ label }}</label>
+    <input
+        type="date"
+        class="form-control {% if name in errors %}is-invalid{% endif %}"
+        name="{{ name }}"
+        id="{{ name }}"
+        value="{{ value }}"
+        {% if disabled %}disabled{% endif %}
+    >
+    {% if name in errors %}
+        <div class="text-danger font-weight-bold">{{ errors[name] }}</div>
+    {% endif %}
+{% endmacro %}
+
+{% macro select_field(name, label, list, errors, checked_value='', disabled=False) %}
+    <label for="{{ name }}" class="form-label mb-4">{{ label }}</label>
+    <select class="form-select {% if name in errors %}is-invalid{% endif %}" id="{{ name }}" name="{{ name }}" {% if disabled %}disabled{% endif %}>
+        <option value="0">--- Выберите значение ---</option>
+        {% for item in list %}
+            <option value="{{ item.id }}" {% if checked_value|default(0)|int == item.id %}selected{% endif %}>{{ item }}</option>
+        {% endfor %}
+    </select>
+    {% if name in errors %}
+        <div class="text-danger font-weight-bold">{{ errors[name] }}</div>
+    {% endif %}
+{% endmacro %}
+
+{% macro select_filter(name, list, checked_value='') %}
+    <select class="form-select {% if name in errors %}is-invalid{% endif %}" id="{{ name }}" name="{{ name }}" {% if disabled %}disabled{% endif %}>
+        <option value="0">--- Все ---</option>
+        {% for item in list %}
+            <option value="{{ item.id }}" {% if checked_value|default(0)|int == item.id %}selected{% endif %}>{{ item }}</option>
+        {% endfor %}
+    </select>
+{% endmacro %}
+
+{% macro textarea(name, label, value='', rows=5) %}
+    <label for="{{ name }}" class="form-label">{{ label }}</label>
+    <textarea
+        class="form-control {% if name in errors %}is-invalid{% endif %}"
+        name="{{ name }}"
+        id="{{ name }}"
+        rows="{{ rows }}"
+    >{{ value }}</textarea>
+{% endmacro %}
+
+{% macro checkbox(name, label, value=False) %}
+    <div class="form-check form-switch mt-3">
+        <input class="form-check-input" type="checkbox" id="{{ name }}" name="{{ name }}" {% if value %}checked{% endif %}>
+        <label for="{{ name }}" class="form-check-label">{{ label }}</label>
+    </div>
+{% endmacro %}

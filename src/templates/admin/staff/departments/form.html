@@ -1,0 +1,29 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}{{ page_header }}{% endblock %}
+{% block breadcrumb %}{% include 'admin/common/breadcrumbs.html' %}{% endblock %}
+{% block page_header %}{{ page_header }}{% endblock %}
+{% block page_header_help %}{{ page_header_help }}{% endblock %}
+
+{% from "admin/common/form_macros.html" import input_field %}
+
+{% block content %}
+    <form method="POST" class="custom">
+        <div class="card">
+            <div class="card-body">
+                <legend class="text-success">
+                    <strong>Реквизиты отдела</strong>
+                </legend>
+                <hr class="mt-0 mb-4">
+                <div class="row mb-3">
+                    <div class="col-12">
+                        {{ input_field("name", "Наименование отдела:", errors, name, "Введите наименование отдела") }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% include 'admin/common/form_buttons.html' %}
+
+    </form>
+{% endblock %}

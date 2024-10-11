@@ -1,0 +1,53 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}{{ page_header }}{% endblock %}
+{% block breadcrumb %}{% include 'admin/common/breadcrumbs.html' %}{% endblock %}
+{% block page_header %}{{ page_header }}{% endblock %}
+{% block page_header_help %}{{ page_header_help }}{% endblock %}
+
+{% from "admin/common/form_macros.html" import input_field, textarea, select_field %}
+
+{% block content %}
+    <form method="POST" class="custom">
+        <fieldset>
+            <div class="card">
+                <div class="card-body">
+                    <legend class="text-success">
+                        <strong>Реквизиты модели СКЗИ</strong>
+                    </legend>
+                    <hr class="mt-0 mb-4">
+
+                    <div class="row mb-3">
+                        <div class="col-4">
+                            {{ input_field("name", "Наименование СКЗИ:", errors, name, "Наименование модели") }}
+                        </div>
+                        <div class="col-lg-4">
+                            {{ select_field("manufacturer_id", "Производитель:", manufacturers, errors, manufacturer_id) }}
+                        </div>
+                        <div class="col-lg-4">
+                            <label for="type" class="form-label mb-4">Тип СКЗИ : </label>
+                            <select
+                                class="form-select {% if 'type' in errors %}is-invalid{% endif %}"
+                                id="type"
+                                name="type"
+                            >
+                                {% for obj in types %}
+                                    <option value="{{ loop.index-1 }}" {% if loop.index-1 == type.value %}selected{% endif %}>{{ obj }}</option>
+                                {% endfor %}
+                            </select>
+                            {% if "type" in errors %}
+                                <div class="text-danger font-weight-bold">{{ errors["type"] }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="col-lg-12">
+                        {{ textarea("description", "Описание:", description) }}
+                    </div>
+                </div>
+            </div>
+
+            {% include 'admin/common/form_buttons.html' %}
+        </fieldset>
+    </form>
+{% endblock %}

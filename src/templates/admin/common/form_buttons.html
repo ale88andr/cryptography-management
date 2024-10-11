@@ -1,0 +1,8 @@
+<div class="card mt-4 mb-4">
+    <div class="card-body">
+        <button type="submit" class="btn btn-outline-success me-2">
+            <i class="bi bi-save"></i> {% if is_created %}Создать{% else %}Сохранить{% endif %}
+        </button>
+        {% include 'admin/common/form_cancel_button.html' %}
+    </div>
+</div>

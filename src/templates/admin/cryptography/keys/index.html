@@ -1,0 +1,143 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}{{ page_header }}{% endblock %}
+{% block breadcrumb %}{% include 'admin/common/breadcrumbs.html' %}{% endblock %}
+{% block page_header_text %}{{ page_header }}{% endblock %}
+{% block page_header_help_text %}{{ page_header_help }}{% endblock %}
+
+{% from "admin/common/macros.html" import no_data, pagination_page_info, display_pagination_pages, shortener, format_date %}
+{% from "admin/common/form_macros.html" import select_filter, search_field %}
+
+{% block content %}
+    <div class="d-flex justify-content-between align-items-center mb-2 text-body">
+        <p class="fw-normal card-subtitle text-muted">
+            Показано элементов: <span class="badge bg-success">{{ counter * (page+1) }}</span> из <span class="badge bg-success">{{ total_records }}</span>
+        </p>
+        <p class="mb-2">
+            Cтраница <span class="badge bg-info">{{ page+1 }}</span> из <span class="badge bg-info">{{ total_pages }}</span>
+        </p>
+    </div>
+
+    <table class="table table-hover align-middle mb-4">
+        <thead class="bg-light">
+            <tr>
+                <th scope="col" width="1px"></th>
+                <th scope="col">#</th>
+                <th scope="col">Серийный номер</th>
+                <th scope="col">Ключевой носитель</th>
+                <th scope="col">Статус</th>
+                <th scope="col">АРМ</th>
+                <th scope="col">Получен</th>
+                <th scope="col">Владелец</th>
+                <th scope="col" class="col-1">Действия</th>
+            </tr>
+            <tr>
+                <form method="get">
+                    <th scope="col" width="1px"></th>
+                    <td scope="col"></td>
+                    <td scope="col">{{ search_field(value=q) }}</td>
+                    <td scope="col">
+                        {{ select_filter("filter_type_id", carrier_types, filter_type_id) }}
+                    </td>
+                    <td scope="col">
+                        <select class="form-select" name="status">
+                            <option value="">Все</option>
+                            <option value="installed" {% if status == 'installed' %}selected{% endif %}>Действующие</option>
+                            <option value="removed" {% if status == 'removed' %}selected{% endif %}>Изъятые</option>
+                        </select>
+                    </td>
+                    <td></td>
+                    <td></td>
+                    <td scope="col">
+                        {{ select_filter("filter_owner_id", employees, filter_owner_id) }}
+                    </td>
+                    <td scope="col">
+                        <a href="{{ url_for('get_key_documents_admin') }}" class="btn btn-sm btn-outline-danger me-1"><i class="bi bi-x-lg"></i></a>
+                        <button type="submit" class="btn btn-sm btn-outline-success"><i class="bi bi-check-lg"></i></button>
+                    </td>
+                </form>
+            </tr>
+        </thead>
+        <tbody>
+
+            {% for object in objects %}
+                <tr>
+                    <th scope="col" width="1px" class="{% if object.remove_act_record_id %} table-danger {% endif %}"></th>
+                    <th scope="row">{{ loop.index }}</th>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <img
+                                src="{{ url_for('static', path='img/key.png') }}"
+                                alt=""
+                                style="width: 32px; height: 32px"
+                                />
+                            <div class="ms-3">
+                                <p class="fw-bold mb-1">{{ object.serial }}</p>
+                                <p class="text-muted mb-0">{{ object.received_from }}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div>
+                            <p class="fw-bold mb-1">{{ object.key_carrier.serial }}</p>
+                            <p class="text-muted mb-0">
+                                <span class="badge bg-info">{{ object.key_carrier.carrier_type }}</span>
+                            </p>
+                        </div>
+                    </td>
+                    <td>
+                        {% if object.remove_act_record_id %}
+                            <span class="badge bg-danger">Изъят</span>
+                        {% else %}
+                            <span class="badge bg-primary">Введен в действие</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{{ url_for('detail_equipment_admin', equipment_id=object.equipment_id) }}" title="{{ object.equipment_id }}">
+                            {{ shortener(object.equipment_id) }}
+                        </a>
+                    </td>
+                    <td>{{ format_date(object.received_date) }}</td>
+                    <td>
+                        <a href="{{ url_for('detail_employee_admin', employee_id=object.owner_id) }}">
+                            {{ object.owner.short_name }}
+                        </a>
+                    </td>
+                    <td>
+                        <a
+                            href="{{ url_for('detail_key_document_admin', pk=object.id) }}"
+                            class="btn btn-sm btn-outline-info me-1"
+                            title="Просмотр"
+                        >
+                            <i class="bi bi-three-dots"></i>
+                        </a>
+                        {% if not object.remove_act_record_id %}
+                            {% if object.is_unexpired %}
+                                <a
+                                    href="{{ url_for('destruct_employee_cversion_admin', pk=object.id) }}"
+                                    class="btn btn-sm btn-outline-warning"
+                                    title="Изъять(уничтожить) СКЗИ"
+                                >
+                                    <i class="bi bi-shield-x"></i>
+                                </a>
+                            {% else %}
+                                <a
+                                    href="{{ url_for('destruction_key_document_admin', pk=object.id) }}"
+                                    class="btn btn-sm btn-outline-danger"
+                                    title="Изъять(уничтожить) ключевой документ"
+                                >
+                                    <i class="bi bi-file-earmark-x"></i>
+                                </a>
+                            {% endif %}
+                        {% endif %}
+                    </td>
+                </tr>
+            {% else %}
+                {{ no_data(9) }}
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {{ display_pagination_pages(limit, page, total_pages, sort) }}
+
+{% endblock %}

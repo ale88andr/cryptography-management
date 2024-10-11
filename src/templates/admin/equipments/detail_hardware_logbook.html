@@ -1,0 +1,84 @@
+{% from "admin/common/macros.html" import format_date, empty_value, print_default %}
+
+<table class="table table-hover align-middle logbook">
+    <thead>
+        <tr class="table-light">
+            <th scope="col" rowspan=2 class="align-middle">#</th>
+            <th scope="col" rowspan=2 class="align-middle">Дата</th>
+            <th scope="col" rowspan=2 class="align-middle">Тип и серийные номера используемых СКЗИ</th>
+            <th scope="col" rowspan=2 class="align-middle">Записи по обслуживанию СКЗИ</th>
+            <th scope="col" class="text-center" colspan=3>Используемые крипто ключи</th>
+            <th scope="col" class="text-center" colspan=2>Отметка об уничтожении(стирании)</th>
+            <th scope="col" rowspan=2 class="align-middle">Примечание</th>
+        </tr>
+        <tr class="table-light">
+            <th scope="col">Тип ключевого документа</th>
+            <th scope="col">Серийный номер и номер экземпляра ключевого документа</th>
+            <th scope="col">Номер разового ключевого носителя</th>
+            <th scope="col">Дата</th>
+            <th scope="col">Номер акта</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for log in equipment.hw_logs %}
+            <tr>
+                <th scope="row">{{ loop.index }}</th>
+                <td class="text-muted">{{ format_date(log.happened_at) }}</td>
+                <td>
+                    <ul class="list-unstyled mb-0">
+                        <li>
+                            <a href="{{ url_for('edit_cversion_admin', cversion_id=log.cryptography_version_id) }}">
+                                <strong>{{ log.cryptography_version.model.name }} {{ log.cryptography_version.version }}</strong>
+                            </a>
+                        </li>
+                        <li class="mb-1">
+                            <span class="badge bg-info">СКЗИ:</span> <span class="text-muted">{{ log.cryptography_version.serial }}</span>
+                        </li>
+                        <li class="mb-1 text-nowrap">
+                            <span class="badge bg-info">№ дист:</span> <span class="text-muted">{{ log.cryptography_version.dist_num }}</span>
+                        </li>
+                    </ul>
+                </td>
+                <td class="text-muted">{{ hardware_logbook_record_types[log.record_type.value] }}</td>
+                <td>
+                    {% if log.key_document %}
+                        <span class="badge bg-primary">{{ log.key_document.key_carrier.serial }}</span>
+                        <br>
+                        <span class="badge bg-success">{{ log.key_document.key_carrier.carrier_type }}</span>
+                    {% else %}
+                        {{ empty_value() }}
+                    {% endif %}
+                </td>
+                <td>
+                    {% if log.key_document %}
+                        <a href="{{ url_for('detail_key_document_admin',pk=log.key_document.id) }}">
+                            {{ log.key_document.serial }}
+                        </a>
+                    {% else %}
+                        {{ empty_value() }}
+                    {% endif %}
+                </td>
+                <td>{{ empty_value() }}</td>
+                <td>
+                    {% if log.removed_at %}
+                        {{ format_date(log.removed_at) }}
+                    {% else %}
+                        {{ empty_value() }}
+                    {% endif %}
+                </td>
+                <td class="text-nowrap">
+                    {% if log.remove_action %}
+                        <a href="{{ url_for('download_instance_destruction_act_admin', key_id=log.id) }}">
+                            {{ log.remove_action }}
+                        </a>
+                    {% else %}
+                        {{ empty_value() }}
+                    {% endif %}
+                </td>
+                <td>{{ print_default(log.comment, "") }}</td>
+            </tr>
+        {% else %}
+            <tr class="text-center"><td colspan="10"><strong class="text-body-tertiary">Нет данных!</strong></td></tr>
+        {% endfor %}
+    </tbody>
+</table>

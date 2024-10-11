@@ -1,0 +1,37 @@
+{% from "admin/common/macros.html" import empty_value, format_date %}
+
+<td>{{ object.received_from }}</td>
+<td>{{ object.received_doc }}</td>
+<td class="text-nowrap text-muted text-uppercase">
+    {{ object.responsible_user.short_name }}
+</td>
+<td class="text-nowrap text-muted">
+    {{ format_date(object.install_act.action_date) }}
+    <br>
+    <a href="{{ url_for('download_creation_act_admin', record_id=object.id) }}">
+        {{ object.install_act }}
+    </a>
+</td>
+<td class="text-muted">
+    {% if object.remove_act %}
+        {{ format_date(object.remove_act.action_date) }}
+    {% else %}
+        {{ empty_value() }}
+    {% endif %}
+</td>
+<td class="text-nowrap text-muted text-uppercase">
+    {% if object.remove_act %}
+        {{ object.remove_act.performer.short_name }}
+    {% else %}
+        {{ empty_value() }}
+    {% endif %}
+</td>
+<td>
+    {% if object.remove_act %}
+        <a href="{{ url_for('download_decommissioning_act_admin', record_id=object.id) }}">
+            {{ object.remove_act }}
+        </a>
+    {% else %}
+        {{ empty_value() }}
+    {% endif %}
+</td>
