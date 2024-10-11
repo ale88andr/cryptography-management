@@ -23,7 +23,8 @@ class EquipmentForm(Form):
             is_exists = await EquipmentServise.get_one_or_none(serial=self.serial)
             if is_exists:
                 self.errors.setdefault(
-                    "serial", f"'{self.id}' - серийный номер уже существует у оборудования с инв. № '{is_exists.id}'!"
+                    "serial",
+                    f"'{self.id}' - серийный номер уже существует у оборудования с инв. № '{is_exists.id}'!",
                 )
 
         if not self.errors:

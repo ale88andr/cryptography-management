@@ -7,7 +7,7 @@ from admin.constants import (
     VER_EDIT_PAGE_HEADER as edit_page_header,
     VER_HELP_TEXT as hepl_text,
     VER_INDEX_PAGE_HEADER as index_page_header,
-    VER_DECOMMISSIONING_TEXT as decommissioning_page_header
+    VER_DECOMMISSIONING_TEXT as decommissioning_page_header,
 )
 from core.config import templates
 from core.utils import create_breadcrumbs
@@ -65,7 +65,9 @@ async def get_cversions_admin(
         "error": error,
         "sort": sort,
         "q": q,
-        "breadcrumbs": create_breadcrumbs(router, [index_page_header], ["get_cversions_admin"])
+        "breadcrumbs": create_breadcrumbs(
+            router, [index_page_header], ["get_cversions_admin"]
+        ),
     }
     return templates.TemplateResponse(list_teplate, context)
 
@@ -87,8 +89,8 @@ async def add_cversion_admin(request: Request):
         "breadcrumbs": create_breadcrumbs(
             router,
             [index_page_header, add_page_header],
-            ["get_cversions_admin", "add_cversion_admin"]
-        )
+            ["get_cversions_admin", "add_cversion_admin"],
+        ),
     }
     return templates.TemplateResponse(form_teplate, context)
 
@@ -114,14 +116,14 @@ async def create_cversion_admin(request: Request):
                 license=format_string(form.license),
                 responsible_user_id=int(form.responsible_user_id),
                 comment=format_string(form.comment),
-                action_date=format_date(form.happened_at)
+                action_date=format_date(form.happened_at),
             )
 
             return responses.RedirectResponse(
                 request.url_for("get_cversions_admin").include_query_params(
                     msg="Версия СКЗИ зарегистрирована!"
                 ),
-                status_code=status.HTTP_303_SEE_OTHER
+                status_code=status.HTTP_303_SEE_OTHER,
             )
         except Exception as e:
             form.__dict__.get("errors").setdefault("non_field_error", e)
@@ -138,8 +140,8 @@ async def create_cversion_admin(request: Request):
         "breadcrumbs": create_breadcrumbs(
             router,
             [index_page_header, add_page_header],
-            ["get_cversions_admin", "add_cversion_admin"]
-        )
+            ["get_cversions_admin", "add_cversion_admin"],
+        ),
     }
     context.update(form.__dict__)
     context.update(form.fields)
@@ -162,8 +164,8 @@ async def edit_cversion_admin(cversion_id: int, request: Request):
         "breadcrumbs": create_breadcrumbs(
             router,
             [index_page_header, edit_page_header],
-            ["get_cversions_admin", "add_cversion_admin"]
-        )
+            ["get_cversions_admin", "add_cversion_admin"],
+        ),
     }
     context.update(obj.__dict__)
     return templates.TemplateResponse(form_teplate, context)
@@ -190,9 +192,7 @@ async def update_cversion_admin(cversion_id: int, request: Request):
                 license=format_string(form.license),
                 comment=format_string(form.comment),
             )
-            redirect_url = request.url_for(
-                "get_cversions_admin"
-            ).include_query_params(
+            redirect_url = request.url_for("get_cversions_admin").include_query_params(
                 msg=f"Версия СКЗИ '{obj.version}' обновлена!"
             )
             return responses.RedirectResponse(
@@ -214,8 +214,8 @@ async def update_cversion_admin(cversion_id: int, request: Request):
         "breadcrumbs": create_breadcrumbs(
             router,
             [index_page_header, edit_page_header],
-            ["get_cversions_admin", "add_cversion_admin"]
-        )
+            ["get_cversions_admin", "add_cversion_admin"],
+        ),
     }
     context.update(form.__dict__)
     context.update(form.fields)
@@ -236,8 +236,8 @@ async def decommissioning_cversion_admin(cversion_id: int, request: Request):
         "breadcrumbs": create_breadcrumbs(
             router,
             [index_page_header, decommissioning_page_header],
-            ["get_cversions_admin", "decommissioning_cversion_admin"]
-        )
+            ["get_cversions_admin", "decommissioning_cversion_admin"],
+        ),
     }
     return templates.TemplateResponse(decommissioning_form_template, context)
 
@@ -255,12 +255,10 @@ async def set_decommissioning_cversion_admin(cversion_id: int, request: Request)
                 commision_member_id=int(form.commision_member_id),
                 performer_id=int(form.performer_id),
                 reason=format_string(form.reason),
-                action_date=format_date(form.action_date)
+                action_date=format_date(form.action_date),
             )
 
-            redirect_url = request.url_for(
-                "get_cversions_admin"
-            ).include_query_params(
+            redirect_url = request.url_for("get_cversions_admin").include_query_params(
                 msg=f"Экземпляр СКЗИ выведен из эксплуатации!"
             )
             return responses.RedirectResponse(
@@ -278,8 +276,8 @@ async def set_decommissioning_cversion_admin(cversion_id: int, request: Request)
         "breadcrumbs": create_breadcrumbs(
             router,
             [index_page_header, decommissioning_page_header],
-            ["get_cversions_admin", "decommissioning_cversion_admin"]
-        )
+            ["get_cversions_admin", "decommissioning_cversion_admin"],
+        ),
     }
     context.update(form.__dict__)
     context.update(form.fields)
@@ -295,9 +293,7 @@ async def delete_cversion_admin(cversion_id: int, request: Request):
         if log:
             raise LogbookOnDeleteException
         await CVersionServise.delete(cversion_id)
-        redirect_url = redirect_url.include_query_params(
-            msg="Версия СКЗИ удалена!"
-        )
+        redirect_url = redirect_url.include_query_params(msg="Версия СКЗИ удалена!")
     except Exception as e:
         redirect_url = redirect_url.include_query_params(error=e)
 

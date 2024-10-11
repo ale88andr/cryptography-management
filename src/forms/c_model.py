@@ -19,7 +19,11 @@ class CModelForm(Form):
                     "name", f"'{self.name}' - модель с таким именем уже существует!"
                 )
 
-        if not self.manufacturer_id or not self.manufacturer_id.isnumeric() or int(self.manufacturer_id) == 0:
+        if (
+            not self.manufacturer_id
+            or not self.manufacturer_id.isnumeric()
+            or int(self.manufacturer_id) == 0
+        ):
             self.errors.setdefault("manufacturer_id", self.REQUIRED_ERROR)
 
         if not self.errors:

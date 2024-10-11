@@ -74,7 +74,10 @@ async def add_carrier_admin(request: Request):
                     router, CARRIERS_INDEX_PAGE_HEADER, "get_carriers_admin"
                 ),
                 add_breadcrumb(
-                    router, CARRIERS_ADD_PAGE_HEADER, "add_carrier_admin", is_active=True
+                    router,
+                    CARRIERS_ADD_PAGE_HEADER,
+                    "add_carrier_admin",
+                    is_active=True,
                 ),
             ],
         },
@@ -87,7 +90,9 @@ async def create_carrier_admin(request: Request):
     await form.load_data()
     if await form.is_valid():
         try:
-            obj = await KeyCarrierServise.add(serial=form.serial, carrier_type_id=int(form.type_id))
+            obj = await KeyCarrierServise.add(
+                serial=form.serial, carrier_type_id=int(form.type_id)
+            )
             redirect_url = request.url_for("create_carrier_admin").include_query_params(
                 msg=f"Ключевой носитель '{obj.serial}' создан!"
             )
@@ -121,8 +126,15 @@ async def edit_carrier_admin(carrier_id: int, request: Request):
             "page_header": CARRIERS_EDIT_PAGE_HEADER,
             "page_header_help": CARRIERS_HELP_TEXT,
             "breadcrumbs": [
-                add_breadcrumb(router, CARRIERS_INDEX_PAGE_HEADER, "get_carriers_admin"),
-                add_breadcrumb(router, CARRIERS_EDIT_PAGE_HEADER, "edit_carrier_admin", is_active=True),
+                add_breadcrumb(
+                    router, CARRIERS_INDEX_PAGE_HEADER, "get_carriers_admin"
+                ),
+                add_breadcrumb(
+                    router,
+                    CARRIERS_EDIT_PAGE_HEADER,
+                    "edit_carrier_admin",
+                    is_active=True,
+                ),
             ],
         },
     )
@@ -135,11 +147,10 @@ async def update_carrier_admin(carrier_id: int, request: Request):
     if await form.is_valid():
         try:
             obj = await KeyCarrierServise.update(
-                carrier_id, name=form.name,
+                carrier_id,
+                name=form.name,
             )
-            redirect_url = request.url_for(
-                "get_carriers_admin"
-            ).include_query_params(
+            redirect_url = request.url_for("get_carriers_admin").include_query_params(
                 msg=f"Тип ключевого носителя '{obj.name}' обновлен!"
             )
             return responses.RedirectResponse(
@@ -166,9 +177,7 @@ async def delete_carrier_admin(carrier_id: int, request: Request):
             msg="Ключевой носитель удален!"
         )
     except Exception as e:
-        redirect_url = redirect_url.include_query_params(
-            errors={"non_field_error": e}
-        )
+        redirect_url = redirect_url.include_query_params(errors={"non_field_error": e})
 
     return responses.RedirectResponse(redirect_url, status_code=redirect_code)
 
@@ -191,13 +200,15 @@ class KeyCarrierForm:
         name_min_length = 3
         if not self.serial or not len(self.serial) >= name_min_length:
             self.errors.setdefault(
-                "serial", f"Поле должно содержать как минимум {name_min_length} символа!"
+                "serial",
+                f"Поле должно содержать как минимум {name_min_length} символа!",
             )
         if self.serial:
             is_exists = await KeyCarrierServise.get_one_or_none(serial=self.serial)
             if is_exists:
                 self.errors.setdefault(
-                    "serial", f"'{self.serial}' - Ключевой носитель с таким серийным номером уже существует!"
+                    "serial",
+                    f"'{self.serial}' - Ключевой носитель с таким серийным номером уже существует!",
                 )
 
         if not self.type_id or not self.type_id.isnumeric() or self.type_id == 0:

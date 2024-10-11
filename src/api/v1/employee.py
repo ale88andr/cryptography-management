@@ -66,10 +66,17 @@ async def add_employee(
     department_id: int,
     organisation_id: int,
     location_id: int,
-    user: User = Depends(get_current_admin)
+    user: User = Depends(get_current_admin),
 ):
     employee: Employee = await EmployeeServise.add(
-        surname, name, middle_name, is_worked, position_id, department_id, organisation_id, location_id,
+        surname,
+        name,
+        middle_name,
+        is_worked,
+        position_id,
+        department_id,
+        organisation_id,
+        location_id,
     )
     if not employee:
         raise UserAddException

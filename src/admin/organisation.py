@@ -1,6 +1,11 @@
 from fastapi import APIRouter, Request, responses, status
 
-from admin.constants import ORG_ADD_HEADER, ORG_EDIT_HEADER, ORG_INDEX_PAGE_HEADER, OGR_HELP_TEXT
+from admin.constants import (
+    ORG_ADD_HEADER,
+    ORG_EDIT_HEADER,
+    ORG_INDEX_PAGE_HEADER,
+    OGR_HELP_TEXT,
+)
 from core.config import templates
 from core.utils import add_breadcrumb
 from services.organisation import OrganisationServise
@@ -20,7 +25,7 @@ async def get_organisation_admin(request: Request):
     if not organisation:
         return responses.RedirectResponse(
             request.url_for("add_organisation_admin"),
-            status_code=status.HTTP_303_SEE_OTHER
+            status_code=status.HTTP_303_SEE_OTHER,
         )
 
     return templates.TemplateResponse(
@@ -31,11 +36,15 @@ async def get_organisation_admin(request: Request):
             "page_header": ORG_INDEX_PAGE_HEADER,
             "page_header_help": OGR_HELP_TEXT,
             "breadcrumbs": [
-                add_breadcrumb(router, ORG_INDEX_PAGE_HEADER, "get_organisation_admin", is_active=True),
+                add_breadcrumb(
+                    router,
+                    ORG_INDEX_PAGE_HEADER,
+                    "get_organisation_admin",
+                    is_active=True,
+                ),
             ],
         },
     )
-
 
 
 @router.get("/add")
@@ -71,9 +80,11 @@ async def create_organisation_admin(request: Request):
                 city=form.city,
                 street=form.street,
                 building=form.building,
-                index=int(form.index)
+                index=int(form.index),
             )
-            redirect_url = request.url_for("get_organisations_admin").include_query_params(
+            redirect_url = request.url_for(
+                "get_organisations_admin"
+            ).include_query_params(
                 msg=f"Организация '{organisation.name}' успешно создана!"
             )
             return responses.RedirectResponse(
@@ -89,9 +100,7 @@ async def create_organisation_admin(request: Request):
 
 @router.get("/{organisation_id}/edit")
 async def edit_organisation_admin(organisation_id: int, request: Request):
-    organisation = await OrganisationServise.get_one_or_none(
-        id=organisation_id
-    )
+    organisation = await OrganisationServise.get_one_or_none(id=organisation_id)
     return templates.TemplateResponse(
         form_teplate,
         context={
@@ -107,7 +116,9 @@ async def edit_organisation_admin(organisation_id: int, request: Request):
             "page_header_help": OGR_HELP_TEXT,
             "breadcrumbs": [
                 add_breadcrumb(router, ORG_INDEX_PAGE_HEADER, "get_organisation_admin"),
-                add_breadcrumb(router, ORG_EDIT_HEADER, "edit_organisation_admin", True),
+                add_breadcrumb(
+                    router, ORG_EDIT_HEADER, "edit_organisation_admin", True
+                ),
             ],
         },
     )
@@ -131,13 +142,11 @@ async def update_organisation_admin(organisation_id: int, request: Request):
                 city=form.city,
                 street=form.street,
                 building=form.building,
-                index=int(form.index)
+                index=int(form.index),
             )
             redirect_url = request.url_for(
                 "get_organisation_admin"
-            ).include_query_params(
-                msg=f"Данные '{organisation.name}' обновлены!"
-            )
+            ).include_query_params(msg=f"Данные '{organisation.name}' обновлены!")
             return responses.RedirectResponse(
                 redirect_url, status_code=status.HTTP_303_SEE_OTHER
             )
@@ -174,13 +183,12 @@ class OrganisationForm:
         name_min_length = 3
         if not self.name or not len(self.name) >= name_min_length:
             self.errors.setdefault(
-                "name",
-                f"Поле должно содержать как минимум {name_min_length} символа!"
+                "name", f"Поле должно содержать как минимум {name_min_length} символа!"
             )
         if not self.short_name or not len(self.short_name) >= name_min_length:
             self.errors.setdefault(
                 "short_name",
-                f"Поле должно содержать как минимум {name_min_length} символа!"
+                f"Поле должно содержать как минимум {name_min_length} символа!",
             )
         if not self.city:
             self.errors.setdefault("city", "Поле должно быть заполнено!")

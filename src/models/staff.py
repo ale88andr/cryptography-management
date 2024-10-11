@@ -17,9 +17,7 @@ class Building(Base):
     building: Mapped[str] = mapped_column(String(5), nullable=False)
     index: Mapped[int]
 
-    locations: Mapped[list["Location"]] = relationship(
-        back_populates="building"
-    )
+    locations: Mapped[list["Location"]] = relationship(back_populates="building")
 
     @property
     def address(self):
@@ -67,9 +65,7 @@ class Position(Base):
     name: Mapped[fields.title]
     is_leadership: Mapped[bool] = mapped_column(nullable=False, default=False)
 
-    employees: Mapped[list["Employee"]] = relationship(
-        back_populates="position"
-    )
+    employees: Mapped[list["Employee"]] = relationship(back_populates="position")
 
     def __str__(self) -> str:
         return self.name
@@ -86,9 +82,7 @@ class Department(Base):
     id: Mapped[fields.pk]
     name: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
 
-    employees: Mapped[list["Employee"]] = relationship(
-        back_populates="department"
-    )
+    employees: Mapped[list["Employee"]] = relationship(back_populates="department")
 
     def __str__(self) -> str:
         return self.name
@@ -103,7 +97,7 @@ class Organisation(Base):
     __tablename__ = "employee_organisation"
 
     id: Mapped[fields.pk]
-    name:Mapped[str] = mapped_column(String(150), nullable=False, unique=True)
+    name: Mapped[str] = mapped_column(String(150), nullable=False, unique=True)
     short_name: Mapped[fields.title]
     city: Mapped[str] = mapped_column(String(20), nullable=False)
     street: Mapped[str] = mapped_column(String(40), nullable=False)
@@ -111,9 +105,7 @@ class Organisation(Base):
     index: Mapped[int]
     chief: Mapped[str] = mapped_column(String(20), nullable=False)
 
-    employees: Mapped[list["Employee"]] = relationship(
-        back_populates="organisation"
-    )
+    employees: Mapped[list["Employee"]] = relationship(back_populates="organisation")
 
     @property
     def address(self):
@@ -152,29 +144,19 @@ class Employee(Base):
     updated_at: Mapped[fields.updated_at]
 
     # Relations
-    position: Mapped["Position"] = relationship(
-        back_populates="employees"
-    )
+    position: Mapped["Position"] = relationship(back_populates="employees")
 
-    department: Mapped["Department"] = relationship(
-        back_populates="employees"
-    )
+    department: Mapped["Department"] = relationship(back_populates="employees")
 
-    location: Mapped["Location"] = relationship(
-        back_populates="employees"
-    )
+    location: Mapped["Location"] = relationship(back_populates="employees")
 
-    organisation: Mapped["Organisation"] = relationship(
-        back_populates="employees"
-    )
+    organisation: Mapped["Organisation"] = relationship(back_populates="employees")
 
     cryptography_set: Mapped[list["Version"]] = relationship(
         back_populates="responsible_user"
     )
 
-    key_document_set: Mapped[list["KeyDocument"]] = relationship(
-        back_populates="owner"
-    )
+    key_document_set: Mapped[list["KeyDocument"]] = relationship(back_populates="owner")
 
     @property
     def full_position(self):

@@ -15,12 +15,7 @@ class CVersionServise(BaseRepository):
     model = Version
 
     @classmethod
-    async def all(
-        cls,
-        sort: str = None,
-        q: str = None,
-        filters: Optional[dict] = None
-    ):
+    async def all(cls, sort: str = None, q: str = None, filters: Optional[dict] = None):
         query = select(cls.model).options(
             joinedload(cls.model.responsible_user),
             joinedload(cls.model.model),
@@ -41,10 +36,10 @@ class CVersionServise(BaseRepository):
 
     @classmethod
     async def all_used(cls):
-        query = select(cls.model).options(
-            joinedload(cls.model.model)
-        ).filter(
-            cls.model.remove_act_record_id.is_(None)
+        query = (
+            select(cls.model)
+            .options(joinedload(cls.model.model))
+            .filter(cls.model.remove_act_record_id.is_(None))
         )
 
         records = (await db.execute(query)).scalars().all()
@@ -53,27 +48,28 @@ class CVersionServise(BaseRepository):
 
     @classmethod
     async def get_by_id(cls, model_id: int):
-        query = select(cls.model).options(
-            joinedload(cls.model.install_act),
-            joinedload(cls.model.model),
-            joinedload(cls.model.responsible_user)
-            .options(joinedload(Employee.position), joinedload(Employee.department)),
-            joinedload(cls.model.remove_act)
+        query = (
+            select(cls.model)
             .options(
-                joinedload(ActRecord.performer).options(
-                    joinedload(Employee.position),
-                    joinedload(Employee.department)
+                joinedload(cls.model.install_act),
+                joinedload(cls.model.model),
+                joinedload(cls.model.responsible_user).options(
+                    joinedload(Employee.position), joinedload(Employee.department)
                 ),
-                joinedload(ActRecord.head_commision_member).options(
-                    joinedload(Employee.position),
-                    joinedload(Employee.department)
-                ),
-                joinedload(ActRecord.commision_member).options(
-                    joinedload(Employee.position),
-                    joinedload(Employee.department)
+                joinedload(cls.model.remove_act).options(
+                    joinedload(ActRecord.performer).options(
+                        joinedload(Employee.position), joinedload(Employee.department)
+                    ),
+                    joinedload(ActRecord.head_commision_member).options(
+                        joinedload(Employee.position), joinedload(Employee.department)
+                    ),
+                    joinedload(ActRecord.commision_member).options(
+                        joinedload(Employee.position), joinedload(Employee.department)
+                    ),
                 ),
             )
-        ).filter_by(id=int(model_id))
+            .filter_by(id=int(model_id))
+        )
         result = await cls.db.execute(query)
         return result.scalar_one_or_none()
 
@@ -94,14 +90,14 @@ class CVersionServise(BaseRepository):
         license: str,
         responsible_user_id: int,
         comment: str,
-        action_date: date
+        action_date: date,
     ):
         try:
             install_act_record = await CActionServise.add(
                 action_type=ActRecordTypes.С_INSTALL,
                 number=await CActionServise.get_free_action_number(action_date),
                 performer_id=responsible_user_id,
-                action_date=action_date
+                action_date=action_date,
             )
 
             await cls.add(
@@ -119,15 +115,19 @@ class CVersionServise(BaseRepository):
                 license=license,
                 responsible_user_id=responsible_user_id,
                 comment=comment,
-                install_act_record_id=install_act_record.id
+                install_act_record_id=install_act_record.id,
             )
 
             await cls.db.commit()
             await cls.db.session.flush()
         except Exception as e:
-            print(f"--------- Exception in {cls.__class__.__name__}.register() ---------")
+            print(
+                f"--------- Exception in {cls.__class__.__name__}.register() ---------"
+            )
             print(e)
-            print(f"--------- Exception in {cls.__class__.__name__}.register() ---------")
+            print(
+                f"--------- Exception in {cls.__class__.__name__}.register() ---------"
+            )
             await cls.db.rollback()
 
     @classmethod
@@ -138,7 +138,7 @@ class CVersionServise(BaseRepository):
         commision_member_id: int,
         performer_id: int,
         reason: str,
-        action_date: date
+        action_date: date,
     ):
         try:
             remove_act_record = await CActionServise.add(
@@ -148,20 +148,21 @@ class CVersionServise(BaseRepository):
                 commision_member_id=commision_member_id,
                 performer_id=performer_id,
                 reason=reason,
-                action_date=action_date
+                action_date=action_date,
             )
 
-            await cls.update(
-                version_id,
-                remove_act_record_id=remove_act_record.id
-            )
+            await cls.update(version_id, remove_act_record_id=remove_act_record.id)
 
             await cls.db.commit()
             await cls.db.session.flush()
         except Exception as e:
-            print(f"--------- Exception in {cls.__class__.__name__}.unregister() ---------")
+            print(
+                f"--------- Exception in {cls.__class__.__name__}.unregister() ---------"
+            )
             print(e)
-            print(f"--------- Exception in {cls.__class__.__name__}.unregister() ---------")
+            print(
+                f"--------- Exception in {cls.__class__.__name__}.unregister() ---------"
+            )
             await cls.db.rollback()
 
     @classmethod
@@ -171,21 +172,19 @@ class CVersionServise(BaseRepository):
 
     @classmethod
     async def count_unused(cls) -> int:
-        count_query = select(func.count(cls.model.id.distinct())).filter(cls.model.remove_act_record_id.isnot(None))
+        count_query = select(func.count(cls.model.id.distinct())).filter(
+            cls.model.remove_act_record_id.isnot(None)
+        )
         count = (await db.execute(count_query)).scalar() or 0
         return count
 
     @classmethod
     async def count_by_versions(cls):
-        query = select(
-            cls.model,
-            func.count(cls.model.key_document_set)
-        ).join(
-            KeyDocument, cls.model.key_document_set
-        ).join(
-            Model, cls.model.model
-        ).group_by(
-            cls.model
+        query = (
+            select(cls.model, func.count(cls.model.key_document_set))
+            .join(KeyDocument, cls.model.key_document_set)
+            .join(Model, cls.model.model)
+            .group_by(cls.model)
         )
         result = (await db.execute(query)).fetchall()
         return result

@@ -10,12 +10,7 @@ class LocationServise(BaseRepository):
     model = Location
 
     @classmethod
-    async def all(
-        cls,
-        sort: str = None,
-        q: str = None,
-        filters: Optional[dict] = None
-    ):
+    async def all(cls, sort: str = None, q: str = None, filters: Optional[dict] = None):
         query = select(cls.model)
 
         # Filter rows

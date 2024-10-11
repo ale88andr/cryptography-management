@@ -18,7 +18,12 @@ def create_breadcrumbs(router: APIRouter, titles: list, urls: list) -> list:
     bc, t_len = [], len(titles)
     if t_len == len(urls):
         for i in range(t_len):
-            bc.append({"title": titles[i], "url": router.url_path_for(urls[i]) if i < t_len-1 else None})
+            bc.append(
+                {
+                    "title": titles[i],
+                    "url": router.url_path_for(urls[i]) if i < t_len - 1 else None,
+                }
+            )
 
     return bc
 
@@ -28,7 +33,9 @@ def create_file_response(template, context, name):
 
     docx_in_memory = BytesIO()
     template = os.path.join(BASE_DIR, "media/doc", template)
-    content_disposition = f"attachment; filename={name.encode('utf-8').decode('unicode-escape')}.docx"
+    content_disposition = (
+        f"attachment; filename={name.encode('utf-8').decode('unicode-escape')}.docx"
+    )
 
     RenderTemplate(template, context, docx_in_memory)
 
@@ -37,5 +44,5 @@ def create_file_response(template, context, name):
     return responses.StreamingResponse(
         content=docx_in_memory,
         media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        headers={"Content-Disposition": content_disposition}
+        headers={"Content-Disposition": content_disposition},
     )

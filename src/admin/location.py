@@ -69,12 +69,8 @@ async def add_location_admin(request: Request):
             "page_header_help": LOC_HELP_TEXT,
             "buildings": buildings,
             "breadcrumbs": [
-                add_breadcrumb(
-                    router, LOC_INDEX_PAGE_HEADER, "get_locations_admin"
-                ),
-                add_breadcrumb(
-                    router, LOC_ADD_PAGE_HEADER, "add_location_admin", True
-                ),
+                add_breadcrumb(router, LOC_INDEX_PAGE_HEADER, "get_locations_admin"),
+                add_breadcrumb(router, LOC_ADD_PAGE_HEADER, "add_location_admin", True),
             ],
         },
     )
@@ -89,9 +85,7 @@ async def create_loc_admin(request: Request):
             loc = await LocationServise.add(
                 name=form.name, building_id=int(form.building_id)
             )
-            redirect_url = request.url_for(
-                "get_locations_admin"
-            ).include_query_params(
+            redirect_url = request.url_for("get_locations_admin").include_query_params(
                 msg=f"Рабочее место '{loc.name}' создано!"
             )
             return responses.RedirectResponse(
@@ -123,9 +117,7 @@ async def edit_location_admin(location_id: int, request: Request):
             "page_header": LOC_EDIT_PAGE_HEADER,
             "page_header_help": LOC_HELP_TEXT,
             "breadcrumbs": [
-                add_breadcrumb(
-                    router, LOC_INDEX_PAGE_HEADER, "get_locations_admin"
-                ),
+                add_breadcrumb(router, LOC_INDEX_PAGE_HEADER, "get_locations_admin"),
                 add_breadcrumb(
                     router, LOC_EDIT_PAGE_HEADER, "edit_locations_admin", True
                 ),
@@ -143,9 +135,7 @@ async def update_location_admin(location_id: int, request: Request):
             loc = await LocationServise.update(
                 location_id, name=form.name, building_id=int(form.building_id)
             )
-            redirect_url = request.url_for(
-                "get_locations_admin"
-            ).include_query_params(
+            redirect_url = request.url_for("get_locations_admin").include_query_params(
                 msg=f"Рабочее место '{loc.name}' обновлено!"
             )
             return responses.RedirectResponse(
@@ -157,7 +147,7 @@ async def update_location_admin(location_id: int, request: Request):
     context = {
         "page_header_text": LOC_EDIT_PAGE_HEADER,
         "page_header_help_text": LOC_HELP_TEXT,
-        "buildings": await BuildingServise.all()
+        "buildings": await BuildingServise.all(),
     }
     context.update(form.__dict__)
     return templates.TemplateResponse(form_teplate, context)
@@ -169,13 +159,9 @@ async def delete_location_admin(location_id: int, request: Request):
     redirect_code = status.HTTP_307_TEMPORARY_REDIRECT
     try:
         await LocationServise.delete(location_id)
-        redirect_url = redirect_url.include_query_params(
-            msg="Рабочее место удалено!"
-        )
+        redirect_url = redirect_url.include_query_params(msg="Рабочее место удалено!")
     except Exception as e:
-        redirect_url = redirect_url.include_query_params(
-            errors={"non_field_error": e}
-        )
+        redirect_url = redirect_url.include_query_params(errors={"non_field_error": e})
 
     return responses.RedirectResponse(redirect_url, status_code=redirect_code)
 
@@ -198,15 +184,13 @@ class LocationForm:
         name_min_length = 3
         if not self.name or not len(self.name) >= name_min_length:
             self.errors.setdefault(
-                "name",
-                f"Поле должно содержать как минимум {name_min_length} символа!"
+                "name", f"Поле должно содержать как минимум {name_min_length} символа!"
             )
         if self.name:
             db_loc = await LocationServise.get_one_or_none(name=self.name)
             if db_loc and db_loc.building_id == int(self.building_id):
                 self.errors.setdefault(
-                    "name",
-                    f"'{self.name}' - Такое рабочее место уже существует!"
+                    "name", f"'{self.name}' - Такое рабочее место уже существует!"
                 )
         if not self.building_id or not self.building_id.isnumeric():
             self.errors.setdefault("building_id", self.REQUIRED_ERROR)

@@ -75,9 +75,7 @@ async def create_building_admin(request: Request):
                 building=form.building,
                 index=int(form.index) if form.index else None,
             )
-            redirect_url = request.url_for(
-                "get_buildings_admin"
-            ).include_query_params(
+            redirect_url = request.url_for("get_buildings_admin").include_query_params(
                 msg=f"Филиал '{building.name}' добавлен!"
             )
             return responses.RedirectResponse(
@@ -105,9 +103,7 @@ async def edit_building_admin(building_id: int, request: Request):
             "page_header": BUILD_EDIT_PAGE_HEADER,
             "page_header_help": BUILD_HELP_TEXT,
             "breadcrumbs": [
-                add_breadcrumb(
-                    router, BUILD_INDEX_PAGE_HEADER, "get_buildings_admin"
-                ),
+                add_breadcrumb(router, BUILD_INDEX_PAGE_HEADER, "get_buildings_admin"),
                 add_breadcrumb(
                     router, BUILD_EDIT_PAGE_HEADER, "edit_building_admin", True
                 ),
@@ -137,7 +133,8 @@ async def update_building_admin(building_id: int, request: Request):
             return responses.RedirectResponse(
                 request.url_for("get_buildings_admin").include_query_params(
                     msg=f"Данные '{building.name}' успешно обновлены!"
-                ), status_code=status.HTTP_303_SEE_OTHER
+                ),
+                status_code=status.HTTP_303_SEE_OTHER,
             )
         except Exception as e:
             form.__dict__.get("errors").setdefault("non_field_error", e)
@@ -151,9 +148,9 @@ async def delete_building_admin(building_id: int, request: Request):
     redirect_url = request.url_for("get_buildings_admin")
     try:
         await BuildingServise.delete(building_id)
-        redirect = request.url_for(
-            "get_buildings_admin"
-        ).include_query_params(msg="Филиал удален!")
+        redirect = request.url_for("get_buildings_admin").include_query_params(
+            msg="Филиал удален!"
+        )
         return responses.RedirectResponse(
             redirect, status_code=status.HTTP_307_TEMPORARY_REDIRECT
         )

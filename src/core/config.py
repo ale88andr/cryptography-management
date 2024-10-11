@@ -19,8 +19,10 @@ class Settings(BaseSettings):
 
     @property
     def db_connection_string(self) -> str:
-        return (f"{self.DB_ENGINE}://{self.DB_USER}:{self.DB_PASS}@"
-                f"{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}")
+        return (
+            f"{self.DB_ENGINE}://{self.DB_USER}:{self.DB_PASS}@"
+            f"{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
+        )
 
     class Config:
         env_file = ".env"
@@ -46,4 +48,4 @@ origins = [
 templates = Jinja2Templates(directory="src/templates")
 
 # Настройка локали
-locale.setlocale(category=locale.LC_ALL,locale="ru_RU.UTF-8")
+locale.setlocale(category=locale.LC_ALL, locale="ru_RU.UTF-8")

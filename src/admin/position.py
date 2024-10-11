@@ -21,7 +21,7 @@ async def get_positions_admin(
     sort: Optional[str] = None,
     q: Optional[str] = None,
     columns: str = None,
-    is_leadership: Optional[str] = None
+    is_leadership: Optional[str] = None,
 ):
     page_header_text = "Должности сотрудников"
     page_header_help_text = "Администрирование должностей сотрудников"
@@ -30,7 +30,9 @@ async def get_positions_admin(
     if is_leadership is not None and is_leadership != "all":
         filters["is_leadership"] = True if is_leadership == "True" else False
 
-    records, counter = await PositionServise.all(sort=sort, q=q, columns=columns, filters=filters)
+    records, counter = await PositionServise.all(
+        sort=sort, q=q, columns=columns, filters=filters
+    )
     return templates.TemplateResponse(
         list_teplate,
         context={
@@ -64,7 +66,9 @@ async def add_position_admin(request: Request):
             "page_header_help_text": page_header_help_text,
             "breadcrumbs": [
                 add_breadcrumb(router, "Должности сотрудников", "get_positions_admin"),
-                add_breadcrumb(router, page_header_text, "add_position_admin", is_active=True),
+                add_breadcrumb(
+                    router, page_header_text, "add_position_admin", is_active=True
+                ),
             ],
         },
     )
@@ -112,7 +116,9 @@ async def edit_position_admin(position_id: int, request: Request):
             "page_header_help_text": page_header_help_text,
             "breadcrumbs": [
                 add_breadcrumb(router, "Должности сотрудников", "get_positions_admin"),
-                add_breadcrumb(router, page_header_text, "edit_position_admin", is_active=True),
+                add_breadcrumb(
+                    router, page_header_text, "edit_position_admin", is_active=True
+                ),
             ],
         },
     )
@@ -129,13 +135,9 @@ async def update_position_admin(position_id: int, request: Request):
     if await form.is_valid():
         try:
             position = await PositionServise.update(
-                position_id,
-                name=form.name,
-                is_leadership=form.is_leadership
+                position_id, name=form.name, is_leadership=form.is_leadership
             )
-            redirect_url = request.url_for(
-                "get_positions_admin"
-            ).include_query_params(
+            redirect_url = request.url_for("get_positions_admin").include_query_params(
                 msg=f"Должность '{position.name}' успешно обновлена!"
             )
             return responses.RedirectResponse(

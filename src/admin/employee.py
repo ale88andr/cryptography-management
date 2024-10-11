@@ -6,7 +6,7 @@ from admin.constants import (
     EMP_EDIT_PAGE_HEADER as edit_page_header,
     EMP_HELP_TEXT as hepl_text,
     EMP_INDEX_PAGE_HEADER as index_page_header,
-    EMP_CUSERS_PAGE_HEADER as index_cusers_page_header
+    EMP_CUSERS_PAGE_HEADER as index_cusers_page_header,
 )
 from core.config import templates
 from core.utils import create_breadcrumbs, create_file_response
@@ -55,8 +55,10 @@ async def get_employees_admin(
     if filter_location and filter_location > 0:
         filters["location_id"] = filter_location
 
-    records, counter, total_records, total_pages = await EmployeeServise.all_with_pagination(
-        sort=sort, q=q, page=page, limit=limit, filters=filters
+    records, counter, total_records, total_pages = (
+        await EmployeeServise.all_with_pagination(
+            sort=sort, q=q, page=page, limit=limit, filters=filters
+        )
     )
     departments, _ = await DepartmentServise.all()
     positions, _ = await PositionServise.all()
@@ -83,7 +85,9 @@ async def get_employees_admin(
             "msg": msg,
             "sort": sort,
             "q": q,
-            "breadcrumbs": create_breadcrumbs(router, [index_page_header], ["get_employees_admin"])
+            "breadcrumbs": create_breadcrumbs(
+                router, [index_page_header], ["get_employees_admin"]
+            ),
         },
     )
 
@@ -104,7 +108,9 @@ async def get_cusers_admin(
     if filter_version and filter_version > 0:
         filters["cryptography_version_id"] = filter_version
 
-    cryptography_users, total_cryptography_users = await EmployeeServise.cryptography_users(q=q, sort=sort, filters=filters)
+    cryptography_users, total_cryptography_users = (
+        await EmployeeServise.cryptography_users(q=q, sort=sort, filters=filters)
+    )
 
     departments, _ = await DepartmentServise.all()
     versions, _ = await CVersionServise.all()
@@ -125,7 +131,7 @@ async def get_cusers_admin(
             "sort": sort,
             "breadcrumbs": create_breadcrumbs(
                 router, [index_cusers_page_header], ["get_employees_admin"]
-            )
+            ),
         },
     )
 
@@ -150,8 +156,8 @@ async def add_employee_admin(request: Request):
             "breadcrumbs": create_breadcrumbs(
                 router,
                 [index_page_header, add_page_header],
-                ["get_employees_admin", "add_employee_admin"]
-            )
+                ["get_employees_admin", "add_employee_admin"],
+            ),
         },
     )
 
@@ -170,11 +176,9 @@ async def create_employee_admin(request: Request):
                 position_id=int(form.position_id),
                 department_id=int(form.department_id),
                 location_id=int(form.location_id),
-                organisation_id=organisation.id
+                organisation_id=organisation.id,
             )
-            redirect_url = request.url_for(
-                "get_employees_admin"
-            ).include_query_params(
+            redirect_url = request.url_for("get_employees_admin").include_query_params(
                 msg=f"Сотрудник '{emp.short_name}' добавлен!"
             )
             return responses.RedirectResponse(
@@ -195,8 +199,8 @@ async def create_employee_admin(request: Request):
         "breadcrumbs": create_breadcrumbs(
             router,
             [index_page_header, add_page_header],
-            ["get_employees_admin", "add_employee_admin"]
-        )
+            ["get_employees_admin", "add_employee_admin"],
+        ),
     }
     context.update(form.__dict__)
     context.update(form.fields)
@@ -217,8 +221,8 @@ async def detail_employee_admin(employee_id: int, request: Request):
             "breadcrumbs": create_breadcrumbs(
                 router,
                 [index_page_header, employee.short_name],
-                ["get_employees_admin", "detail_employee_admin"]
-            )
+                ["get_employees_admin", "detail_employee_admin"],
+            ),
         },
     )
 
@@ -254,8 +258,8 @@ async def edit_employee_admin(employee_id: int, request: Request):
             "breadcrumbs": create_breadcrumbs(
                 router,
                 [index_page_header, edit_page_header],
-                ["get_employees_admin", "edit_employee_admin"]
-            )
+                ["get_employees_admin", "edit_employee_admin"],
+            ),
         },
     )
 
@@ -274,11 +278,9 @@ async def update_employee_admin(employee_id: int, request: Request):
                 position_id=int(form.position_id),
                 department_id=int(form.department_id),
                 location_id=int(form.location_id),
-                is_security_staff=True if form.is_security_staff=="on" else False
+                is_security_staff=True if form.is_security_staff == "on" else False,
             )
-            redirect_url = request.url_for(
-                "get_employees_admin"
-            ).include_query_params(
+            redirect_url = request.url_for("get_employees_admin").include_query_params(
                 msg=f"Данные сотрудника '{obj}' обновлены!"
             )
             return responses.RedirectResponse(
@@ -312,8 +314,9 @@ async def download_personal_account_admin(employee_id: int, request: Request):
     return create_file_response(
         LogbookTemplatesEnum.PERSONAL_LOGBOOK.value,
         {"employee": employee, "items": items},
-        f"Лицевой счёт пользователя СКЗИ - {employee.short_name}"
+        f"Лицевой счёт пользователя СКЗИ - {employee.short_name}",
     )
+
 
 @router.get("/cryptography/doc")
 async def download_cusers_admin(request: Request):
@@ -322,8 +325,9 @@ async def download_cusers_admin(request: Request):
     return create_file_response(
         LogbookTemplatesEnum.C_USERS_LOGBOOK.value,
         {"items": items},
-        f"Список пользователей СКЗИ на дату - {get_str_now_date()}"
+        f"Список пользователей СКЗИ на дату - {get_str_now_date()}",
     )
+
 
 # @router.get("/{location_id}/delete")
 # async def delete_location_admin(location_id: int, request: Request):

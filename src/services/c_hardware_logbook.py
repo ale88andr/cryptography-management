@@ -12,11 +12,7 @@ class CHardwareLogbookServise(BaseRepository):
     model = HardwareLogbook
 
     @classmethod
-    async def all(
-        cls,
-        sort: str = None,
-        filters: Optional[dict] = None
-    ):
+    async def all(cls, sort: str = None, filters: Optional[dict] = None):
         query = select(cls.model).options(
             joinedload(cls.model.cryptography_version),
         )
@@ -32,10 +28,7 @@ class CHardwareLogbookServise(BaseRepository):
         return records, len(records)
 
     @classmethod
-    async def get_by_equipment(
-        cls,
-        equipment_id: int = None
-    ):
+    async def get_by_equipment(cls, equipment_id: int = None):
         if equipment_id:
             query = select(cls.model).filter_by(equipment_id=equipment_id)
             records = (await db.execute(query)).scalars().all()
@@ -57,5 +50,5 @@ class CHardwareLogbookServise(BaseRepository):
             equipment_id=equipment_id,
             cryptography_version_id=int(version_id),
             key_document_id=int(key_id),
-            comment=comment
+            comment=comment,
         )

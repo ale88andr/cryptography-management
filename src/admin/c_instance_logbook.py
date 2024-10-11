@@ -9,7 +9,12 @@ from admin.constants import (
     CILOG_ADD_PAGE_HEADER as add_page_header,
 )
 from core.config import templates
-from core.templater import DocumentTemplatesEnum, InstallKeyActDocumentContext, LogbookTemplatesEnum, UninstallKeyActDocumentContext
+from core.templater import (
+    DocumentTemplatesEnum,
+    InstallKeyActDocumentContext,
+    LogbookTemplatesEnum,
+    UninstallKeyActDocumentContext,
+)
 from core.utils import create_breadcrumbs, create_file_response
 from forms.c_instance_logbook import CInstanceLogbookAdd
 from services.c_instance_logbook import CInstanceLogbookServise
@@ -48,8 +53,10 @@ async def get_cilogbook_admin(
     # if filter_grade:
     #     filters["grade"] = filter_grade
 
-    records, counter, total_records, total_pages = await KeyDocumentServise.all_with_pagination(
-        sort=sort, q=q, page=page, limit=limit
+    records, counter, total_records, total_pages = (
+        await KeyDocumentServise.all_with_pagination(
+            sort=sort, q=q, page=page, limit=limit
+        )
     )
 
     context = {
@@ -68,7 +75,9 @@ async def get_cilogbook_admin(
         "msg": msg,
         "sort": sort,
         "q": q,
-        "breadcrumbs": create_breadcrumbs(router, [index_page_header], ["get_clogbook_admin"])
+        "breadcrumbs": create_breadcrumbs(
+            router, [index_page_header], ["get_clogbook_admin"]
+        ),
     }
     return templates.TemplateResponse(list_teplate, context)
 
@@ -95,8 +104,8 @@ async def add_cilogbook_admin(request: Request):
         "breadcrumbs": create_breadcrumbs(
             router,
             [index_page_header, add_page_header],
-            ["get_cilogbook_admin", "add_cilogbook_admin"]
-        )
+            ["get_cilogbook_admin", "add_cilogbook_admin"],
+        ),
     }
     return templates.TemplateResponse(form_teplate, context)
 
@@ -138,8 +147,8 @@ async def create_cilogbook_admin(request: Request):
         "breadcrumbs": create_breadcrumbs(
             router,
             [index_page_header, add_page_header],
-            ["get_cilogbook_admin", "add_cilogbook_admin"]
-        )
+            ["get_cilogbook_admin", "add_cilogbook_admin"],
+        ),
     }
     context.update(form.__dict__)
     context.update(form.fields)
@@ -152,13 +161,9 @@ async def delete_clogbook_admin(record_id: int, request: Request):
     redirect_code = status.HTTP_307_TEMPORARY_REDIRECT
     try:
         await CInstanceLogbookServise.delete(record_id)
-        redirect_url = redirect_url.include_query_params(
-            msg="Запись журнала удалена!"
-        )
+        redirect_url = redirect_url.include_query_params(msg="Запись журнала удалена!")
     except Exception as e:
-        redirect_url = redirect_url.include_query_params(
-            errors={"non_field_error": e}
-        )
+        redirect_url = redirect_url.include_query_params(errors={"non_field_error": e})
 
     return responses.RedirectResponse(redirect_url, status_code=redirect_code)
 
@@ -189,16 +194,16 @@ async def download_instance_creation_act_admin(key_id: int, request: Request):
         owner_full_name=key.owner.full_name,
         owner_position=key.owner.full_position,
         cryptography=key.cryptography_version,
-        key_document_serials=list(map(lambda r: [r.key_carrier, r.serial], all_act_keys)),
+        key_document_serials=list(
+            map(lambda r: [r.key_carrier, r.serial], all_act_keys)
+        ),
         location=key.owner.location,
         sticker=key.equipment.sticker if key.equipment.sticker else "",
         equipment=key.equipment_id,
     )
 
     return create_file_response(
-        DocumentTemplatesEnum.KD_INSTALL.value,
-        asdict(context),
-        key.install_act.number
+        DocumentTemplatesEnum.KD_INSTALL.value, asdict(context), key.install_act.number
     )
 
 
@@ -230,7 +235,9 @@ async def download_instance_destruction_act_admin(key_id: int, request: Request)
         owner_position=key.owner.full_position,
         owner_organisation=key.owner.organisation,
         cryptography=key.cryptography_version,
-        key_document_serials=list(map(lambda r: [r.key_carrier, r.serial], all_act_keys)),
+        key_document_serials=list(
+            map(lambda r: [r.key_carrier, r.serial], all_act_keys)
+        ),
         location=key.owner.location,
         equipment=key.equipment_id,
     )
@@ -247,5 +254,5 @@ async def download_cilogbook_admin(request: Request):
     return create_file_response(
         LogbookTemplatesEnum.INSTANCE_LOGBOOK.value,
         {"items": objects},
-        f"Журнал поэкземплярного учета СКЗИ на дату - {get_str_now_date()}"
+        f"Журнал поэкземплярного учета СКЗИ на дату - {get_str_now_date()}",
     )

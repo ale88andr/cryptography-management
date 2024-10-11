@@ -60,9 +60,7 @@ async def add_department_admin(request: Request):
             "page_header": DP_ADD_PAGE_HEADER,
             "page_header_help": DP_HELP_TEXT,
             "breadcrumbs": [
-                add_breadcrumb(
-                    router, "Отделы сотрудников", "get_departments_admin"
-                ),
+                add_breadcrumb(router, "Отделы сотрудников", "get_departments_admin"),
                 add_breadcrumb(
                     router, DP_INDEX_PAGE_HEADER, "add_department_admin", is_active=True
                 ),
@@ -82,9 +80,9 @@ async def create_position_admin(request: Request):
     if await form.is_valid():
         try:
             dept = await DepartmentServise.add(name=form.name)
-            redirect_url = request.url_for("get_departments_admin").include_query_params(
-                msg=f"Отдел '{dept.name}' создан!"
-            )
+            redirect_url = request.url_for(
+                "get_departments_admin"
+            ).include_query_params(msg=f"Отдел '{dept.name}' создан!")
             return responses.RedirectResponse(
                 redirect_url, status_code=status.HTTP_303_SEE_OTHER
             )
@@ -106,8 +104,12 @@ async def edit_department_admin(department_id: int, request: Request):
             "page_header": DP_EDIT_PAGE_HEADER,
             "page_header_help": DP_HELP_TEXT,
             "breadcrumbs": [
-                add_breadcrumb(router, "Должности сотрудников", "get_departments_admin"),
-                add_breadcrumb(router, DP_EDIT_PAGE_HEADER, "edit_department_admin", is_active=True),
+                add_breadcrumb(
+                    router, "Должности сотрудников", "get_departments_admin"
+                ),
+                add_breadcrumb(
+                    router, DP_EDIT_PAGE_HEADER, "edit_department_admin", is_active=True
+                ),
             ],
         },
     )
@@ -124,13 +126,12 @@ async def update_position_admin(department_id: int, request: Request):
     if await form.is_valid():
         try:
             position = await DepartmentServise().update(
-                department_id, name=form.name,
+                department_id,
+                name=form.name,
             )
             redirect_url = request.url_for(
                 "get_departments_admin"
-            ).include_query_params(
-                msg=f"Отдел '{position.name}' обновлен!"
-            )
+            ).include_query_params(msg=f"Отдел '{position.name}' обновлен!")
             return responses.RedirectResponse(
                 redirect_url, status_code=status.HTTP_303_SEE_OTHER
             )

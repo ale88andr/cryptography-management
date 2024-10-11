@@ -11,12 +11,7 @@ class KeyCarrierServise(BaseRepository):
     model = KeyCarrier
 
     @classmethod
-    async def all(
-        cls,
-        sort: str = None,
-        q: str = None,
-        filters: Optional[dict] = None
-    ):
+    async def all(cls, sort: str = None, q: str = None, filters: Optional[dict] = None):
         query = select(cls.model).options(joinedload(cls.model.carrier_type))
 
         # Filter rows
@@ -35,16 +30,11 @@ class KeyCarrierServise(BaseRepository):
 
     @classmethod
     async def count_key_carriers(cls):
-        query = select(
-            KeyCarrierType.name,
-            func.count(cls.model.key_documents)
-        ).join(
-            KeyDocument, cls.model.key_documents
-        ).join(
-            KeyCarrierType, cls.model.carrier_type
-        ).group_by(
-            cls.model,
-            KeyCarrierType.name
+        query = (
+            select(KeyCarrierType.name, func.count(cls.model.key_documents))
+            .join(KeyDocument, cls.model.key_documents)
+            .join(KeyCarrierType, cls.model.carrier_type)
+            .group_by(cls.model, KeyCarrierType.name)
         )
         result = (await db.execute(query)).fetchall()
         return result

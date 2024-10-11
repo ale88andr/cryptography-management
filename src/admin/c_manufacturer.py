@@ -63,7 +63,10 @@ async def add_cmanufacturer_admin(request: Request):
                     router, CM_INDEX_PAGE_HEADER, "get_cmanufacturers_admin"
                 ),
                 add_breadcrumb(
-                    router, CM_ADD_PAGE_HEADER, "add_cmanufacturer_admin", is_active=True
+                    router,
+                    CM_ADD_PAGE_HEADER,
+                    "add_cmanufacturer_admin",
+                    is_active=True,
                 ),
             ],
         },
@@ -77,9 +80,9 @@ async def create_cmanufacturer_admin(request: Request):
     if await form.is_valid():
         try:
             obj = await CManufacturerServise.add(name=form.name)
-            redirect_url = request.url_for("get_cmanufacturers_admin").include_query_params(
-                msg=f"Производитель СКЗИ '{obj.name}' создан!"
-            )
+            redirect_url = request.url_for(
+                "get_cmanufacturers_admin"
+            ).include_query_params(msg=f"Производитель СКЗИ '{obj.name}' создан!")
             return responses.RedirectResponse(
                 redirect_url, status_code=status.HTTP_303_SEE_OTHER
             )
@@ -105,8 +108,15 @@ async def edit_cmanufacturer_admin(cm_id: int, request: Request):
             "page_header": CM_EDIT_PAGE_HEADER,
             "page_header_help": CM_HELP_TEXT,
             "breadcrumbs": [
-                add_breadcrumb(router, CM_INDEX_PAGE_HEADER, "get_cmanufacturers_admin"),
-                add_breadcrumb(router, CM_EDIT_PAGE_HEADER, "edit_cmanufacturer_admin", is_active=True),
+                add_breadcrumb(
+                    router, CM_INDEX_PAGE_HEADER, "get_cmanufacturers_admin"
+                ),
+                add_breadcrumb(
+                    router,
+                    CM_EDIT_PAGE_HEADER,
+                    "edit_cmanufacturer_admin",
+                    is_active=True,
+                ),
             ],
         },
     )
@@ -119,11 +129,10 @@ async def update_carrier_admin(cm_id: int, request: Request):
     if await form.is_valid():
         try:
             obj = await CManufacturerServise.update(
-                cm_id, name=form.name,
+                cm_id,
+                name=form.name,
             )
-            redirect_url = request.url_for(
-                "get_carriers_admin"
-            ).include_query_params(
+            redirect_url = request.url_for("get_carriers_admin").include_query_params(
                 msg=f"Тип ключевого носителя '{obj.name}' обновлен!"
             )
             return responses.RedirectResponse(
@@ -150,9 +159,7 @@ async def delete_cmanufacturer_admin(cm_id: int, request: Request):
             msg="Ключевой носитель удален!"
         )
     except Exception as e:
-        redirect_url = redirect_url.include_query_params(
-            errors={"non_field_error": e}
-        )
+        redirect_url = redirect_url.include_query_params(errors={"non_field_error": e})
 
     return responses.RedirectResponse(redirect_url, status_code=redirect_code)
 
@@ -179,7 +186,8 @@ class CManufacturerForm:
             is_exists = await CManufacturerServise.get_one_or_none(name=self.name)
             if is_exists:
                 self.errors.setdefault(
-                    "name", f"'{self.name}' - Производитель с таким именем уже существует!"
+                    "name",
+                    f"'{self.name}' - Производитель с таким именем уже существует!",
                 )
 
         if not self.errors:

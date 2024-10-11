@@ -6,7 +6,7 @@ T = TypeVar('T')
 
 
 class PageResponse(GenericModel, Generic[T]):
-    """ The response for a pagination query. """
+    """The response for a pagination query."""
 
     page_number: int
     page_size: int

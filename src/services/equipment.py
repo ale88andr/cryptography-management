@@ -27,7 +27,7 @@ class EquipmentServise(BaseRepository):
         columns: str = None,
         sort: str = None,
         q: str = None,
-        filters: Optional[dict] = None
+        filters: Optional[dict] = None,
     ):
         query = select(cls.model)
 
@@ -54,7 +54,7 @@ class EquipmentServise(BaseRepository):
         count_query = select(func.count(1)).select_from(cls.model)
 
         total_records = (await db.execute(count_query)).scalar() or 0
-        total_pages = math.ceil(total_records/limit) if limit else 0
+        total_pages = math.ceil(total_records / limit) if limit else 0
 
         records = (await db.execute(query)).scalars().all()
 
@@ -62,19 +62,27 @@ class EquipmentServise(BaseRepository):
 
     @classmethod
     async def get_by_id(cls, model_id: str):
-        query = select(cls.model).options(
+        query = (
+            select(cls.model)
+            .options(
                 selectinload(cls.model.hw_logs)
                 .joinedload(HardwareLogbook.cryptography_version)
                 .options(joinedload(Version.model)),
                 selectinload(cls.model.hw_logs)
                 .joinedload(HardwareLogbook.key_document)
-                .options(joinedload(KeyDocument.key_carrier)
-                         .options(joinedload(KeyCarrier.carrier_type))
+                .options(
+                    joinedload(KeyDocument.key_carrier).options(
+                        joinedload(KeyCarrier.carrier_type)
+                    )
                 ),
-                selectinload(cls.model.hw_logs)
-                .subqueryload(HardwareLogbook.remove_action),
-                selectinload(cls.model.key_documents)
-                .options(joinedload(KeyDocument.cryptography_version))
-            ).filter_by(id=model_id)
+                selectinload(cls.model.hw_logs).subqueryload(
+                    HardwareLogbook.remove_action
+                ),
+                selectinload(cls.model.key_documents).options(
+                    joinedload(KeyDocument.cryptography_version)
+                ),
+            )
+            .filter_by(id=model_id)
+        )
         result = await cls.db.execute(query)
         return result.scalar_one_or_none()

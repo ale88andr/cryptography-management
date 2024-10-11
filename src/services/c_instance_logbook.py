@@ -13,22 +13,21 @@ class CInstanceLogbookServise(BaseRepository):
     model = KeyDocument
 
     @classmethod
-    async def all(
-        cls,
-        sort: str = None,
-        filters: Optional[dict] = None
-    ):
+    async def all(cls, sort: str = None, filters: Optional[dict] = None):
         query = select(cls.model).options(
-            joinedload(cls.model.cryptography_version)
-            .options(joinedload(Version.model)),
-            joinedload(cls.model.key_document)
-            .options(joinedload(KeyDocument.key_carrier)
-                     .joinedload(KeyCarrier.carrier_type)),
+            joinedload(cls.model.cryptography_version).options(
+                joinedload(Version.model)
+            ),
+            joinedload(cls.model.key_document).options(
+                joinedload(KeyDocument.key_carrier).joinedload(KeyCarrier.carrier_type)
+            ),
             joinedload(cls.model.responsible_user),
-            joinedload(cls.model.install_action)
-            .options(joinedload(ActRecord.performer)),
-            joinedload(cls.model.remove_action)
-            .options(joinedload(ActRecord.performer)),
+            joinedload(cls.model.install_action).options(
+                joinedload(ActRecord.performer)
+            ),
+            joinedload(cls.model.remove_action).options(
+                joinedload(ActRecord.performer)
+            ),
             joinedload(cls.model.remove_action),
         )
 
@@ -49,17 +48,16 @@ class CInstanceLogbookServise(BaseRepository):
         limit: int = 0,
         sort: str = None,
         q: str = None,
-        filters: Optional[dict] = None
+        filters: Optional[dict] = None,
     ):
         query = select(cls.model).options(
-            joinedload(cls.model.cryptography_version)
-            .options(joinedload(Version.model)),
+            joinedload(cls.model.cryptography_version).options(
+                joinedload(Version.model)
+            ),
             joinedload(cls.model.equipment),
             joinedload(cls.model.owner),
-            joinedload(cls.model.install_act)
-            .options(joinedload(ActRecord.performer)),
-            joinedload(cls.model.remove_act)
-            .options(joinedload(ActRecord.performer)),
+            joinedload(cls.model.install_act).options(joinedload(ActRecord.performer)),
+            joinedload(cls.model.remove_act).options(joinedload(ActRecord.performer)),
         )
 
         # Filter rows
@@ -83,7 +81,7 @@ class CInstanceLogbookServise(BaseRepository):
         count_query = select(func.count(1)).select_from(cls.model)
 
         total_records = (await db.execute(count_query)).scalar() or 0
-        total_pages = math.ceil(total_records/limit) if limit else 0
+        total_pages = math.ceil(total_records / limit) if limit else 0
 
         records = (await db.execute(query)).scalars().all()
 

@@ -5,6 +5,7 @@ from db.connection import db
 
 class BaseRepository:
     """Базовый класс для сервисов"""
+
     model = None
     db = db
 

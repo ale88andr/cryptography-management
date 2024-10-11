@@ -49,7 +49,7 @@ def init_app():
         # Можно сразу сделать небольшую оптимизацию сервиса и заменить стандартный
         # JSON-сереализатор на более шуструю версию, написанную на Rust
         default_response_class=ORJSONResponse,
-        lifespan=lifespan
+        lifespan=lifespan,
     )
 
     return app
@@ -104,8 +104,8 @@ app.add_middleware(
         "Set-Cookie",
         "Access-Control-Allow-Haders",
         "Access-Control-Allow-Origin",
-        "Authorization"
-    ]
+        "Authorization",
+    ],
 )
 
 
@@ -125,11 +125,12 @@ if __name__ == "__main__":
     # параметр reload указывает Uvicorn перезапустить веб-сервер,
     # если содержимое файла main.py изменится
     import uvicorn
+
     uvicorn.run(
         "main:app",
         host="0.0.0.0",
         port=8000,
         log_config=LOGGING,
         log_level=logging.DEBUG,
-        reload=True
+        reload=True,
     )

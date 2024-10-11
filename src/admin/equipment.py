@@ -37,9 +37,13 @@ async def get_equipments_admin(
     page: int = 0,
     limit: int = 20,
     sort: Optional[str] = None,
-    q: Optional[str] = None
+    q: Optional[str] = None,
 ):
-    records, counter, total_records, total_pages = await EquipmentServise.all_with_pagination(sort=sort, q=q, page=page, limit=limit)
+    records, counter, total_records, total_pages = (
+        await EquipmentServise.all_with_pagination(
+            sort=sort, q=q, page=page, limit=limit
+        )
+    )
     context = {
         "request": request,
         "objects": records,
@@ -53,7 +57,9 @@ async def get_equipments_admin(
         "msg": msg,
         "sort": sort,
         "q": q,
-        "breadcrumbs": create_breadcrumbs(router, [index_page_header], ["get_cversions_admin"])
+        "breadcrumbs": create_breadcrumbs(
+            router, [index_page_header], ["get_cversions_admin"]
+        ),
     }
     return templates.TemplateResponse(list_teplate, context)
 
@@ -67,8 +73,8 @@ async def add_equipment_admin(request: Request):
         "breadcrumbs": create_breadcrumbs(
             router,
             [index_page_header, add_page_header],
-            ["get_equipments_admin", "add_equipment_admin"]
-        )
+            ["get_equipments_admin", "add_equipment_admin"],
+        ),
     }
     return templates.TemplateResponse(form_teplate, context)
 
@@ -83,7 +89,7 @@ async def create_equipment_admin(request: Request):
                 id=form.id,
                 serial=form.serial,
                 description=form.description,
-                sticker=form.sticker
+                sticker=form.sticker,
             )
             redirect_url = request.url_for("get_equipments_admin").include_query_params(
                 msg=f"Оборудование '{obj}' добавлено!"
@@ -100,8 +106,8 @@ async def create_equipment_admin(request: Request):
         "breadcrumbs": create_breadcrumbs(
             router,
             [index_page_header, add_page_header],
-            ["get_equipments_admin", "add_equipment_admin"]
-        )
+            ["get_equipments_admin", "add_equipment_admin"],
+        ),
     }
     context.update(form.__dict__)
     context.update(form.fields)
@@ -121,8 +127,8 @@ async def detail_equipment_admin(equipment_id: str, request: Request):
         "breadcrumbs": create_breadcrumbs(
             router,
             [index_page_header, equipment.id],
-            ["get_equipments_admin", "detail_equipment_admin"]
-        )
+            ["get_equipments_admin", "detail_equipment_admin"],
+        ),
     }
     return templates.TemplateResponse(detail_teplate, context)
 
@@ -137,8 +143,8 @@ async def edit_equipment_admin(equipment_id: str, request: Request):
         "breadcrumbs": create_breadcrumbs(
             router,
             [index_page_header, edit_page_header],
-            ["get_equipments_admin", "edit_equipment_admin"]
-        )
+            ["get_equipments_admin", "edit_equipment_admin"],
+        ),
     }
     context.update(obj.__dict__)
     return templates.TemplateResponse(form_teplate, context)
@@ -154,11 +160,9 @@ async def update_equipment_admin(equipment_id: str, request: Request):
                 equipment_id,
                 description=form.description,
                 serial=form.serial,
-                sticker=form.sticker
+                sticker=form.sticker,
             )
-            redirect_url = request.url_for(
-                "get_equipments_admin"
-            ).include_query_params(
+            redirect_url = request.url_for("get_equipments_admin").include_query_params(
                 msg=f"Оборудование '{obj}' обновлено!"
             )
             return responses.RedirectResponse(
@@ -174,8 +178,8 @@ async def update_equipment_admin(equipment_id: str, request: Request):
         "breadcrumbs": create_breadcrumbs(
             router,
             [index_page_header, edit_page_header],
-            ["get_equipments_admin", "add_equipment_admin"]
-        )
+            ["get_equipments_admin", "add_equipment_admin"],
+        ),
     }
     context.update(form.__dict__)
     context.update(form.fields)
@@ -188,13 +192,9 @@ async def delete_equipment_admin(equipment_id: str, request: Request):
     redirect_code = status.HTTP_307_TEMPORARY_REDIRECT
     try:
         await EquipmentServise.delete(equipment_id)
-        redirect_url = redirect_url.include_query_params(
-            msg="Оборудование удалено!"
-        )
+        redirect_url = redirect_url.include_query_params(msg="Оборудование удалено!")
     except Exception as e:
-        redirect_url = redirect_url.include_query_params(
-            errors={"non_field_error": e}
-        )
+        redirect_url = redirect_url.include_query_params(errors={"non_field_error": e})
 
     return responses.RedirectResponse(redirect_url, status_code=redirect_code)
 
@@ -203,19 +203,23 @@ async def delete_equipment_admin(equipment_id: str, request: Request):
 async def add_hardware_logbook_admin(equipment_id: str, request: Request):
     equipment = await EquipmentServise.get_by_id(equipment_id)
     versions, _ = await CVersionServise.all()
-    add_hw_page_header = f"Добавление записи аппаратного журнала оборудования '{equipment.id}'"
+    add_hw_page_header = (
+        f"Добавление записи аппаратного журнала оборудования '{equipment.id}'"
+    )
     context = {
         "request": request,
         "equipment": equipment,
         "versions": versions,
-        "record_types": [RECORD_TYPES[i] for i in range(len(RECORD_TYPES)) if i in [2, 5, 6, 7]],
+        "record_types": [
+            RECORD_TYPES[i] for i in range(len(RECORD_TYPES)) if i in [2, 5, 6, 7]
+        ],
         "page_header": add_hw_page_header,
         "page_header_help": hepl_text,
         "breadcrumbs": create_breadcrumbs(
             router,
             [index_page_header, add_hw_page_header],
-            ["get_equipments_admin", "add_hardware_logbook_admin"]
-        )
+            ["get_equipments_admin", "add_hardware_logbook_admin"],
+        ),
     }
     return templates.TemplateResponse(hw_form_teplate, context)
 
@@ -235,11 +239,8 @@ async def add_hardware_logbook_admin(equipment_id: str, request: Request):
             )
 
             redirect_url = request.url_for(
-                "detail_equipment_admin",
-                equipment_id=equipment_id
-            ).include_query_params(
-                msg="Запись аппаратного журнала добавлена!"
-            )
+                "detail_equipment_admin", equipment_id=equipment_id
+            ).include_query_params(msg="Запись аппаратного журнала добавлена!")
 
             return responses.RedirectResponse(
                 redirect_url, status_code=status.HTTP_303_SEE_OTHER
@@ -256,8 +257,8 @@ async def add_hardware_logbook_admin(equipment_id: str, request: Request):
         "breadcrumbs": create_breadcrumbs(
             router,
             [index_page_header, add_page_header],
-            ["get_equipments_admin", "add_equipment_admin"]
-        )
+            ["get_equipments_admin", "add_equipment_admin"],
+        ),
     }
     context.update(form.__dict__)
     context.update(form.fields)
@@ -272,5 +273,5 @@ async def download_hardware_logbook_admin(equipment_id: str, request: Request):
     return create_file_response(
         LogbookTemplatesEnum.HARDWARE_LOGBOOK.value,
         {"equipment": equipment, "items": items, "RT": RECORD_TYPES},
-        f"Аппаратный журнал СКЗИ - {equipment.id}"
+        f"Аппаратный журнал СКЗИ - {equipment.id}",
     )

@@ -56,7 +56,6 @@ async def get_dashboard_admin(
 
     organisation = await OrganisationServise.all()
 
-
     context = {
         "request": request,
         "latest_users": latest_users,
@@ -72,7 +71,9 @@ async def get_dashboard_admin(
         "organisation": organisation,
         "version_chart_labels": [item[0].title for item in key_versions],
         "version_chart_data": [item[1] for item in key_versions],
-        "act_chart_labels": [calendar.month_abbr[int(item[0])] for item in installs_by_month],
+        "act_chart_labels": [
+            calendar.month_abbr[int(item[0])] for item in installs_by_month
+        ],
         "act_chart_data": [str(item[1]) for item in installs_by_month],
         "carrier_chart_labels": [str(item[0]) for item in count_key_carriers],
         "carrier_chart_data": [str(item[1]) for item in count_key_carriers],

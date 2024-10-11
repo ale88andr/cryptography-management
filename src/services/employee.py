@@ -24,7 +24,7 @@ class EmployeeServise(BaseRepository):
         limit: int = 0,
         sort: str = None,
         q: str = None,
-        filters: Optional[dict] = None
+        filters: Optional[dict] = None,
     ):
         query = select(cls.model).options(
             joinedload(cls.model.position),
@@ -49,7 +49,7 @@ class EmployeeServise(BaseRepository):
         count_query = select(func.count(1)).select_from(cls.model)
 
         total_records = (await db.execute(count_query)).scalar() or 0
-        total_pages = math.ceil(total_records/limit) if limit else 0
+        total_pages = math.ceil(total_records / limit) if limit else 0
 
         records = (await db.execute(query)).scalars().all()
 
@@ -57,57 +57,82 @@ class EmployeeServise(BaseRepository):
 
     @classmethod
     async def get_by_id(cls, model_id: int):
-        query = select(cls.model).options(
+        query = (
+            select(cls.model)
+            .options(
                 joinedload(cls.model.position),
                 joinedload(cls.model.department),
                 joinedload(cls.model.location),
                 joinedload(cls.model.organisation),
-                selectinload(cls.model.key_document_set)
-                .options(
-                    joinedload(KeyDocument.cryptography_version)
-                    .options(joinedload(Version.model)),
+                selectinload(cls.model.key_document_set).options(
+                    joinedload(KeyDocument.cryptography_version).options(
+                        joinedload(Version.model)
+                    ),
                     joinedload(KeyDocument.owner),
-                    joinedload(KeyDocument.key_carrier)
-                    .options(joinedload(KeyCarrier.carrier_type)),
-                    joinedload(KeyDocument.install_act)
-                    .options(joinedload(ActRecord.performer)),
-                    joinedload(KeyDocument.remove_act)
-                    .options(joinedload(ActRecord.performer)),
-                )
-            ).filter_by(id=int(model_id))
+                    joinedload(KeyDocument.key_carrier).options(
+                        joinedload(KeyCarrier.carrier_type)
+                    ),
+                    joinedload(KeyDocument.install_act).options(
+                        joinedload(ActRecord.performer)
+                    ),
+                    joinedload(KeyDocument.remove_act).options(
+                        joinedload(ActRecord.performer)
+                    ),
+                ),
+            )
+            .filter_by(id=int(model_id))
+        )
         result = await cls.db.execute(query)
         return result.scalar_one_or_none()
 
     @classmethod
     async def latest_cryptography_users(cls, limit: int = None):
-        query = select(cls.model).select_from(KeyDocument).join(cls.model).options(
-            joinedload(cls.model.department),
-            joinedload(cls.model.position),
-            selectinload(cls.model.key_document_set).options(
-                joinedload(KeyDocument.cryptography_version).options(joinedload(Version.model))
+        query = (
+            select(cls.model)
+            .select_from(KeyDocument)
+            .join(cls.model)
+            .options(
+                joinedload(cls.model.department),
+                joinedload(cls.model.position),
+                selectinload(cls.model.key_document_set).options(
+                    joinedload(KeyDocument.cryptography_version).options(
+                        joinedload(Version.model)
+                    )
+                ),
             )
-        ).where(KeyDocument.remove_act==None).order_by(cls.model.created_at.desc())
+            .where(KeyDocument.remove_act == None)
+            .order_by(cls.model.created_at.desc())
+        )
         records = (await db.execute(query)).unique().scalars().all()
         return records[:limit] if limit else records, len(records)
 
     @classmethod
     async def cryptography_users(
-        cls,
-        sort: str = None,
-        q: str = None,
-        filters: Optional[dict] = None
+        cls, sort: str = None, q: str = None, filters: Optional[dict] = None
     ):
-        query = select(cls.model).select_from(KeyDocument).join(cls.model).options(
-            joinedload(cls.model.position),
-            joinedload(cls.model.department),
-            selectinload(cls.model.key_document_set).options(
-                joinedload(KeyDocument.cryptography_version).options(joinedload(Version.model))
-            )).where(KeyDocument.remove_act==None)
+        query = (
+            select(cls.model)
+            .select_from(KeyDocument)
+            .join(cls.model)
+            .options(
+                joinedload(cls.model.position),
+                joinedload(cls.model.department),
+                selectinload(cls.model.key_document_set).options(
+                    joinedload(KeyDocument.cryptography_version).options(
+                        joinedload(Version.model)
+                    )
+                ),
+            )
+            .where(KeyDocument.remove_act == None)
+        )
 
         # Filter rows
         if filters:
             if filters.get("cryptography_version_id"):
-                query = query.filter(KeyDocument.cryptography_version_id==filters["cryptography_version_id"])
+                query = query.filter(
+                    KeyDocument.cryptography_version_id
+                    == filters["cryptography_version_id"]
+                )
             else:
                 query = query.filter_by(**filters)
 
@@ -124,27 +149,44 @@ class EmployeeServise(BaseRepository):
 
     @classmethod
     async def today_cryptography_users(cls):
-        count_query = select(func.count(cls.model.id.distinct())).select_from(KeyDocument).join(cls.model).filter(
-            func.DATE(cls.model.created_at)==date.today()
-        ).distinct()
+        count_query = (
+            select(func.count(cls.model.id.distinct()))
+            .select_from(KeyDocument)
+            .join(cls.model)
+            .filter(func.DATE(cls.model.created_at) == date.today())
+            .distinct()
+        )
         today_users = (await db.execute(count_query)).scalar() or 0
         return today_users
 
     @classmethod
     async def month_cryptography_users(cls):
-        count_query = select(func.count(cls.model.id.distinct())).select_from(KeyDocument).join(cls.model).filter(extract("month", cls.model.created_at) >= datetime.today().month)
+        count_query = (
+            select(func.count(cls.model.id.distinct()))
+            .select_from(KeyDocument)
+            .join(cls.model)
+            .filter(extract("month", cls.model.created_at) >= datetime.today().month)
+        )
         month_users = (await db.execute(count_query)).scalar() or 0
         return month_users
 
     @classmethod
     async def security_staff_members(cls):
-        query = select(cls.model).filter_by(is_security_staff=True).order_by(cls.model.surname)
+        query = (
+            select(cls.model)
+            .filter_by(is_security_staff=True)
+            .order_by(cls.model.surname)
+        )
         records = (await db.execute(query)).scalars().all()
         return records
 
     @classmethod
     async def leadership_members(cls):
-        query = select(cls.model).filter(cls.model.position.has(is_leadership=True)).order_by(cls.model.surname)
+        query = (
+            select(cls.model)
+            .filter(cls.model.position.has(is_leadership=True))
+            .order_by(cls.model.surname)
+        )
         records = (await db.execute(query)).scalars().all()
         return records
 
@@ -174,7 +216,6 @@ class EmployeeServise(BaseRepository):
     #         new_employee = await session.execute(query)
     #         await session.commit()
     #         return new_employee.scalar()
-
 
 
 # EmployeeService содержит бизнес-логику по работе с фильмами.

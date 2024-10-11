@@ -14,7 +14,7 @@ class PositionServise(BaseRepository):
         columns: str = None,
         sort: str = None,
         q: str = None,
-        filters: Optional[dict] = None
+        filters: Optional[dict] = None,
     ):
         query = select(cls.model)
 

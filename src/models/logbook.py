@@ -20,14 +20,16 @@ ACTION_TYPES = [
     'Вывод кючевого документа из эксплуатации',
 ]
 
+
 class ActRecordTypes(enum.Enum):
     """Класс для описания типа события"""
-    С_INSTALL       = 0
-    C_DESTRUCTION   = 1
-    I_INSTALL       = 2
-    I_REMOVE        = "c_remove.docx"
-    KD_INSTALL      = 4
-    KD_REMOVE       = "kd_remove.docx"
+
+    С_INSTALL = 0
+    C_DESTRUCTION = 1
+    I_INSTALL = 2
+    I_REMOVE = "c_remove.docx"
+    KD_INSTALL = 4
+    KD_REMOVE = "kd_remove.docx"
 
 
 class ActRecord(Base):
@@ -53,28 +55,23 @@ class ActRecord(Base):
     updated_at: Mapped[fields.updated_at]
 
     install_object: Mapped["KeyDocument"] = relationship(
-        uselist=False,
-        foreign_keys=[KeyDocument.install_act_record_id]
+        uselist=False, foreign_keys=[KeyDocument.install_act_record_id]
     )
 
     remove_object: Mapped["KeyDocument"] = relationship(
-        uselist=False,
-        foreign_keys=[KeyDocument.remove_act_record_id]
+        uselist=False, foreign_keys=[KeyDocument.remove_act_record_id]
     )
 
     head_commision_member: Mapped["Employee"] = relationship(
-        uselist=False,
-        foreign_keys=[head_commision_member_id]
+        uselist=False, foreign_keys=[head_commision_member_id]
     )
 
     commision_member: Mapped["Employee"] = relationship(
-        uselist=False,
-        foreign_keys=[commision_member_id]
+        uselist=False, foreign_keys=[commision_member_id]
     )
 
     performer: Mapped["Employee"] = relationship(
-        uselist=False,
-        foreign_keys=[performer_id]
+        uselist=False, foreign_keys=[performer_id]
     )
 
     def __str__(self) -> str:
@@ -93,7 +90,7 @@ RECORD_TYPES = (
     "Вывод ключевого документа из эксплуатации",
     "Компроментация ключей",
     "Техническое обслуживание СКЗИ",
-    "Устранение технического сбоя"
+    "Устранение технического сбоя",
 )
 
 
@@ -130,8 +127,7 @@ class HardwareLogbook(Base):
     # | Тип и серийные номера используемых СКЗИ  |
     # *------------------------------------------*
     cryptography_version_id: Mapped[int] = mapped_column(
-        ForeignKey("cryptography_version.id", ondelete="CASCADE"),
-        nullable=False
+        ForeignKey("cryptography_version.id", ondelete="CASCADE"), nullable=False
     )
 
     # Тип события в соответствии с кортежем RECORD_TYPES
@@ -146,8 +142,7 @@ class HardwareLogbook(Base):
     # | Используемые крипто ключи |
     # *---------------------------*
     key_document_id: Mapped[int] = mapped_column(
-        ForeignKey("cryptography_key_document.id", ondelete="CASCADE"),
-        nullable=True
+        ForeignKey("cryptography_key_document.id", ondelete="CASCADE"), nullable=True
     )
 
     # Актовая запись об удалении СКЗИ/Ключевых документов
@@ -155,8 +150,7 @@ class HardwareLogbook(Base):
     # | Отметка об уничтожении (стирании) - Подпись пользователя СКЗИ |
     # *---------------------------------------------------------------*
     remove_action_id: Mapped[int] = mapped_column(
-        ForeignKey("cryptography_act_record.id", ondelete="CASCADE"),
-        nullable=True
+        ForeignKey("cryptography_act_record.id", ondelete="CASCADE"), nullable=True
     )
 
     # Дата удаления СКЗИ/Ключевых документов
@@ -182,8 +176,7 @@ class HardwareLogbook(Base):
     equipment: Mapped["Equipment"] = relationship(back_populates="hw_logs")
 
     remove_action: Mapped["ActRecord"] = relationship(
-        uselist=False,
-        foreign_keys=[remove_action_id]
+        uselist=False, foreign_keys=[remove_action_id]
     )
 
     def __str__(self) -> str:
@@ -201,9 +194,7 @@ class CryptographyPersonalAccount(Base):
     id: Mapped[fields.pk]
 
     # Идентификатор пользователя
-    user_id: Mapped[int] = mapped_column(
-        ForeignKey("employee.id", ondelete="CASCADE")
-    )
+    user_id: Mapped[int] = mapped_column(ForeignKey("employee.id", ondelete="CASCADE"))
 
     # Дата события записи журнала
     # *------*
@@ -216,8 +207,7 @@ class CryptographyPersonalAccount(Base):
     # | Наименование СКЗИ, эксплуатационной и технической документации к ним, ключевых документов |
     # *-------------------------------------------------------------------------------------------*
     cryptography_version_id: Mapped[int] = mapped_column(
-        ForeignKey("cryptography_version.id", ondelete="CASCADE"),
-        nullable=False
+        ForeignKey("cryptography_version.id", ondelete="CASCADE"), nullable=False
     )
 
     # Идентификатор ключевого документа введенного
@@ -226,8 +216,7 @@ class CryptographyPersonalAccount(Base):
     # | Используемые крипто ключи |
     # *---------------------------*
     key_document_id: Mapped[int] = mapped_column(
-        ForeignKey("cryptography_key_document.id", ondelete="CASCADE"),
-        nullable=False
+        ForeignKey("cryptography_key_document.id", ondelete="CASCADE"), nullable=False
     )
 
     # Идентификатор оборудования с которым ассоциируется запись журнала
@@ -243,8 +232,7 @@ class CryptographyPersonalAccount(Base):
     # | Номер и дата сопроводительного документа при получении |
     # *--------------------------------------------------------*
     install_action_id: Mapped[int] = mapped_column(
-        ForeignKey("cryptography_act_record.id", ondelete="CASCADE"),
-        nullable=True
+        ForeignKey("cryptography_act_record.id", ondelete="CASCADE"), nullable=True
     )
 
     # Дата удаления СКЗИ/Ключевых документов
@@ -258,8 +246,7 @@ class CryptographyPersonalAccount(Base):
     # | Отметка об уничтожении (стирании) - Подпись пользователя СКЗИ |
     # *---------------------------------------------------------------*
     remove_action_id: Mapped[int] = mapped_column(
-        ForeignKey("cryptography_act_record.id", ondelete="CASCADE"),
-        nullable=True
+        ForeignKey("cryptography_act_record.id", ondelete="CASCADE"), nullable=True
     )
 
     # Примечание
@@ -281,13 +268,11 @@ class CryptographyPersonalAccount(Base):
     equipment: Mapped["Equipment"] = relationship()
 
     install_action: Mapped["ActRecord"] = relationship(
-        uselist=False,
-        foreign_keys=[install_action_id]
+        uselist=False, foreign_keys=[install_action_id]
     )
 
     remove_action: Mapped["ActRecord"] = relationship(
-        uselist=False,
-        foreign_keys=[remove_action_id]
+        uselist=False, foreign_keys=[remove_action_id]
     )
 
     def __str__(self) -> str:

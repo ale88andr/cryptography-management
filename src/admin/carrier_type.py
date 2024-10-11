@@ -61,9 +61,7 @@ async def add_ctype_admin(request: Request):
             "page_header": CTYPES_ADD_PAGE_HEADER,
             "page_header_help": CTYPES_HELP_TEXT,
             "breadcrumbs": [
-                add_breadcrumb(
-                    router, CTYPES_INDEX_PAGE_HEADER, "get_ctypes_admin"
-                ),
+                add_breadcrumb(router, CTYPES_INDEX_PAGE_HEADER, "get_ctypes_admin"),
                 add_breadcrumb(
                     router, CTYPES_ADD_PAGE_HEADER, "add_ctype_admin", is_active=True
                 ),
@@ -108,7 +106,9 @@ async def edit_ctype_admin(ctype_id: int, request: Request):
             "page_header_help": CTYPES_HELP_TEXT,
             "breadcrumbs": [
                 add_breadcrumb(router, CTYPES_INDEX_PAGE_HEADER, "get_ctypes_admin"),
-                add_breadcrumb(router, CTYPES_EDIT_PAGE_HEADER, "edit_ctype_admin", is_active=True),
+                add_breadcrumb(
+                    router, CTYPES_EDIT_PAGE_HEADER, "edit_ctype_admin", is_active=True
+                ),
             ],
         },
     )
@@ -121,11 +121,10 @@ async def update_ctype_admin(ctype_id: int, request: Request):
     if await form.is_valid():
         try:
             obj = await CarrierTypesServise.update(
-                ctype_id, name=form.name,
+                ctype_id,
+                name=form.name,
             )
-            redirect_url = request.url_for(
-                "get_ctypes_admin"
-            ).include_query_params(
+            redirect_url = request.url_for("get_ctypes_admin").include_query_params(
                 msg=f"Тип ключевого носителя '{obj.name}' обновлен!"
             )
             return responses.RedirectResponse(
@@ -152,9 +151,7 @@ async def delete_ctype_admin(ctype_id: int, request: Request):
             msg="Тип ключевого носителя удален!"
         )
     except Exception as e:
-        redirect_url = redirect_url.include_query_params(
-            errors={"non_field_error": e}
-        )
+        redirect_url = redirect_url.include_query_params(errors={"non_field_error": e})
 
     return responses.RedirectResponse(redirect_url, status_code=redirect_code)
 
@@ -179,7 +176,8 @@ class CtypeForm:
             db_position = await CarrierTypesServise.get_one_or_none(name=self.name)
             if db_position:
                 self.errors.setdefault(
-                    "name", f"'{self.name}' - Такой тип ключевого носителя уже существует!"
+                    "name",
+                    f"'{self.name}' - Такой тип ключевого носителя уже существует!",
                 )
         if not self.errors:
             return True

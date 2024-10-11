@@ -12,11 +12,7 @@ class EmployeePersonalAccountService(BaseRepository):
     model = CryptographyPersonalAccount
 
     @classmethod
-    async def all(
-        cls,
-        sort: str = None,
-        filters: Optional[dict] = None
-    ):
+    async def all(cls, sort: str = None, filters: Optional[dict] = None):
         query = select(cls.model).options(
             joinedload(cls.model.cryptography_version),
             joinedload(cls.model.key_document),
@@ -34,17 +30,18 @@ class EmployeePersonalAccountService(BaseRepository):
         return records, len(records)
 
     @classmethod
-    async def get_by_user(
-        cls,
-        user_id: int = None
-    ):
+    async def get_by_user(cls, user_id: int = None):
         if user_id:
-            query = select(cls.model).options(
-                joinedload(cls.model.cryptography_version),
-                joinedload(cls.model.key_document),
-                joinedload(cls.model.equipment),
-                joinedload(cls.model.install_action),
-                joinedload(cls.model.remove_action),
-            ).filter_by(user_id=user_id)
+            query = (
+                select(cls.model)
+                .options(
+                    joinedload(cls.model.cryptography_version),
+                    joinedload(cls.model.key_document),
+                    joinedload(cls.model.equipment),
+                    joinedload(cls.model.install_action),
+                    joinedload(cls.model.remove_action),
+                )
+                .filter_by(user_id=user_id)
+            )
             records = (await db.execute(query)).scalars().all()
             return records, len(records)

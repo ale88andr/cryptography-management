@@ -12,7 +12,13 @@ from core.config import templates, BASE_DIR
 from core.utils import create_breadcrumbs, create_file_response
 
 from services.c_logbook import CLogbookServise
-from core.templater import DocumentTemplatesEnum, InstallVersionActDocumentContext, LogbookTemplatesEnum, RenderTemplate, UninstallVersionActDocumentContext
+from core.templater import (
+    DocumentTemplatesEnum,
+    InstallVersionActDocumentContext,
+    LogbookTemplatesEnum,
+    RenderTemplate,
+    UninstallVersionActDocumentContext,
+)
 from services.c_version import CVersionServise
 from utils.formatting import get_str_now_date, format_date_to_str, get_date_tuple
 
@@ -54,7 +60,9 @@ async def get_clogbook_admin(
         "msg": msg,
         "sort": sort,
         "q": q,
-        "breadcrumbs": create_breadcrumbs(router, [index_page_header], ["get_clogbook_admin"])
+        "breadcrumbs": create_breadcrumbs(
+            router, [index_page_header], ["get_clogbook_admin"]
+        ),
     }
     return templates.TemplateResponse(list_teplate, context)
 
@@ -65,13 +73,9 @@ async def delete_clogbook_admin(record_id: int, request: Request):
     redirect_code = status.HTTP_307_TEMPORARY_REDIRECT
     try:
         await CLogbookServise.delete(record_id)
-        redirect_url = redirect_url.include_query_params(
-            msg="Запись журнала удалена!"
-        )
+        redirect_url = redirect_url.include_query_params(msg="Запись журнала удалена!")
     except Exception as e:
-        redirect_url = redirect_url.include_query_params(
-            errors={"non_field_error": e}
-        )
+        redirect_url = redirect_url.include_query_params(errors={"non_field_error": e})
 
     return responses.RedirectResponse(redirect_url, status_code=redirect_code)
 
@@ -92,13 +96,13 @@ async def download_creation_act_admin(record_id: int, request: Request):
         performer_position=cryptography.responsible_user.full_position,
         cryptography_version=str(cryptography),
         cryptography_version_set="\n".join(cryptography.doc_set),
-        sender=cryptography.received_from
+        sender=cryptography.received_from,
     )
 
     return create_file_response(
         DocumentTemplatesEnum.C_INSTALL.value,
         asdict(context),
-        cryptography.install_act.number
+        cryptography.install_act.number,
     )
 
 
@@ -127,7 +131,7 @@ async def download_decommissioning_act_admin(record_id: int, request: Request):
     return create_file_response(
         DocumentTemplatesEnum.C_REMOVE.value,
         asdict(context),
-        cryptography.install_act.number
+        cryptography.install_act.number,
     )
 
 
@@ -138,5 +142,5 @@ async def download_clogbook_admin(request: Request):
     return create_file_response(
         LogbookTemplatesEnum.LOGBOOK.value,
         {"objects": objects},
-        f"Журнал учета СКЗИ на дату - {get_str_now_date()}"
+        f"Журнал учета СКЗИ на дату - {get_str_now_date()}",
     )

@@ -1,6 +1,9 @@
 from fastapi import APIRouter, Depends, Response
 
-from core.exceptions import IncorrectEmailOrPasswordException, UserAlreadyExistsException
+from core.exceptions import (
+    IncorrectEmailOrPasswordException,
+    UserAlreadyExistsException,
+)
 from dependencies.auth import get_current_admin, get_current_user
 from models.users import User
 from schemas.auth import SUserAuth
@@ -17,9 +20,7 @@ async def register_user(user_data: SUserAuth):
     if existing_user:
         raise UserAlreadyExistsException
     hashed_password = get_password_hash(user_data.password)
-    await UsersDAO.create(
-        email=user_data.email, hashed_password=hashed_password
-    )
+    await UsersDAO.create(email=user_data.email, hashed_password=hashed_password)
 
 
 @router.post("/login")

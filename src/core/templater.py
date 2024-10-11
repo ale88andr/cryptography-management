@@ -24,7 +24,7 @@ class DocumentTemplatesEnum(enum.Enum):
     PERSONAL_LOGBOOK = "personal_logbook.docx"
 
 
-class RenderTemplate():
+class RenderTemplate:
 
     def __init__(self, template, context, output) -> None:
         self._template = template
@@ -39,7 +39,7 @@ class RenderTemplate():
 
 
 @dataclass
-class ActDocument():
+class ActDocument:
     action_date: date
     number: str
 
@@ -51,7 +51,7 @@ class ActDocument():
 
 
 @dataclass
-class CommisionMembersContext():
+class CommisionMembersContext:
     head_commision_member: str
     head_commision_member_position: str
 

@@ -26,16 +26,13 @@ class Manufacturer(Base):
         json_dumps = orjson.dumps
 
 
-CRYPTO_MODEL_TYPES = [
-    'Программный',
-    'Аппаратный',
-    'Аппаратно-программный'
-]
+CRYPTO_MODEL_TYPES = ['Программный', 'Аппаратный', 'Аппаратно-программный']
 
 
 class ModelTypes(enum.Enum):
     """Enum типов СКЗИ"""
-    PROGRAM  = 0
+
+    PROGRAM = 0
     HARDWARE = 1
     HARDSOFT = 2
 
@@ -47,7 +44,9 @@ class Model(Base):
     name: Mapped[fields.title]
     description: Mapped[str] = mapped_column(Text(), nullable=True)
     type: Mapped[ModelTypes] = mapped_column(default=ModelTypes.PROGRAM)
-    manufacturer_id: Mapped[int] = mapped_column(ForeignKey("cryptography_manufacturer.id", ondelete="CASCADE"))
+    manufacturer_id: Mapped[int] = mapped_column(
+        ForeignKey("cryptography_manufacturer.id", ondelete="CASCADE")
+    )
 
     manufacturer: Mapped["Manufacturer"] = relationship(back_populates="models")
     versions: Mapped[list["Version"]] = relationship(back_populates="model")
@@ -61,14 +60,7 @@ class Model(Base):
         json_dumps = orjson.dumps
 
 
-CPRODUCT_GRADES = [
-    "КС1",
-    "КС2",
-    "КС3",
-    "КВ1",
-    "КВ2",
-    "КА1"
-]
+CPRODUCT_GRADES = ["КС1", "КС2", "КС3", "КВ1", "КВ2", "КА1"]
 
 
 class CryptographyGrade(enum.Enum):
@@ -108,8 +100,7 @@ class Version(Base):
         ForeignKey("cryptography_act_record.id", ondelete="CASCADE")
     )
     remove_act_record_id: Mapped[int] = mapped_column(
-        ForeignKey("cryptography_act_record.id", ondelete="CASCADE"),
-        nullable=True
+        ForeignKey("cryptography_act_record.id", ondelete="CASCADE"), nullable=True
     )
     created_at: Mapped[fields.created_at]
     updated_at: Mapped[fields.updated_at]
@@ -122,9 +113,7 @@ class Version(Base):
         back_populates="cryptography_version"
     )
 
-    model: Mapped["Model"] = relationship(
-        back_populates="versions"
-    )
+    model: Mapped["Model"] = relationship(back_populates="versions")
 
     personal_logs: Mapped[list["CryptographyPersonalAccount"]] = relationship(
         back_populates="cryptography_version"
@@ -135,13 +124,11 @@ class Version(Base):
     )
 
     install_act: Mapped["ActRecord"] = relationship(
-        uselist=False,
-        foreign_keys=[install_act_record_id]
+        uselist=False, foreign_keys=[install_act_record_id]
     )
 
     remove_act: Mapped["ActRecord"] = relationship(
-        uselist=False,
-        foreign_keys=[remove_act_record_id]
+        uselist=False, foreign_keys=[remove_act_record_id]
     )
 
     def is_certificate_expired(self):
@@ -206,10 +193,14 @@ class KeyCarrier(Base):
 
     id: Mapped[fields.pk]
     serial: Mapped[fields.title]
-    carrier_type_id: Mapped[int] = mapped_column(ForeignKey("cryptography_key_carrier_type.id", ondelete="CASCADE"))
+    carrier_type_id: Mapped[int] = mapped_column(
+        ForeignKey("cryptography_key_carrier_type.id", ondelete="CASCADE")
+    )
 
     carrier_type: Mapped["KeyCarrierType"] = relationship(back_populates="carriers")
-    key_documents: Mapped[list["KeyDocument"]] = relationship(back_populates="key_carrier")
+    key_documents: Mapped[list["KeyDocument"]] = relationship(
+        back_populates="key_carrier"
+    )
 
     def __str__(self) -> str:
         return f"{self.serial} ({self.carrier_type})"
@@ -235,9 +226,7 @@ class KeyDocument(Base):
     carrier_id: Mapped[int] = mapped_column(
         ForeignKey("cryptography_key_carrier.id", ondelete="CASCADE")
     )
-    owner_id: Mapped[int] = mapped_column(
-        ForeignKey("employee.id", ondelete="CASCADE")
-    )
+    owner_id: Mapped[int] = mapped_column(ForeignKey("employee.id", ondelete="CASCADE"))
     equipment_id: Mapped[int] = mapped_column(
         ForeignKey("equipment.id", ondelete="CASCADE")
     )
@@ -245,8 +234,7 @@ class KeyDocument(Base):
         ForeignKey("cryptography_act_record.id", ondelete="CASCADE"),
     )
     remove_act_record_id: Mapped[int] = mapped_column(
-        ForeignKey("cryptography_act_record.id", ondelete="CASCADE"),
-        nullable=True
+        ForeignKey("cryptography_act_record.id", ondelete="CASCADE"), nullable=True
     )
     created_at: Mapped[fields.created_at]
     updated_at: Mapped[fields.updated_at]
@@ -271,13 +259,13 @@ class KeyDocument(Base):
         back_populates="install_object",
         uselist=False,
         foreign_keys=[install_act_record_id],
-        order_by="desc(ActRecord.action_date)"
+        order_by="desc(ActRecord.action_date)",
     )
 
     remove_act: Mapped["ActRecord"] = relationship(
         back_populates="remove_object",
         uselist=False,
-        foreign_keys=[remove_act_record_id]
+        foreign_keys=[remove_act_record_id],
     )
 
     def __str__(self) -> str:

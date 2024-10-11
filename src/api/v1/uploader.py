@@ -2,10 +2,7 @@ from fastapi import APIRouter, UploadFile
 import shutil
 
 
-router = APIRouter(
-    prefix="/files",
-    tags=["Загрузка файлов"]
-)
+router = APIRouter(prefix="/files", tags=["Загрузка файлов"])
 
 
 @router.post("/upload")

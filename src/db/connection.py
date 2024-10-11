@@ -18,9 +18,11 @@ class AsyncDatabaseSession:
             self.connection_url,
             echo=True,
             connect_args={"server_settings": {"jit": "off"}},
-            isolation_level="AUTOCOMMIT"
+            isolation_level="AUTOCOMMIT",
         )
-        self.session = async_sessionmaker(self.engine, class_=AsyncSession, expire_on_commit=False)()
+        self.session = async_sessionmaker(
+            self.engine, class_=AsyncSession, expire_on_commit=False
+        )()
 
 
 db = AsyncDatabaseSession(settings.db_connection_string)

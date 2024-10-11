@@ -5,7 +5,7 @@ from admin.constants import (
     KD_HELP_TEXT as hepl_text,
     KD_INDEX_PAGE_HEADER as index_page_header,
     KD_DESTRUCTION_PAGE_HEADER as destruction_page_header,
-    KD_C_DESTRUCTION_PAGE_HEADER as c_destruction_page_header
+    KD_C_DESTRUCTION_PAGE_HEADER as c_destruction_page_header,
 )
 from core.config import templates
 from core.utils import create_breadcrumbs
@@ -56,19 +56,21 @@ async def get_key_documents_admin(
     elif status == "removed":
         filter_removed = True
 
-    objects, counter, total_records, total_pages = await KeyDocumentServise.all_with_pagination(
-        sort=sort,
-        q=q,
-        page=page,
-        limit=limit,
-        filters=filters,
-        is_removed=filter_removed,
-        is_installed=filter_installed
+    objects, counter, total_records, total_pages = (
+        await KeyDocumentServise.all_with_pagination(
+            sort=sort,
+            q=q,
+            page=page,
+            limit=limit,
+            filters=filters,
+            is_removed=filter_removed,
+            is_installed=filter_installed,
+        )
     )
     key_carriers, _ = await KeyCarrierServise.all()
     carrier_types, _ = await CarrierTypesServise.all()
     employees = await EmployeeServise.all()
-    context={
+    context = {
         "request": request,
         "objects": objects,
         "counter": counter,
@@ -87,7 +89,9 @@ async def get_key_documents_admin(
         "sort": sort,
         "status": status,
         "q": q,
-        "breadcrumbs": create_breadcrumbs(router, [index_page_header], ["get_cversions_admin"])
+        "breadcrumbs": create_breadcrumbs(
+            router, [index_page_header], ["get_cversions_admin"]
+        ),
     }
 
     return templates.TemplateResponse(list_teplate, context)
@@ -106,8 +110,8 @@ async def detail_key_document_admin(pk: int, request: Request):
         "breadcrumbs": create_breadcrumbs(
             router,
             [index_page_header, key.serial],
-            ["get_key_documents_admin", "detail_key_document_admin"]
-        )
+            ["get_key_documents_admin", "detail_key_document_admin"],
+        ),
     }
     return templates.TemplateResponse(detail_tepmlate, context)
 
@@ -128,8 +132,8 @@ async def destruction_key_document_admin(pk: int, request: Request):
         "breadcrumbs": create_breadcrumbs(
             router,
             [index_page_header, destruction_page_header],
-            ["get_key_documents_admin", "destruction_key_document_admin"]
-        )
+            ["get_key_documents_admin", "destruction_key_document_admin"],
+        ),
     }
     return templates.TemplateResponse(destruction_tepmlate, context)
 
@@ -159,9 +163,7 @@ async def destruct_key_document_admin(pk: int, request: Request):
 
             redirect_url = request.url_for(
                 "get_key_documents_admin"
-            ).include_query_params(
-                msg=f"Ключевой документ выведен из эксплуатации!"
-            )
+            ).include_query_params(msg=f"Ключевой документ выведен из эксплуатации!")
             return responses.RedirectResponse(
                 redirect_url, status_code=status.HTTP_303_SEE_OTHER
             )
@@ -181,8 +183,8 @@ async def destruct_key_document_admin(pk: int, request: Request):
         "breadcrumbs": create_breadcrumbs(
             router,
             [index_page_header, destruction_page_header],
-            ["get_key_documents_admin", "decommissioning_cversion_admin"]
-        )
+            ["get_key_documents_admin", "decommissioning_cversion_admin"],
+        ),
     }
     context.update(form.__dict__)
     context.update(form.fields)
@@ -192,11 +194,13 @@ async def destruct_key_document_admin(pk: int, request: Request):
 @router.get("/{pk}/c_destruction")
 async def destruct_employee_cversion_admin(pk: int, request: Request):
     key = await KeyDocumentServise.get_by_id(pk)
-    responsible_user_cryptography_keys, _ = await KeyDocumentServise.all(filters={
+    responsible_user_cryptography_keys, _ = await KeyDocumentServise.all(
+        filters={
             "owner_id": key.owner_id,
             "cryptography_version_id": key.cryptography_version_id,
-            "remove_act_record_id": None
-    })
+            "remove_act_record_id": None,
+        }
+    )
     security_staff_members = await EmployeeServise.security_staff_members()
     context = {
         "request": request,
@@ -211,8 +215,8 @@ async def destruct_employee_cversion_admin(pk: int, request: Request):
         "breadcrumbs": create_breadcrumbs(
             router,
             [index_page_header, c_destruction_page_header],
-            ["get_key_documents_admin", "destruct_employee_cversion_admin"]
-        )
+            ["get_key_documents_admin", "destruct_employee_cversion_admin"],
+        ),
     }
     return templates.TemplateResponse(c_destruction_tepmlate, context)
 
@@ -224,7 +228,7 @@ async def destruct_key_cversion_admin(pk: int, request: Request):
         filters={
             "owner_id": key.owner_id,
             "cryptography_version_id": key.cryptography_version_id,
-            "remove_act_record_id": None
+            "remove_act_record_id": None,
         }
     )
     form = DestructionForm(request, is_create=False)
@@ -247,14 +251,12 @@ async def destruct_key_cversion_admin(pk: int, request: Request):
             await KeyDocumentServise.destruct_c_version(
                 keys=user_cryptography_keys,
                 act_record=log_action,
-                action_date=action_date
+                action_date=action_date,
             )
 
             redirect_url = request.url_for(
                 "get_key_documents_admin"
-            ).include_query_params(
-                msg=f"СКЗИ выведено из эксплуатации!"
-            )
+            ).include_query_params(msg=f"СКЗИ выведено из эксплуатации!")
             return responses.RedirectResponse(
                 redirect_url, status_code=status.HTTP_303_SEE_OTHER
             )
@@ -278,8 +280,8 @@ async def destruct_key_cversion_admin(pk: int, request: Request):
         "breadcrumbs": create_breadcrumbs(
             router,
             [index_page_header, destruction_page_header],
-            ["get_key_documents_admin", "decommissioning_cversion_admin"]
-        )
+            ["get_key_documents_admin", "decommissioning_cversion_admin"],
+        ),
     }
     context.update(form.__dict__)
     context.update(form.fields)

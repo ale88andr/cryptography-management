@@ -5,7 +5,13 @@ from sqlalchemy import select, update, text, func, extract
 from sqlalchemy.orm import joinedload
 
 from db.connection import db
-from models.logbook import ActRecord, ActRecordTypes, CryptographyPersonalAccount, HardwareLogbook, HardwareLogbookRecordType
+from models.logbook import (
+    ActRecord,
+    ActRecordTypes,
+    CryptographyPersonalAccount,
+    HardwareLogbook,
+    HardwareLogbookRecordType,
+)
 from models.staff import Employee
 from services.base import BaseRepository
 from models.cryptography import KeyCarrier, KeyDocument, Version
@@ -19,13 +25,12 @@ class KeyDocumentServise(BaseRepository):
     model = KeyDocument
 
     @classmethod
-    async def all(
-        cls,
-        sort: str = None,
-        q: str = None,
-        filters: Optional[dict] = None
-    ):
-        query = select(cls.model).options(joinedload(cls.model.key_carrier).options(joinedload(KeyCarrier.carrier_type)))
+    async def all(cls, sort: str = None, q: str = None, filters: Optional[dict] = None):
+        query = select(cls.model).options(
+            joinedload(cls.model.key_carrier).options(
+                joinedload(KeyCarrier.carrier_type)
+            )
+        )
 
         # Filter rows
         if filters:
@@ -43,13 +48,22 @@ class KeyDocumentServise(BaseRepository):
 
     @classmethod
     async def latest(cls, limit: int = 10):
-        query = select(cls.model).options(
-            joinedload(cls.model.cryptography_version).options(joinedload(Version.model)),
-            joinedload(cls.model.install_act).options(joinedload(ActRecord.performer)),
-            joinedload(cls.model.owner),
-            joinedload(cls.model.key_carrier).options(
-                joinedload(KeyCarrier.carrier_type)
-            )).limit(limit)
+        query = (
+            select(cls.model)
+            .options(
+                joinedload(cls.model.cryptography_version).options(
+                    joinedload(Version.model)
+                ),
+                joinedload(cls.model.install_act).options(
+                    joinedload(ActRecord.performer)
+                ),
+                joinedload(cls.model.owner),
+                joinedload(cls.model.key_carrier).options(
+                    joinedload(KeyCarrier.carrier_type)
+                ),
+            )
+            .limit(limit)
+        )
         records = (await db.execute(query)).scalars().all()
         return records
 
@@ -64,18 +78,26 @@ class KeyDocumentServise(BaseRepository):
         is_removed: Optional[bool] = None,
         is_installed: Optional[bool] = None,
     ):
-        query = select(cls.model).options(
-            joinedload(cls.model.cryptography_version)
-            .options(joinedload(Version.model)),
-            joinedload(cls.model.key_carrier)
-            .options(joinedload(KeyCarrier.carrier_type)),
-            joinedload(cls.model.equipment),
-            joinedload(cls.model.owner),
-            joinedload(cls.model.install_act)
-            .options(joinedload(ActRecord.performer)),
-            joinedload(cls.model.remove_act)
-            .options(joinedload(ActRecord.performer)),
-        ).join(ActRecord, cls.model.install_act)
+        query = (
+            select(cls.model)
+            .options(
+                joinedload(cls.model.cryptography_version).options(
+                    joinedload(Version.model)
+                ),
+                joinedload(cls.model.key_carrier).options(
+                    joinedload(KeyCarrier.carrier_type)
+                ),
+                joinedload(cls.model.equipment),
+                joinedload(cls.model.owner),
+                joinedload(cls.model.install_act).options(
+                    joinedload(ActRecord.performer)
+                ),
+                joinedload(cls.model.remove_act).options(
+                    joinedload(ActRecord.performer)
+                ),
+            )
+            .join(ActRecord, cls.model.install_act)
+        )
 
         # if is_removed:
         #     query.filter(cls.model.log.has(CryptographyInstanceLogbook.remove_action_id.is_not(None)))
@@ -89,8 +111,7 @@ class KeyDocumentServise(BaseRepository):
 
         if not sort and sort != "null":
             query = query.order_by(
-                ActRecord.action_date.desc(),
-                cls.model.install_act_record_id
+                ActRecord.action_date.desc(), cls.model.install_act_record_id
             )
         else:
             query = query.order_by(text(sort))
@@ -104,7 +125,7 @@ class KeyDocumentServise(BaseRepository):
         count_query = select(func.count(1)).select_from(cls.model)
 
         total_records = (await db.execute(count_query)).scalar() or 0
-        total_pages = math.ceil(total_records/limit) if limit else 0
+        total_pages = math.ceil(total_records / limit) if limit else 0
 
         records = (await db.execute(query)).scalars().all()
 
@@ -112,50 +133,48 @@ class KeyDocumentServise(BaseRepository):
 
     @classmethod
     async def get_by_id(cls, model_id: int):
-        query = select(cls.model).options(
+        query = (
+            select(cls.model)
+            .options(
                 joinedload(cls.model.equipment),
                 joinedload(cls.model.cryptography_version),
-                joinedload(cls.model.cryptography_version)
-                .options(joinedload(Version.model)),
-                joinedload(cls.model.key_carrier)
-                .options(joinedload(KeyCarrier.carrier_type)),
+                joinedload(cls.model.cryptography_version).options(
+                    joinedload(Version.model)
+                ),
+                joinedload(cls.model.key_carrier).options(
+                    joinedload(KeyCarrier.carrier_type)
+                ),
                 joinedload(cls.model.owner).options(
                     joinedload(Employee.position),
                     joinedload(Employee.department),
                     joinedload(Employee.location),
                     joinedload(Employee.organisation),
                 ),
-                joinedload(cls.model.install_act)
-                .options(
+                joinedload(cls.model.install_act).options(
                     joinedload(ActRecord.performer).options(
-                        joinedload(Employee.position),
-                        joinedload(Employee.department)
+                        joinedload(Employee.position), joinedload(Employee.department)
                     ),
                     joinedload(ActRecord.head_commision_member).options(
-                        joinedload(Employee.position),
-                        joinedload(Employee.department)
+                        joinedload(Employee.position), joinedload(Employee.department)
                     ),
                     joinedload(ActRecord.commision_member).options(
-                        joinedload(Employee.position),
-                        joinedload(Employee.department)
+                        joinedload(Employee.position), joinedload(Employee.department)
                     ),
                 ),
-                joinedload(cls.model.remove_act)
-                .options(
+                joinedload(cls.model.remove_act).options(
                     joinedload(ActRecord.performer).options(
-                        joinedload(Employee.position),
-                        joinedload(Employee.department)
+                        joinedload(Employee.position), joinedload(Employee.department)
                     ),
                     joinedload(ActRecord.head_commision_member).options(
-                        joinedload(Employee.position),
-                        joinedload(Employee.department)
+                        joinedload(Employee.position), joinedload(Employee.department)
                     ),
                     joinedload(ActRecord.commision_member).options(
-                        joinedload(Employee.position),
-                        joinedload(Employee.department)
+                        joinedload(Employee.position), joinedload(Employee.department)
                     ),
                 ),
-            ).filter_by(id=int(model_id))
+            )
+            .filter_by(id=int(model_id))
+        )
         result = await cls.db.execute(query)
         return result.scalar_one_or_none()
 
@@ -168,7 +187,7 @@ class KeyDocumentServise(BaseRepository):
                 log_id=key_document.log.id,
                 key_id=key_document.id,
                 act_record_id=act_record.id,
-                action_date=action_date
+                action_date=action_date,
             )
             await cls.db.commit()
             await cls.db.session.flush()
@@ -180,34 +199,28 @@ class KeyDocumentServise(BaseRepository):
 
     @classmethod
     async def destruct_c_version(
-        cls,
-        keys: list[KeyDocument],
-        act_record: ActRecord,
-        action_date: date
+        cls, keys: list[KeyDocument], act_record: ActRecord, action_date: date
     ):
         try:
             for key in keys:
                 await cls.remove_key(
-                    key_id=key.id,
-                    act_record_id=act_record.id,
-                    action_date=action_date
+                    key_id=key.id, act_record_id=act_record.id, action_date=action_date
                 )
 
             await cls.db.commit()
             await cls.db.session.flush()
         except Exception as e:
-            print(f"--------- Exception in {cls.__name__}.destruct_c_version() ---------")
+            print(
+                f"--------- Exception in {cls.__name__}.destruct_c_version() ---------"
+            )
             print(e)
-            print(f"--------- Exception in {cls.__name__}.destruct_c_version() ---------")
+            print(
+                f"--------- Exception in {cls.__name__}.destruct_c_version() ---------"
+            )
             await cls.db.rollback()
 
     @classmethod
-    async def remove_key(
-        cls,
-        key_id: int,
-        act_record_id: int,
-        action_date: date
-    ):
+    async def remove_key(cls, key_id: int, act_record_id: int, action_date: date):
         # Обновление записи журнала поэкземплярного учета
         await cls.db.execute(
             update(KeyDocument)
@@ -219,22 +232,14 @@ class KeyDocumentServise(BaseRepository):
         await cls.db.execute(
             update(HardwareLogbook)
             .where(HardwareLogbook.key_document_id == key_id)
-            .values(
-                remove_action_id=act_record_id,
-                removed_at=action_date
-            )
+            .values(remove_action_id=act_record_id, removed_at=action_date)
         )
 
         # Обновление записи в лицевом счете сотрудника
         await cls.db.execute(
             update(CryptographyPersonalAccount)
-            .where(
-                CryptographyPersonalAccount.key_document_id == key_id
-            )
-            .values(
-                remove_action_id=act_record_id,
-                removed_at=action_date
-            )
+            .where(CryptographyPersonalAccount.key_document_id == key_id)
+            .values(remove_action_id=act_record_id, removed_at=action_date)
         )
 
     @classmethod
@@ -257,7 +262,7 @@ class KeyDocumentServise(BaseRepository):
         received_date: date,
         install_act_record: ActRecord,
         comment: str | None = None,
-        is_unexpired: bool = False
+        is_unexpired: bool = False,
     ):
         key_document = await cls.add(
             serial=serial,
@@ -269,7 +274,7 @@ class KeyDocumentServise(BaseRepository):
             received_date=received_date,
             install_act_record_id=install_act_record.id,
             comment=comment,
-            is_unexpired=is_unexpired
+            is_unexpired=is_unexpired,
         )
 
         # Создание записи аппаратного журнала
@@ -288,7 +293,7 @@ class KeyDocumentServise(BaseRepository):
             happened_at=install_act_record.action_date,
             cryptography_version_id=cryptography_version_id,
             key_document_id=key_document.id,
-            install_action_id=install_act_record.id
+            install_action_id=install_act_record.id,
         )
 
         return key_document
@@ -307,7 +312,7 @@ class KeyDocumentServise(BaseRepository):
                 performer_id=int(form_data.performer_id),
                 action_date=action_date,
                 head_commision_member_id=int(form_data.head_commision_member_id),
-                commision_member_id=int(form_data.commision_member_id)
+                commision_member_id=int(form_data.commision_member_id),
             )
 
             # Создание ключевого документа на весь
@@ -321,9 +326,11 @@ class KeyDocumentServise(BaseRepository):
                     owner_id=int(form_data.responsible_user_id),
                     equipment_id=form_data.equipment_id,
                     received_from=form_data.key_document_unexpired_received_from,
-                    received_date=format_date(form_data.key_document_unexpired_received_at),
+                    received_date=format_date(
+                        form_data.key_document_unexpired_received_at
+                    ),
                     install_act_record=install_act_record,
-                    comment=form_data.comment
+                    comment=form_data.comment,
                 )
 
             # Создание ключевого документа, который сменяется
@@ -339,9 +346,11 @@ class KeyDocumentServise(BaseRepository):
                             owner_id=int(form_data.responsible_user_id),
                             equipment_id=form_data.equipment_id,
                             received_from=form_data.key_document_expired_received_from,
-                            received_date=format_date(form_data.key_document_expired_received_at),
+                            received_date=format_date(
+                                form_data.key_document_expired_received_at
+                            ),
                             install_act_record=install_act_record,
-                            comment=form_data.comment
+                            comment=form_data.comment,
                         )
                     case "False":
                         expired_kd = await KeyDocumentServise.get_by_id(
@@ -352,9 +361,13 @@ class KeyDocumentServise(BaseRepository):
             await cls.db.commit()
             await cls.db.session.flush()
         except Exception as e:
-            print(f"--------- Exception in {cls.__name__}.add_personal_keys() ---------")
+            print(
+                f"--------- Exception in {cls.__name__}.add_personal_keys() ---------"
+            )
             print(e)
-            print(f"--------- Exception in {cls.__name__}.add_personal_keys() ---------")
+            print(
+                f"--------- Exception in {cls.__name__}.add_personal_keys() ---------"
+            )
             await cls.db.rollback()
 
     @classmethod
@@ -366,7 +379,7 @@ class KeyDocumentServise(BaseRepository):
     @classmethod
     async def count_today_keys(cls):
         count_query = select(func.count(cls.model.id.distinct())).filter(
-            func.DATE(cls.model.created_at)==date.today()
+            func.DATE(cls.model.created_at) == date.today()
         )
         count = (await db.execute(count_query)).scalar() or 0
         return count
