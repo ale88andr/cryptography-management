@@ -1,5 +1,6 @@
 import logging
 
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import ORJSONResponse
@@ -30,6 +31,12 @@ from db.connection import db
 def init_app():
     db.init()
 
+    @asynccontextmanager
+    async def lifespan(app: FastAPI):
+        yield
+        # Clean up the db connection
+        await db.close()
+
     app = FastAPI(
         # Вывод логов
         debug=True,
@@ -42,11 +49,8 @@ def init_app():
         # Можно сразу сделать небольшую оптимизацию сервиса и заменить стандартный
         # JSON-сереализатор на более шуструю версию, написанную на Rust
         default_response_class=ORJSONResponse,
+        lifespan=lifespan
     )
-
-    @app.on_event("shutdown")
-    async def shutdown():
-        await db.close()
 
     return app
 

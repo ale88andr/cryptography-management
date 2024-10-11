@@ -2,13 +2,13 @@ from datetime import date, datetime
 from functools import lru_cache
 import math
 from typing import Optional
-from sqlalchemy import select, text, func, extract, distinct
+from sqlalchemy import select, text, func, extract
 from sqlalchemy.orm import joinedload, selectinload
 
 from db.connection import db
 from models.cryptography import KeyCarrier, KeyDocument, Version
 from models.logbook import ActRecord
-from models.staff import Department, Employee, Position
+from models.staff import Employee
 from services.base import BaseRepository
 
 # EMPLOYEE_CACHE_EXPIRE_IN_SECONDS = 60 * 5  # 5 минут

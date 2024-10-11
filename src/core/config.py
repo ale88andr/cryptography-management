@@ -32,7 +32,7 @@ settings = Settings()
 logging_config.dictConfig(LOGGING)
 
 # Название проекта. Для Swagger-документации
-PROJECT_NAME = os.getenv("PROJECT_NAME", "FastAPI demo")
+PROJECT_NAME = os.getenv("PROJECT_NAME", "Cryptography Management")
 
 # Корень проекта
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

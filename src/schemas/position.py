@@ -7,4 +7,4 @@ class SPosition(BaseModel):
     is_leadership: bool
 
     class Config:
-        orm_mode = True
+        from_attributes = True
