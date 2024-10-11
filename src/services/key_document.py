@@ -365,12 +365,16 @@ class KeyDocumentServise(BaseRepository):
 
     @classmethod
     async def count_today_keys(cls):
-        count_query = select(func.count(cls.model.id.distinct())).filter(cls.model.created_at==date.today())
+        count_query = select(func.count(cls.model.id.distinct())).filter(
+            func.DATE(cls.model.created_at)==date.today()
+        )
         count = (await db.execute(count_query)).scalar() or 0
         return count
 
     @classmethod
     async def count_month_keys(cls):
-        count_query = select(func.count(cls.model.id.distinct())).filter(extract("month", cls.model.created_at) >= datetime.today().month)
+        count_query = select(func.count(cls.model.id.distinct())).filter(
+            extract("month", cls.model.created_at) >= datetime.today().month
+        )
         count = (await db.execute(count_query)).scalar() or 0
         return count

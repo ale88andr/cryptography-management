@@ -86,7 +86,7 @@ class EmployeeServise(BaseRepository):
             selectinload(cls.model.key_document_set).options(
                 joinedload(KeyDocument.cryptography_version).options(joinedload(Version.model))
             )
-        ).where(KeyDocument.remove_act==None).order_by(cls.model.created_at)
+        ).where(KeyDocument.remove_act==None).order_by(cls.model.created_at.desc())
         records = (await db.execute(query)).unique().scalars().all()
         return records[:limit] if limit else records, len(records)
 
@@ -117,14 +117,16 @@ class EmployeeServise(BaseRepository):
         if sort and sort != "null":
             query = query.order_by(text(sort))
         else:
-            query = query.order_by(cls.model.created_at)
+            query = query.order_by(cls.model.created_at.desc())
 
         records = (await db.execute(query)).unique().scalars().all()
         return records, len(records)
 
     @classmethod
     async def today_cryptography_users(cls):
-        count_query = select(func.count(cls.model.id.distinct())).select_from(KeyDocument).join(cls.model).filter(cls.model.created_at==date.today()).distinct()
+        count_query = select(func.count(cls.model.id.distinct())).select_from(KeyDocument).join(cls.model).filter(
+            func.DATE(cls.model.created_at)==date.today()
+        ).distinct()
         today_users = (await db.execute(count_query)).scalar() or 0
         return today_users
 

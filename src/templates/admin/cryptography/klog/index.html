@@ -136,7 +136,7 @@
                     </td>
                     <td class="text-nowrap">
                         {% if object.remove_act %}
-                            <a href="{{ url_for('download_instance_destruction_act_admin', record_id=object.id) }}">
+                            <a href="{{ url_for('download_instance_destruction_act_admin', key_id=object.id) }}">
                                 {{ object.remove_act }}
                             </a>
                         {% else %}
