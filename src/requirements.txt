@@ -78,3 +78,4 @@ wcwidth==0.2.13
 websockets==12.0
 docxtpl
 asyncpg
+psycopg2-binary
