@@ -3,6 +3,8 @@ FROM python:3.11.9-slim
 # set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
+ENV http_proxy=http://10.92.239.85:3128
+ENV https_proxy=http://10.92.239.85:3128
 
 COPY src/requirements.txt src/requirements.txt
 
@@ -17,11 +19,6 @@ RUN apt update && apt install -y --no-install-recommends locales; rm -rf /var/li
 # Restore backup
 # cat your_dump.sql | docker exec -i your-db-container psql -U postgres
 
-RUN pip install --no-cache-dir --upgrade -r src/requirements.txt
+RUN pip install --no-cache-dir -r src/requirements.txt
 
 COPY . .
-
-RUN chmod +x docker-entrypoint.sh
-ENTRYPOINT ["./docker-entrypoint.sh"]
-
-CMD [ "python", "src/main.py" ]

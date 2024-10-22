@@ -6,13 +6,13 @@ services:
     container_name: postgres_container
     restart: always
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-123}
-      POSTGRES_DB: ${POSTGRES_DB:-postgres}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASS:-123}
+      POSTGRES_DB: ${DB_NAME:-postgres}
       PGDATA: /var/lib/postgresql/data
     volumes:
        - postgres_data:/var/lib/postgresql/data
-       - ./backup.sql:/docker-entrypoint-initdb.d/backup.sql
+       - ./cm2.dump:/tmp/cm2.dump
     ports:
       - "5432:5432"
     networks:
@@ -24,15 +24,14 @@ services:
       retries: 10
 
   pgadmin:
-    container_name: pgadmin_container
     image: dpage/pgadmin4
+    container_name: pgadmin_container
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-ale88andr@gmail.com}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-123}
       PGADMIN_CONFIG_SERVER_MODE: 'False'
     volumes:
        - pgadmin_data:/var/lib/pgadmin
-       - ./backup.sql:/tmp/backup.sql:ro
 
     ports:
       - "${PGADMIN_PORT:-5050}:80"
@@ -43,12 +42,14 @@ services:
   cryman:
     container_name: cryman_container
     build: .
+    command: bash -c "alembic upgrade head && python src/main.py"
     ports:
       - "8000:8000"
     depends_on:
       - db
     networks:
       - app
+    restart: unless-stopped
 
 networks:
   app:
