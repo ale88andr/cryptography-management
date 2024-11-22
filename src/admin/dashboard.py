@@ -10,6 +10,7 @@ from admin.constants import (
 )
 from core.config import templates
 from services.c_action import CActionServise
+from services.carrier_types import CarrierTypesServise
 from services.key_carrier import KeyCarrierServise
 from services.key_document import KeyDocumentServise
 from services.employee import EmployeeServise

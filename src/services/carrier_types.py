@@ -3,7 +3,7 @@ from sqlalchemy import select, text, func
 from db.connection import db
 
 from services.base import BaseRepository
-from models.cryptography import KeyCarrierType, KeyCarrier
+from models.cryptography import KeyCarrierType, KeyCarrier, KeyDocument
 
 
 class CarrierTypesServise(BaseRepository):

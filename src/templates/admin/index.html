@@ -276,35 +276,7 @@
 
         <div class="row mt-4 mb-4">
 
-            <div class="col-12 col-lg-4 col-xxl-4 d-flex">
-                <div class="card flex-fill">
-                    <div class="card-header">
-                        <div class="card-actions float-end">
-                            <div class="dropdown position-relative">
-                                <button class="btn p-0" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    <i class="bi bi-three-dots-vertical text-muted"></i>
-                                </button>
-
-                                <div class="dropdown-menu dropdown-menu-end">
-                                    <a href="{{ url_for('add_cilogbook_admin') }}" class="dropdown-item">
-                                        <i class="bi bi-plus-lg me-2"></i>{{ add_page_header }}
-                                    </a>
-                                    <a href="{{ url_for('get_cilogbook_admin') }}" class="dropdown-item">
-                                        <i class="bi bi-card-list me-2"></i> Журнал поэкземплярного учета
-                                    </a>
-                                    <a href="{{ url_for('download_cilogbook_admin') }}" class="dropdown-item">
-                                        <i class="bi bi-download me-2"></i> Выгрузить журнал
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                        <h5 class="card-title m-0 me-2">Подключение СКЗИ</h5>
-                    </div>
-                    <div class="mb-2"><canvas class="ms-3 me-3" height="500" id="acts"></canvas></div><br>
-                </div>
-            </div>
-            
-            <div class="col-12 col-lg-8 col-xxl-8 d-flex">
+            <div class="col-12 col-lg-12 col-xxl-12 d-flex">
                 <div class="card flex-fill">
                     <div class="card-header d-flex align-items-center justify-content-between">
                         <h5 class="card-title m-0 me-2">Последние записи журнала поэкземплярного учета СКЗИ</h5>
@@ -313,60 +285,63 @@
                         </a>
                     </div>
 
-                    <table class="table align-items-center table-flush">
-                        <thead class="thead-light">
-                            <tr>
-                                <th scope="col">Криптографическое средство</th>
-                                <th scope="col">Серийные номера ключевых документов</th>
-                                <th scope="col">Пользователь СКЗИ</th>
-                                <th scope="col">Актовая запись</th>
-                                <th scope="col">Дата подключения</th>
-                            </tr>
-                        </thead>
-                        {% for record in latest_logbook %}
-                            <tr>
-                                <td>
-                                    <ul class="list-unstyled mb-0">
-                                        <li class="mb-1">
-                                            <a href="{{ url_for('edit_cversion_admin', cversion_id=record.cryptography_version_id) }}">
-                                                {{ record.cryptography_version.model.name }} {{ record.cryptography_version.version }}
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </td>
-                                <td class="text-nowrap">
-                                    <div class="d-flex align-items-center">
-                                        <div>
-                                            <p class="fw-bold">
-                                                <ul class="list-unstyled mb-0">
-                                                    <li class="mb-1">
-                                                        <a href="{{ url_for('destruct_employee_cversion_admin', pk=record.id) }}">
-                                                            <strong>{{ record.serial }}</strong>
-                                                        </a>
-                                                    </li>
-                                                </ul>
-                                            </p>
+                    <div class="card-body">
+                        <table class="table align-items-center table-flush table-hover">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th scope="col">Криптографическое средство</th>
+                                    <th scope="col">Серийные номера ключевых документов</th>
+                                    <th scope="col">Пользователь СКЗИ</th>
+                                    <th scope="col">Актовая запись</th>
+                                    <th scope="col">Дата подключения</th>
+                                </tr>
+                            </thead>
+                            {% for record in latest_logbook %}
+                                <tr>
+                                    <td>
+                                        <ul class="list-unstyled mb-0">
+                                            <li class="mb-1">
+                                                <a href="{{ url_for('edit_cversion_admin', cversion_id=record.cryptography_version_id) }}">
+                                                    {{ record.cryptography_version.model.name }} {{ record.cryptography_version.version }}
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </td>
+                                    <td class="text-nowrap">
+                                        <div class="d-flex align-items-center">
+                                            <div>
+                                                <p class="fw-bold">
+                                                    <ul class="list-unstyled mb-0">
+                                                        <li class="mb-1">
+                                                            <a href="{{ url_for('destruct_employee_cversion_admin', pk=record.id) }}">
+                                                                <strong>{{ record.serial }}</strong>
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </p>
+                                            </div>
                                         </div>
-                                    </div>
-                                </td>
-                                <td class="text-nowrap">
-                                    <a href="{{ url_for('detail_employee_admin', employee_id=record.owner_id) }}">
-                                        {{ record.owner.short_name }}
-                                    </a>
-                                </td>
-                                <td class="text-muted">
-                                    <a href="{{ url_for('download_instance_creation_act_admin', key_id=record.id) }}" class="text-nowrap">
-                                        {{ record.install_act }}
-                                    </a>
-                                </td>
-                                <td>
-                                    {{ format_date(record.install_act.action_date) }}
-                                </td>
-                            </tr>
-                        {% else %}
-                            {{ no_data(15) }}
-                        {% endfor %}
-                    </table>
+                                    </td>
+                                    <td class="text-nowrap">
+                                        <a href="{{ url_for('detail_employee_admin', employee_id=record.owner_id) }}">
+                                            {{ record.owner.short_name }}
+                                        </a>
+                                    </td>
+                                    <td class="text-muted">
+                                        <a href="{{ url_for('download_instance_creation_act_admin', key_id=record.id) }}" class="text-nowrap">
+                                            {{ record.install_act }}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        {{ format_date(record.install_act.action_date) }}
+                                    </td>
+                                </tr>
+                            {% else %}
+                                {{ no_data(15) }}
+                            {% endfor %}
+                        </table>
+                    </div>
+
                 </div>
             </div>
 
@@ -394,6 +369,34 @@
                         <h5 class="card-title m-0 me-2">Типы ключевых носителей</h5>
                     </div>
                     <div class="mb-2"><canvas class="ms-3 me-3" id="keyCarriers"></canvas></div><br>
+                </div>
+            </div>
+
+            <div class="col-12 col-lg-8 col-xxl-8 d-flex">
+                <div class="card flex-fill">
+                    <div class="card-header">
+                        <div class="card-actions float-end">
+                            <div class="dropdown position-relative">
+                                <button class="btn p-0" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <i class="bi bi-three-dots-vertical text-muted"></i>
+                                </button>
+
+                                <div class="dropdown-menu dropdown-menu-end">
+                                    <a href="{{ url_for('add_cilogbook_admin') }}" class="dropdown-item">
+                                        <i class="bi bi-plus-lg me-2"></i>{{ add_page_header }}
+                                    </a>
+                                    <a href="{{ url_for('get_cilogbook_admin') }}" class="dropdown-item">
+                                        <i class="bi bi-card-list me-2"></i> Журнал поэкземплярного учета
+                                    </a>
+                                    <a href="{{ url_for('download_cilogbook_admin') }}" class="dropdown-item">
+                                        <i class="bi bi-download me-2"></i> Выгрузить журнал
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <h5 class="card-title m-0 me-2">Подключение СКЗИ</h5>
+                    </div>
+                    <div class="mb-2"><canvas class="ms-3 me-3" id="acts"></canvas></div><br>
                 </div>
             </div>
 
@@ -454,7 +457,6 @@
             },
             options: {
                 responsive: true,
-                indexAxis: "y",
             },
         });
 

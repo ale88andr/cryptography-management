@@ -198,6 +198,7 @@ class KeyCarrier(Base):
     )
 
     carrier_type: Mapped["KeyCarrierType"] = relationship(back_populates="carriers")
+    
     key_documents: Mapped[list["KeyDocument"]] = relationship(
         back_populates="key_carrier"
     )

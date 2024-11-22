@@ -1,6 +1,6 @@
 import orjson
 
-from sqlalchemy import String, ForeignKey
+from sqlalchemy import String, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 from db.connection import Base
@@ -34,9 +34,12 @@ class Building(Base):
 
 class Location(Base):
     __tablename__ = "employee_location"
+    __table_args__ = (
+        UniqueConstraint("name", "building_id", name="name_building"),
+    )
 
     id: Mapped[fields.pk]
-    name: Mapped[fields.title]
+    name: Mapped[str] = mapped_column(String(50), nullable=False)
     building_id: Mapped[int] = mapped_column(
         ForeignKey("employee_location_building.id", ondelete="CASCADE")
     )

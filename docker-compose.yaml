@@ -14,7 +14,7 @@ services:
        - postgres_data:/var/lib/postgresql/data
        - ./cm2.dump:/tmp/cm2.dump
     ports:
-      - "5432:5432"
+      - "54322:5432"
     networks:
       - app
     healthcheck:
