@@ -53,8 +53,8 @@ async def login(response: Response, request: Request):
 
 
 @router.get("/login")
-async def login(response: Response, request: Request):
-    return templates.TemplateResponse("login.html", {"request":request})
+async def login(response: Response, request: Request, msg: str = None):
+    return templates.TemplateResponse("login.html", {"request":request, "msg": msg})
 
 
 @router.get("/logout")

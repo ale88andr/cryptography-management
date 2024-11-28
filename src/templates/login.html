@@ -4,38 +4,45 @@
 <html lang="ru">
     <head>
         <meta charset="utf-8">
-        <title>Cryman: Admin - {% block title %}{% endblock %}</title>
+        <title>Cryman: Администратор - {% block title %}{% endblock %}</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="shortcut icon" href="{{ url_for('static', path='favicon.ico') }}">
         <link rel="stylesheet" href="{{ url_for('static', path='css/bootstrap.min.css') }}">
-        <link rel="stylesheet" href="{{ url_for('static', path='css/bootstrap-icons.min.css') }}">
     </head>
   <body>
     <section class="vh-100" style="background-color: #9A616D;">
-        <div class="container py-5 h-100">
-          <div class="row d-flex justify-content-center align-items-center h-100">
-            <div class="col col-xl-10">
-              <div class="card" style="border-radius: 1rem;">
-                <div class="row g-0">
-                  <div class="col-md-6 col-lg-5 d-none d-md-block">
-                    <img src="{{ url_for('static', path='img/login.jpeg') }}"
-                      alt="login form" class="img-fluid" style="border-radius: 1rem 0 0 1rem;" />
-                  </div>
-                  <div class="col-md-6 col-lg-7 d-flex align-items-center">
-                    <div class="card-body p-4 p-lg-5 text-black">
+      <div class="container py-5 h-100">
+        <div class="row d-flex justify-content-center align-items-center h-100">
+          <div class="col col-xl-10">
+            <div class="card" style="border-radius: 1rem;">
+              <div class="row g-0">
+                <div class="col-md-6 col-lg-5 d-none d-md-block">
+                  <img src="{{ url_for('static', path='img/login.jpeg') }}"
+                    alt="login form" class="img-fluid" style="border-radius: 1rem 0 0 1rem;" />
+                </div>
+                <div class="col-md-6 col-lg-7 d-flex align-items-center">
+                  <div class="card-body p-4 p-lg-5 text-black">
 
-                        {% if errors %}
-                            <div class="alert alert-dismissible alert-danger">
-                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                <strong>Обнаружены ошибки!</strong> <a href="#" class="alert-link">Исправте их</a> и повторите отправку формы снова.
-                                {% if "non_field_error" in errors %}
-                                    <br>{{ errors["non_field_error"] }}
-                                {% endif %}
-                            </div>
-                        {% endif %}
+                      {% if errors %}
+                        <div class="alert alert-dismissible alert-danger">
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            <strong>Обнаружены ошибки!</strong> <a href="#" class="alert-link">Исправте их</a> и повторите отправку формы снова.
+                            {% if "non_field_error" in errors %}
+                                <br>{{ errors["non_field_error"] }}
+                            {% endif %}
+                        </div>
+                      {% endif %}
 
-                        <form method="POST">
-                            <div class="d-flex align-items-center pb-1">
+                      <!-- Блок сообщений страницы -->
+                      {% if msg %}
+                        <div class="alert alert-dismissible alert-warning">
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            <strong>{{ msg }}</strong>
+                        </div>
+                      {% endif %}
+
+                      <form method="POST">
+                          <div class="d-flex align-items-center pb-1">
                             <div class="me-1">
                                 <svg width="35" viewBox="0 0 25 42" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
                                 <defs>
@@ -66,44 +73,40 @@
                                         <use fill-opacity="0.2" fill="#FFFFFF" xlink:href="#path-5"></use>
                                         </g>
                                     </g>
-                                    </g>
+                                  </g>
                                 </g>
-                                </svg>
+                              </svg>
                             </div>
                             <h2 class="pt-3">CryMan</h2>
-                            </div>
+                          </div>
 
-                            <h5 class="fw-normal mb-3 pb-3" style="letter-spacing: 1px;">Войдите в свою учетную запись</h5>
+                          <h5 class="fw-normal mb-3 pb-3" style="letter-spacing: 0.75px;">Войдите в свою учетную запись</h5>
 
-                            <div data-mdb-input-init class="form-outline mb-4">
-                                {{ email_field("email", "Адрес электронной почты:", errors, email) }}
-                                <!-- <input name="email" type="email" id="email" class="form-control form-control-lg" />
-                                <label class="form-label text-muted" for="email">Адрес электронной почты</label> -->
-                            </div>
+                          <div data-mdb-input-init class="form-outline mb-4">
+                              {{ email_field("email", "Адрес электронной почты:", errors, email) }}
+                          </div>
 
-                            <div data-mdb-input-init class="form-outline mb-4">
-                                {{ password_field("password", "Пароль:", errors) }}
-                                <!-- <input  name="password" type="password" id="password" class="form-control form-control-lg" />
-                                <label class="form-label text-muted" for="password">Пароль</label> -->
-                            </div>
+                          <div data-mdb-input-init class="form-outline mb-4">
+                              {{ password_field("password", "Пароль:", errors) }}
+                          </div>
 
-                            <div class="pt-1 mb-4">
-                                <button class="btn btn-outline-dark btn-lg" type="submit" style="text-transform: none !important;">Вход</button>
-                            </div>
+                          <div class="pt-1 mb-4">
+                              <button class="btn btn-outline-dark btn-lg" type="submit" style="text-transform: none !important;">Войти</button>
+                          </div>
 
-                            <!-- <a class="small text-muted" href="#!">Забыли пароль?</a> -->
-                            <!-- <p class="mb-5 pb-lg-2" style="color: #393f81;">Нет учетной записи? <a href="#!"
-                                style="color: #393f81;">Регистрация</a></p> -->
-                            <!-- <a href="#!" class="small text-muted">Условия пользования.</a> -->
-                      </form>
+                          <!-- <a class="small text-muted" href="#!">Забыли пароль?</a> -->
+                          <!-- <p class="mb-5 pb-lg-2" style="color: #393f81;">Нет учетной записи? <a href="#!"
+                              style="color: #393f81;">Регистрация</a></p> -->
+                          <!-- <a href="#!" class="small text-muted">Условия пользования.</a> -->
+                    </form>
 
-                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </section>
+      </div>
+    </section>
   </body>
 </html>

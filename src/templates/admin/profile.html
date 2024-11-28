@@ -1,0 +1,54 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}{{ page_header }}{% endblock %}
+{% block breadcrumb %}{% include 'admin/common/breadcrumbs.html' %}{% endblock %}
+{% block page_header %}{{ page_header }}{% endblock %}
+{% block page_header_help %}{{ page_header_help }}{% endblock %}
+
+{% block content %}
+
+    <section id="employee-profile">
+        <div class="h-100">
+            <div class="row d-flex justify-content-center">
+                <div class="col col-lg-12 mb-4 mb-lg-0">
+                    <div class="card mb-3" style="border-radius: .5rem;">
+                        <div class="row g-0">
+                            <div
+                            class="col-md-3 gradient-custom text-center text-white"
+                            style="border-top-left-radius: .5rem; border-bottom-left-radius: .5rem;"
+                        >
+                            <img
+                                src="{{ url_for('static', path='img/admin.png') }}"
+                                alt="Avatar"
+                                class="img-fluid my-5"
+                                style="width: 100px;"
+                            />
+                            <h5>{{ user.email }}</h5>
+                            <p><span class="badge bg-light mb-4">{% if user.is_admin %}Администратор{%else%}Пользователь{%endif%}</span></p>
+                        </div>
+                        <div class="col-md-9">
+                            <div class="card-body p-4">
+                                <div class="mb-4 text-body">
+                                    <h6 class="lead fw-normal mb-0">Профиль сотрудника</h6>
+                                    {% if user.employee_id %}
+                                        <p class="mb-0 text-muted">
+                                            <a href="{{ url_for('detail_employee_admin', employee_id=user.employee_id) }}" class="btn btn-info mt-2">
+                                                <i class="bi bi-person-dash"></i> Перейти в профиль
+                                            </a>
+                                        </p>
+                                    {% else %}
+                                        <p class="text-warning mt-2">
+                                            Профиль сотрудника не привязан!
+                                        </p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+{% endblock %}

@@ -12,3 +12,10 @@ class User(Base):
     email: Mapped[str] = mapped_column(String(50), nullable=False)
     hashed_password: Mapped[str] = mapped_column(String(250), nullable=False)
     is_admin: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    employee_id: Mapped[int] = mapped_column(
+        ForeignKey("employee.id", ondelete="CASCADE"), nullable=True
+    )
+
+    employee: Mapped["Employee"] = relationship(
+        back_populates="user", lazy="joined"
+    )

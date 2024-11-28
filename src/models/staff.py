@@ -149,6 +149,8 @@ class Employee(Base):
     # Relations
     position: Mapped["Position"] = relationship(back_populates="employees")
 
+    user: Mapped["User"] = relationship(back_populates="employee")
+
     department: Mapped["Department"] = relationship(back_populates="employees")
 
     location: Mapped["Location"] = relationship(back_populates="employees")

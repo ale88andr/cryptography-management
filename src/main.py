@@ -24,7 +24,7 @@ from admin import c_instance_logbook as admin_c_instance_logbook
 from admin import key_document as admin_key_document
 from admin import dashboard as admin_dashboard
 from core import config
-from core.exceptions import TokenDoesntExistsException, UserDoesntExistsException
+from core.exceptions import TokenDoesntExistsException, TokenExpiredException
 from core.logger import LOGGING
 from db.connection import db
 
@@ -129,6 +129,15 @@ async def unicorn_exception_handler(
         request.url_for("login"),
         # status_code=exc.status_code
     )
+
+
+@app.exception_handler(TokenExpiredException)
+async def unicorn_exception_handler(
+    request: Request,
+    exc: TokenExpiredException
+):
+    redirect_url = request.url_for("login").include_query_params(msg=exc.detail)
+    return RedirectResponse(redirect_url)
 
 
 if __name__ == "__main__":

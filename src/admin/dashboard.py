@@ -9,6 +9,7 @@ from admin.constants import (
     CILOG_ADD_PAGE_HEADER as add_page_header,
 )
 from core.config import templates
+from core.utils import create_breadcrumbs
 from dependencies.auth import get_current_user
 from models.users import User
 from services.c_action import CActionServise
@@ -20,7 +21,8 @@ from services.organisation import OrganisationServise
 
 
 app_prefix = "/admin"
-list_teplate = f"{app_prefix}/index.html"
+list_template = f"{app_prefix}/index.html"
+profile_template = f"{app_prefix}/profile.html"
 
 router = APIRouter(prefix=app_prefix, tags=[hepl_text])
 
@@ -93,4 +95,16 @@ async def get_dashboard_admin(
         "q": q,
         "user": user
     }
-    return templates.TemplateResponse(list_teplate, context)
+    return templates.TemplateResponse(list_template, context)
+
+
+@router.get("/me")
+async def profile(request: Request, user: User = Depends(get_current_user)):
+    return templates.TemplateResponse(
+        profile_template,
+        {
+            "request": request,
+            "user": user,
+            "breadcrumbs": create_breadcrumbs(router, ["Мой профиль"], ["profile"])
+        }
+    )

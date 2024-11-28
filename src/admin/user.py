@@ -9,60 +9,33 @@ from admin.constants import (
     EMP_CUSERS_PAGE_HEADER as index_cusers_page_header,
 )
 from core.config import templates
-from core.utils import create_breadcrumbs, create_file_response
-from core.templater import LogbookTemplatesEnum
-from services.c_version import CVersionServise
-from services.department import DepartmentServise
-from services.employee import EmployeeServise
-from services.location import LocationServise
-from services.organisation import OrganisationServise
-from services.position import PositionServise
-from services.employee_personal_account import EmployeePersonalAccountService
-from forms.employee import EmployeeForm
-from utils.formatting import get_str_now_date
+from core.utils import create_breadcrumbs
+from services.users import UsersDAO
 
 
-app_prefix = "/admin/staff/employees"
+app_prefix = "/admin/users"
 form_teplate = f"{app_prefix}/form.html"
 detail_teplate = f"{app_prefix}/detail.html"
 list_teplate = f"{app_prefix}/index.html"
-crypto_user_list_template = f"{app_prefix}/users.html"
 
 router = APIRouter(prefix=app_prefix, tags=[hepl_text])
 
 
-# ========= Employees =========
+# ========= Users =========
 @router.get("/", response_class=responses.HTMLResponse)
-async def get_employees_admin(
+async def get_users_admin(
     request: Request,
     msg: str = None,
     page: int = 0,
     limit: int = 20,
     sort: Optional[str] = None,
     q: Optional[str] = None,
-    filter_position: Optional[int] = None,
-    filter_department: Optional[int] = None,
-    filter_location: Optional[int] = None,
 ):
-    filters = {}
-
-    if filter_position and filter_position > 0:
-        filters["position_id"] = filter_position
-
-    if filter_department and filter_department > 0:
-        filters["department_id"] = filter_department
-
-    if filter_location and filter_location > 0:
-        filters["location_id"] = filter_location
-
     records, counter, total_records, total_pages = (
-        await EmployeeServise.all_with_pagination(
-            sort=sort, q=q, page=page, limit=limit, filters=filters
+        await UsersDAO.all_with_pagination(
+            sort=sort, q=q, page=page, limit=limit
         )
     )
-    departments, _ = await DepartmentServise.all()
-    positions, _ = await PositionServise.all()
-    locations, _ = await LocationServise.all()
 
     return templates.TemplateResponse(
         list_teplate,
@@ -70,14 +43,8 @@ async def get_employees_admin(
             "request": request,
             "employees": records,
             "counter": counter,
-            "departments": departments,
-            "positions": positions,
-            "locations": locations,
             "page_header": index_page_header,
             "page_header_help": hepl_text,
-            "filter_position": filter_position,
-            "filter_department": filter_department,
-            "filter_location": filter_location,
             "page": page,
             "limit": limit,
             "total_records": total_records,
@@ -86,7 +53,7 @@ async def get_employees_admin(
             "sort": sort,
             "q": q,
             "breadcrumbs": create_breadcrumbs(
-                router, [index_page_header], ["get_employees_admin"]
+                router, [index_page_header], ["get_users_admin"]
             ),
         },
     )
