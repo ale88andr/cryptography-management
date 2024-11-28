@@ -14,6 +14,35 @@
     {% endif %}
 {% endmacro %}
 
+{% macro email_field(name, label, errors, value='', placeholder='', disabled=False) %}
+    <label for="{{ name }}" class="form-label">{{ label }}</label>
+    <input
+        type="email"
+        class="form-control {% if name in errors %}is-invalid{% endif %}"
+        name="{{ name }}"
+        id="{{ name }}"
+        value="{% if value %}{{ value }}{% endif %}"
+        placeholder="{{ placeholder }}"
+        {% if disabled %}disabled{% endif %}
+    >
+    {% if name in errors %}
+        <div class="text-danger font-weight-bold">{{ errors[name] }}</div>
+    {% endif %}
+{% endmacro %}
+
+{% macro password_field(name, label, errors) %}
+    <label for="{{ name }}" class="form-label">{{ label }}</label>
+    <input
+        type="password"
+        class="form-control {% if name in errors %}is-invalid{% endif %}"
+        name="{{ name }}"
+        id="{{ name }}"
+    >
+    {% if name in errors %}
+        <div class="text-danger font-weight-bold">{{ errors[name] }}</div>
+    {% endif %}
+{% endmacro %}
+
 {% macro search_field(name='q', value='', placeholder='Поиск') %}
     <input
         class="form-control"

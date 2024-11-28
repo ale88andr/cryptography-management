@@ -10,5 +10,5 @@ class User(Base):
 
     id: Mapped[fields.pk]
     email: Mapped[str] = mapped_column(String(50), nullable=False)
-    hashed_password: Mapped[str] = mapped_column(String(50), nullable=False)
+    hashed_password: Mapped[str] = mapped_column(String(250), nullable=False)
     is_admin: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)

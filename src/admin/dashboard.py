@@ -1,7 +1,7 @@
 import calendar
 from datetime import datetime
 from typing import Optional
-from fastapi import APIRouter, Request, responses
+from fastapi import APIRouter, Request, Depends, responses
 
 from admin.constants import (
     CILOG_HELP_TEXT as hepl_text,
@@ -9,8 +9,9 @@ from admin.constants import (
     CILOG_ADD_PAGE_HEADER as add_page_header,
 )
 from core.config import templates
+from dependencies.auth import get_current_user
+from models.users import User
 from services.c_action import CActionServise
-from services.carrier_types import CarrierTypesServise
 from services.key_carrier import KeyCarrierServise
 from services.key_document import KeyDocumentServise
 from services.employee import EmployeeServise
@@ -32,6 +33,7 @@ async def get_dashboard_admin(
     q: Optional[str] = None,
     filter_model_id: Optional[int] = None,
     filter_grade: Optional[int] = None,
+    user: User = Depends(get_current_user)
 ):
     latest_users, total_users = await EmployeeServise.latest_cryptography_users(limit=5)
     latest_logbook = await KeyDocumentServise.latest(limit=10)
@@ -89,5 +91,6 @@ async def get_dashboard_admin(
         "filter_grade": filter_grade,
         "msg": msg,
         "q": q,
+        "user": user
     }
     return templates.TemplateResponse(list_teplate, context)

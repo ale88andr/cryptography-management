@@ -37,7 +37,7 @@ async def get_current_user(token: str = Depends(get_token)):
     if not user_id:
         raise UserDoesntExistsException
 
-    user = await UsersDAO.get(int(user_id))
+    user = await UsersDAO.get_by_id(int(user_id))
 
     if not user:
         raise UserDoesntExistsException

@@ -1,9 +1,9 @@
 import logging
 
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import ORJSONResponse
+from fastapi.responses import ORJSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
 from api.v1 import department, employee, position, auth, pages, uploader
@@ -24,6 +24,7 @@ from admin import c_instance_logbook as admin_c_instance_logbook
 from admin import key_document as admin_key_document
 from admin import dashboard as admin_dashboard
 from core import config
+from core.exceptions import TokenDoesntExistsException, UserDoesntExistsException
 from core.logger import LOGGING
 from db.connection import db
 
@@ -117,6 +118,17 @@ def greet(who: str):
 @app.get("/hi2")
 def greet2(who: str):
     return f"Hello? {who}?"
+
+
+@app.exception_handler(TokenDoesntExistsException)
+async def unicorn_exception_handler(
+    request: Request,
+    exc: TokenDoesntExistsException
+):
+    return RedirectResponse(
+        request.url_for("login"),
+        # status_code=exc.status_code
+    )
 
 
 if __name__ == "__main__":
