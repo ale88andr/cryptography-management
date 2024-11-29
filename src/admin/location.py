@@ -1,5 +1,5 @@
 from typing import Optional
-from fastapi import APIRouter, Request, responses, status
+from fastapi import APIRouter, Request, Depends, responses, status
 
 from admin.constants import (
     LOC_ADD_PAGE_HEADER,
@@ -9,6 +9,8 @@ from admin.constants import (
 )
 from core.config import templates
 from core.utils import add_breadcrumb
+from dependencies.auth import get_current_admin
+from models.users import User
 from services.building import BuildingServise
 from services.location import LocationServise
 
@@ -28,6 +30,7 @@ async def get_locations_admin(
     sort: Optional[str] = None,
     q: Optional[str] = None,
     filter_building_id: Optional[int] = None,
+    user: User = Depends(get_current_admin)
 ):
     filters = {}
     if filter_building_id and filter_building_id > 0:
@@ -54,12 +57,13 @@ async def get_locations_admin(
                     router, LOC_INDEX_PAGE_HEADER, "get_locations_admin", True
                 )
             ],
+            "user": user
         },
     )
 
 
 @router.get("/add")
-async def add_location_admin(request: Request):
+async def add_location_admin(request: Request, user: User = Depends(get_current_admin)):
     buildings = await BuildingServise.all()
     return templates.TemplateResponse(
         form_teplate,
@@ -72,12 +76,13 @@ async def add_location_admin(request: Request):
                 add_breadcrumb(router, LOC_INDEX_PAGE_HEADER, "get_locations_admin"),
                 add_breadcrumb(router, LOC_ADD_PAGE_HEADER, "add_location_admin", True),
             ],
+            "user": user
         },
     )
 
 
 @router.post("/add")
-async def create_loc_admin(request: Request):
+async def create_loc_admin(request: Request, user: User = Depends(get_current_admin)):
     form = LocationForm(request)
     await form.load_data()
     if await form.is_valid():
@@ -98,13 +103,14 @@ async def create_loc_admin(request: Request):
         "page_header_text": LOC_ADD_PAGE_HEADER,
         "page_header_help_text": LOC_HELP_TEXT,
         "buildings": await BuildingServise.all(),
+        "user": user
     }
     context.update(form.__dict__)
     return templates.TemplateResponse(form_teplate, context)
 
 
 @router.get("/{location_id}/edit")
-async def edit_location_admin(location_id: int, request: Request):
+async def edit_location_admin(location_id: int, request: Request, user: User = Depends(get_current_admin)):
     loc = await LocationServise.get_by_id(location_id)
     buildings = await BuildingServise.all()
     return templates.TemplateResponse(
@@ -122,12 +128,13 @@ async def edit_location_admin(location_id: int, request: Request):
                     router, LOC_EDIT_PAGE_HEADER, "edit_locations_admin", True
                 ),
             ],
+            "user": user
         },
     )
 
 
 @router.post("/{location_id}/edit")
-async def update_location_admin(location_id: int, request: Request):
+async def update_location_admin(location_id: int, request: Request, user: User = Depends(get_current_admin)):
     form = LocationForm(request)
     await form.load_data()
     if await form.is_valid():
@@ -148,13 +155,14 @@ async def update_location_admin(location_id: int, request: Request):
         "page_header_text": LOC_EDIT_PAGE_HEADER,
         "page_header_help_text": LOC_HELP_TEXT,
         "buildings": await BuildingServise.all(),
+        "user": user
     }
     context.update(form.__dict__)
     return templates.TemplateResponse(form_teplate, context)
 
 
 @router.get("/{location_id}/delete")
-async def delete_location_admin(location_id: int, request: Request):
+async def delete_location_admin(location_id: int, request: Request, user: User = Depends(get_current_admin)):
     redirect_url = request.url_for("get_locations_admin")
     redirect_code = status.HTTP_307_TEMPORARY_REDIRECT
     try:

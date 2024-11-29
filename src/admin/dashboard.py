@@ -10,7 +10,7 @@ from admin.constants import (
 )
 from core.config import templates
 from core.utils import create_breadcrumbs
-from dependencies.auth import get_current_user
+from dependencies.auth import get_current_admin, get_current_user
 from models.users import User
 from services.c_action import CActionServise
 from services.key_carrier import KeyCarrierServise
@@ -35,7 +35,7 @@ async def get_dashboard_admin(
     q: Optional[str] = None,
     filter_model_id: Optional[int] = None,
     filter_grade: Optional[int] = None,
-    user: User = Depends(get_current_user)
+    user: User = Depends(get_current_admin)
 ):
     latest_users, total_users = await EmployeeServise.latest_cryptography_users(limit=5)
     latest_logbook = await KeyDocumentServise.latest(limit=10)
@@ -99,7 +99,7 @@ async def get_dashboard_admin(
 
 
 @router.get("/me")
-async def profile(request: Request, user: User = Depends(get_current_user)):
+async def profile(request: Request, user: User = Depends(get_current_admin)):
     return templates.TemplateResponse(
         profile_template,
         {

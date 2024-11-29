@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request, responses, status
+from fastapi import APIRouter, Request, Depends, responses, status
 
 from admin.constants import (
     BUILD_ADD_PAGE_HEADER,
@@ -8,6 +8,8 @@ from admin.constants import (
 )
 from core.config import templates
 from core.utils import add_breadcrumb
+from dependencies.auth import get_current_admin
+from models.users import User
 from services.building import BuildingServise
 
 
@@ -20,7 +22,7 @@ router = APIRouter(prefix=app_prefix, tags=[BUILD_HELP_TEXT])
 
 # ========= Buildings =========
 @router.get("/")
-async def get_buildings_admin(request: Request, msg: str = None):
+async def get_buildings_admin(request: Request, msg: str = None, user: User = Depends(get_current_admin)):
     records = await BuildingServise.all()
     return templates.TemplateResponse(
         list_teplate,
@@ -36,12 +38,13 @@ async def get_buildings_admin(request: Request, msg: str = None):
                     router, BUILD_INDEX_PAGE_HEADER, "get_buildings_admin", True
                 ),
             ],
+            "user": user
         },
     )
 
 
 @router.get("/add")
-async def add_building_admin(request: Request):
+async def add_building_admin(request: Request, user: User = Depends(get_current_admin)):
     return templates.TemplateResponse(
         form_teplate,
         context={
@@ -54,15 +57,17 @@ async def add_building_admin(request: Request):
                     router, BUILD_ADD_PAGE_HEADER, "add_buildings_admin", True
                 ),
             ],
+            "user": user
         },
     )
 
 
 @router.post("/add")
-async def create_building_admin(request: Request):
+async def create_building_admin(request: Request, user: User = Depends(get_current_admin)):
     context = {
         "page_header": BUILD_ADD_PAGE_HEADER,
         "page_header_help": BUILD_HELP_TEXT,
+        "user": user
     }
     form = BuildingForm(request)
     await form.load_data()
@@ -89,7 +94,7 @@ async def create_building_admin(request: Request):
 
 
 @router.get("/{building_id}/edit")
-async def edit_building_admin(building_id: int, request: Request):
+async def edit_building_admin(building_id: int, request: Request, user: User = Depends(get_current_admin)):
     organisation = await BuildingServise.get_one_or_none(id=building_id)
     return templates.TemplateResponse(
         form_teplate,
@@ -108,15 +113,17 @@ async def edit_building_admin(building_id: int, request: Request):
                     router, BUILD_EDIT_PAGE_HEADER, "edit_building_admin", True
                 ),
             ],
+            "user": user
         },
     )
 
 
 @router.post("/{building_id}/edit")
-async def update_building_admin(building_id: int, request: Request):
+async def update_building_admin(building_id: int, request: Request, user: User = Depends(get_current_admin)):
     context = {
         "page_header": BUILD_EDIT_PAGE_HEADER,
         "page_header_help": BUILD_HELP_TEXT,
+        "user": user
     }
     form = BuildingForm(request)
     await form.load_data()
@@ -144,7 +151,7 @@ async def update_building_admin(building_id: int, request: Request):
 
 
 @router.get("/{building_id}/delete")
-async def delete_building_admin(building_id: int, request: Request):
+async def delete_building_admin(building_id: int, request: Request, user: User = Depends(get_current_admin)):
     redirect_url = request.url_for("get_buildings_admin")
     try:
         await BuildingServise.delete(building_id)

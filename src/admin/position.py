@@ -1,8 +1,10 @@
 from typing import Optional
-from fastapi import APIRouter, Request, responses, status
+from fastapi import APIRouter, Request, Depends, responses, status
 
 from core.config import templates
 from core.utils import add_breadcrumb
+from dependencies.auth import get_current_admin
+from models.users import User
 from services.position import PositionServise
 
 
@@ -22,6 +24,7 @@ async def get_positions_admin(
     q: Optional[str] = None,
     columns: str = None,
     is_leadership: Optional[str] = None,
+    user: User = Depends(get_current_admin)
 ):
     page_header_text = "Должности сотрудников"
     page_header_help_text = "Администрирование должностей сотрудников"
@@ -50,12 +53,13 @@ async def get_positions_admin(
                     router, page_header_text, "get_positions_admin", is_active=True
                 )
             ],
+            "user": user
         },
     )
 
 
 @router.get("/positions/add")
-async def add_position_admin(request: Request):
+async def add_position_admin(request: Request, user: User = Depends(get_current_admin)):
     page_header_text = "Добавление должности"
     page_header_help_text = "Администрирование должностей сотрудников"
     return templates.TemplateResponse(
@@ -70,15 +74,17 @@ async def add_position_admin(request: Request):
                     router, page_header_text, "add_position_admin", is_active=True
                 ),
             ],
+            "user": user
         },
     )
 
 
 @router.post("/positions/add")
-async def create_position_admin(request: Request):
+async def create_position_admin(request: Request, user: User = Depends(get_current_admin)):
     context = {
         "page_header_text": "Добавление должности",
         "page_header_help_text": "Администрирование должностей сотрудников",
+        "user": user
     }
     form = PositionForm(request)
     await form.load_data()
@@ -102,7 +108,7 @@ async def create_position_admin(request: Request):
 
 
 @router.get("/positions/{position_id}/edit")
-async def edit_position_admin(position_id: int, request: Request):
+async def edit_position_admin(position_id: int, request: Request, user: User = Depends(get_current_admin)):
     page_header_text = "Редактирование должности"
     page_header_help_text = "Администрирование должностей сотрудников"
     position = await PositionServise.get_by_id(position_id)
@@ -120,15 +126,17 @@ async def edit_position_admin(position_id: int, request: Request):
                     router, page_header_text, "edit_position_admin", is_active=True
                 ),
             ],
+            "user": user
         },
     )
 
 
 @router.post("/positions/{position_id}/edit")
-async def update_position_admin(position_id: int, request: Request):
+async def update_position_admin(position_id: int, request: Request, user: User = Depends(get_current_admin)):
     context = {
         "page_header_text": "Редактирование должности",
         "page_header_help_text": "Администрирование должностей сотрудников",
+        "user": user
     }
     form = PositionForm(request)
     await form.load_data()
@@ -151,7 +159,7 @@ async def update_position_admin(position_id: int, request: Request):
 
 
 @router.get("/positions/{position_id}/delete")
-async def delete_position_admin(position_id: int, request: Request):
+async def delete_position_admin(position_id: int, request: Request, user: User = Depends(get_current_admin)):
     redirect_url = request.url_for("get_positions_admin")
     try:
         await PositionServise.delete(model_id=position_id)

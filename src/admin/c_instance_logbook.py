@@ -1,7 +1,6 @@
 from dataclasses import asdict
-from datetime import datetime
 from typing import Optional
-from fastapi import APIRouter, Request, responses, status
+from fastapi import APIRouter, Request, Depends, responses, status
 
 from admin.constants import (
     CILOG_HELP_TEXT as hepl_text,
@@ -16,7 +15,9 @@ from core.templater import (
     UninstallKeyActDocumentContext,
 )
 from core.utils import create_breadcrumbs, create_file_response
+from dependencies.auth import get_current_admin
 from forms.c_instance_logbook import CInstanceLogbookAdd
+from models.users import User
 from services.c_instance_logbook import CInstanceLogbookServise
 from services.c_version import CVersionServise
 from services.employee import EmployeeServise
@@ -44,6 +45,7 @@ async def get_cilogbook_admin(
     q: Optional[str] = None,
     filter_model_id: Optional[int] = None,
     filter_grade: Optional[int] = None,
+    user: User = Depends(get_current_admin)
 ):
     # filters = {}
 
@@ -78,12 +80,13 @@ async def get_cilogbook_admin(
         "breadcrumbs": create_breadcrumbs(
             router, [index_page_header], ["get_clogbook_admin"]
         ),
+        "user": user,
     }
     return templates.TemplateResponse(list_teplate, context)
 
 
 @router.get("/add")
-async def add_cilogbook_admin(request: Request):
+async def add_cilogbook_admin(request: Request, user: User = Depends(get_current_admin)):
     versions = await CVersionServise.all_used()
     equipments = await EquipmentServise.all()
     employees = await EmployeeServise.all()
@@ -106,12 +109,13 @@ async def add_cilogbook_admin(request: Request):
             [index_page_header, add_page_header],
             ["get_cilogbook_admin", "add_cilogbook_admin"],
         ),
+        "user": user,
     }
     return templates.TemplateResponse(form_teplate, context)
 
 
 @router.post("/add")
-async def create_cilogbook_admin(request: Request):
+async def create_cilogbook_admin(request: Request, user: User = Depends(get_current_admin)):
     form = CInstanceLogbookAdd(request)
     await form.load_data()
     if await form.is_valid():
@@ -149,6 +153,7 @@ async def create_cilogbook_admin(request: Request):
             [index_page_header, add_page_header],
             ["get_cilogbook_admin", "add_cilogbook_admin"],
         ),
+        "user": user,
     }
     context.update(form.__dict__)
     context.update(form.fields)
@@ -156,7 +161,7 @@ async def create_cilogbook_admin(request: Request):
 
 
 @router.get("/{record_id}/delete")
-async def delete_clogbook_admin(record_id: int, request: Request):
+async def delete_clogbook_admin(record_id: int, request: Request, user: User = Depends(get_current_admin)):
     redirect_url = request.url_for("get_clogbook_admin")
     redirect_code = status.HTTP_307_TEMPORARY_REDIRECT
     try:
@@ -169,7 +174,7 @@ async def delete_clogbook_admin(record_id: int, request: Request):
 
 
 @router.get("/{key_id}/install/doc")
-async def download_instance_creation_act_admin(key_id: int, request: Request):
+async def download_instance_creation_act_admin(key_id: int, request: Request, user: User = Depends(get_current_admin)):
     key = await KeyDocumentServise.get_by_id(key_id)
     _, month, year = get_date_tuple(key.install_act.action_date)
 
@@ -208,7 +213,7 @@ async def download_instance_creation_act_admin(key_id: int, request: Request):
 
 
 @router.get("/{key_id}/distruction/doc")
-async def download_instance_destruction_act_admin(key_id: int, request: Request):
+async def download_instance_destruction_act_admin(key_id: int, request: Request, user: User = Depends(get_current_admin)):
     key = await KeyDocumentServise.get_by_id(key_id)
 
     _, month, year = get_date_tuple(key.remove_act.action_date)
@@ -248,7 +253,7 @@ async def download_instance_destruction_act_admin(key_id: int, request: Request)
 
 
 @router.get("/doc")
-async def download_cilogbook_admin(request: Request):
+async def download_cilogbook_admin(request: Request, user: User = Depends(get_current_admin)):
     objects, _ = await CInstanceLogbookServise.all()
 
     return create_file_response(

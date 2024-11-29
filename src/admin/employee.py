@@ -1,5 +1,5 @@
 from typing import Optional
-from fastapi import APIRouter, Request, responses, status
+from fastapi import APIRouter, Request, Depends, responses, status
 
 from admin.constants import (
     EMP_ADD_PAGE_HEADER as add_page_header,
@@ -11,6 +11,8 @@ from admin.constants import (
 from core.config import templates
 from core.utils import create_breadcrumbs, create_file_response
 from core.templater import LogbookTemplatesEnum
+from dependencies.auth import get_current_admin
+from models.users import User
 from services.c_version import CVersionServise
 from services.department import DepartmentServise
 from services.employee import EmployeeServise
@@ -43,6 +45,7 @@ async def get_employees_admin(
     filter_position: Optional[int] = None,
     filter_department: Optional[int] = None,
     filter_location: Optional[int] = None,
+    user: User = Depends(get_current_admin)
 ):
     filters = {}
 
@@ -88,6 +91,7 @@ async def get_employees_admin(
             "breadcrumbs": create_breadcrumbs(
                 router, [index_page_header], ["get_employees_admin"]
             ),
+            "user": user
         },
     )
 
@@ -99,6 +103,7 @@ async def get_cusers_admin(
     sort: Optional[str] = None,
     filter_version: Optional[int] = None,
     filter_department: Optional[int] = None,
+    user: User = Depends(get_current_admin)
 ):
     filters = {}
 
@@ -132,12 +137,13 @@ async def get_cusers_admin(
             "breadcrumbs": create_breadcrumbs(
                 router, [index_cusers_page_header], ["get_employees_admin"]
             ),
+            "user": user
         },
     )
 
 
 @router.get("/add")
-async def add_employee_admin(request: Request):
+async def add_employee_admin(request: Request, user: User = Depends(get_current_admin)):
     departments, _ = await DepartmentServise.all()
     positions, _ = await PositionServise.all()
     locations, _ = await LocationServise.all(sort="name")
@@ -158,12 +164,13 @@ async def add_employee_admin(request: Request):
                 [index_page_header, add_page_header],
                 ["get_employees_admin", "add_employee_admin"],
             ),
+            "user": user
         },
     )
 
 
 @router.post("/add")
-async def create_employee_admin(request: Request):
+async def create_employee_admin(request: Request, user: User = Depends(get_current_admin)):
     organisation = await OrganisationServise.all()
     form = EmployeeForm(request)
     await form.load_data()
@@ -201,6 +208,7 @@ async def create_employee_admin(request: Request):
             [index_page_header, add_page_header],
             ["get_employees_admin", "add_employee_admin"],
         ),
+        "user": user
     }
     context.update(form.__dict__)
     context.update(form.fields)
@@ -208,7 +216,7 @@ async def create_employee_admin(request: Request):
 
 
 @router.get("/{employee_id}")
-async def detail_employee_admin(employee_id: int, request: Request):
+async def detail_employee_admin(employee_id: int, request: Request, user: User = Depends(get_current_admin)):
     employee = await EmployeeServise.get_by_id(employee_id)
     return templates.TemplateResponse(
         detail_teplate,
@@ -223,12 +231,13 @@ async def detail_employee_admin(employee_id: int, request: Request):
                 [index_page_header, employee.short_name],
                 ["get_employees_admin", "detail_employee_admin"],
             ),
+            "user": user
         },
     )
 
 
 @router.get("/{employee_id}/edit")
-async def edit_employee_admin(employee_id: int, request: Request):
+async def edit_employee_admin(employee_id: int, request: Request, user: User = Depends(get_current_admin)):
     emp = await EmployeeServise.get_by_id(employee_id)
     departments, _ = await DepartmentServise.all()
     positions, _ = await PositionServise.all()
@@ -260,12 +269,13 @@ async def edit_employee_admin(employee_id: int, request: Request):
                 [index_page_header, edit_page_header],
                 ["get_employees_admin", "edit_employee_admin"],
             ),
+            "user": user
         },
     )
 
 
 @router.post("/{employee_id}/edit")
-async def update_employee_admin(employee_id: int, request: Request):
+async def update_employee_admin(employee_id: int, request: Request, user: User = Depends(get_current_admin)):
     form = EmployeeForm(request, is_create=False)
     await form.load_data()
     if await form.is_valid():
@@ -300,6 +310,7 @@ async def update_employee_admin(employee_id: int, request: Request):
         "positions": positions,
         "locations": locations,
         "organisation": organisation,
+        "user": user
     }
     context.update(form.__dict__)
     context.update(form.fields)
@@ -307,7 +318,7 @@ async def update_employee_admin(employee_id: int, request: Request):
 
 
 @router.get("/{employee_id}/personal-account/doc")
-async def download_personal_account_admin(employee_id: int, request: Request):
+async def download_personal_account_admin(employee_id: int, request: Request, user: User = Depends(get_current_admin)):
     employee = await EmployeeServise.get_by_id(employee_id)
     items, _ = await EmployeePersonalAccountService.get_by_user(employee_id)
 
@@ -319,7 +330,7 @@ async def download_personal_account_admin(employee_id: int, request: Request):
 
 
 @router.get("/cryptography/doc")
-async def download_cusers_admin(request: Request):
+async def download_cusers_admin(request: Request, user: User = Depends(get_current_admin)):
     items, _ = await EmployeeServise.cryptography_users()
 
     return create_file_response(

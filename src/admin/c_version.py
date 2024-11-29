@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Optional
-from fastapi import APIRouter, Request, responses, status
+from fastapi import APIRouter, Request, Depends, responses, status
 
 from admin.constants import (
     VER_ADD_PAGE_HEADER as add_page_header,
@@ -11,14 +11,15 @@ from admin.constants import (
 )
 from core.config import templates
 from core.utils import create_breadcrumbs
+from dependencies.auth import get_current_admin
 from forms.c_version import CVersionForm
 from forms.c_version_decommissioning import CVersionDecommissioningForm
 from services.c_version import CVersionServise
 from services.c_model import CModelServise
 from services.c_logbook import CLogbookServise
-from services.c_action import CActionServise
 from services.employee import EmployeeServise
 from models.cryptography import CPRODUCT_GRADES, CryptographyGrade
+from models.users import User
 from core.exceptions import LogbookOnDeleteException
 from utils.formatting import format_date, format_string
 
@@ -40,6 +41,7 @@ async def get_cversions_admin(
     q: Optional[str] = None,
     filter_model_id: Optional[int] = None,
     filter_grade: Optional[int] = None,
+    user: User = Depends(get_current_admin)
 ):
     filters = {}
 
@@ -68,12 +70,13 @@ async def get_cversions_admin(
         "breadcrumbs": create_breadcrumbs(
             router, [index_page_header], ["get_cversions_admin"]
         ),
+        "user": user,
     }
     return templates.TemplateResponse(list_teplate, context)
 
 
 @router.get("/add")
-async def add_cversion_admin(request: Request):
+async def add_cversion_admin(request: Request, user: User = Depends(get_current_admin)):
     models, _ = await CModelServise.all()
     responsible_users = await EmployeeServise.security_staff_members()
     context = {
@@ -91,12 +94,13 @@ async def add_cversion_admin(request: Request):
             [index_page_header, add_page_header],
             ["get_cversions_admin", "add_cversion_admin"],
         ),
+        "user": user,
     }
     return templates.TemplateResponse(form_teplate, context)
 
 
 @router.post("/add")
-async def create_cversion_admin(request: Request):
+async def create_cversion_admin(request: Request, user: User = Depends(get_current_admin)):
     form = CVersionForm(request)
     await form.load_data()
     if await form.is_valid():
@@ -142,6 +146,7 @@ async def create_cversion_admin(request: Request):
             [index_page_header, add_page_header],
             ["get_cversions_admin", "add_cversion_admin"],
         ),
+        "user": user,
     }
     context.update(form.__dict__)
     context.update(form.fields)
@@ -149,7 +154,7 @@ async def create_cversion_admin(request: Request):
 
 
 @router.get("/{cversion_id}/edit")
-async def edit_cversion_admin(cversion_id: int, request: Request):
+async def edit_cversion_admin(cversion_id: int, request: Request, user: User = Depends(get_current_admin)):
     obj = await CVersionServise.get_by_id(cversion_id)
     responsible_users = await EmployeeServise.security_staff_members()
     models, _ = await CModelServise.all()
@@ -166,13 +171,14 @@ async def edit_cversion_admin(cversion_id: int, request: Request):
             [index_page_header, edit_page_header],
             ["get_cversions_admin", "add_cversion_admin"],
         ),
+        "user": user,
     }
     context.update(obj.__dict__)
     return templates.TemplateResponse(form_teplate, context)
 
 
 @router.post("/{cversion_id}/edit")
-async def update_cversion_admin(cversion_id: int, request: Request):
+async def update_cversion_admin(cversion_id: int, request: Request, user: User = Depends(get_current_admin)):
     form = CVersionForm(request, is_create=False)
     await form.load_data()
     if await form.is_valid():
@@ -216,6 +222,7 @@ async def update_cversion_admin(cversion_id: int, request: Request):
             [index_page_header, edit_page_header],
             ["get_cversions_admin", "add_cversion_admin"],
         ),
+        "user": user,
     }
     context.update(form.__dict__)
     context.update(form.fields)
@@ -223,7 +230,7 @@ async def update_cversion_admin(cversion_id: int, request: Request):
 
 
 @router.get("/{cversion_id}/decommissioning")
-async def decommissioning_cversion_admin(cversion_id: int, request: Request):
+async def decommissioning_cversion_admin(cversion_id: int, request: Request, user: User = Depends(get_current_admin)):
     performers = await EmployeeServise.security_staff_members()
     context = {
         "request": request,
@@ -238,12 +245,13 @@ async def decommissioning_cversion_admin(cversion_id: int, request: Request):
             [index_page_header, decommissioning_page_header],
             ["get_cversions_admin", "decommissioning_cversion_admin"],
         ),
+        "user": user,
     }
     return templates.TemplateResponse(decommissioning_form_template, context)
 
 
 @router.post("/{cversion_id}/decommissioning")
-async def set_decommissioning_cversion_admin(cversion_id: int, request: Request):
+async def set_decommissioning_cversion_admin(cversion_id: int, request: Request, user: User = Depends(get_current_admin)):
     version = await CVersionServise.get_by_id(cversion_id)
     form = CVersionDecommissioningForm(request, is_create=False)
     await form.load_data()
@@ -278,6 +286,7 @@ async def set_decommissioning_cversion_admin(cversion_id: int, request: Request)
             [index_page_header, decommissioning_page_header],
             ["get_cversions_admin", "decommissioning_cversion_admin"],
         ),
+        "user": user,
     }
     context.update(form.__dict__)
     context.update(form.fields)
@@ -285,7 +294,7 @@ async def set_decommissioning_cversion_admin(cversion_id: int, request: Request)
 
 
 @router.get("/{cversion_id}/delete")
-async def delete_cversion_admin(cversion_id: int, request: Request):
+async def delete_cversion_admin(cversion_id: int, request: Request, user: User = Depends(get_current_admin)):
     redirect_url = request.url_for("get_cversions_admin")
     redirect_code = status.HTTP_303_SEE_OTHER
     try:

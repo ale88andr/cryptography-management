@@ -1,5 +1,5 @@
 from typing import Optional
-from fastapi import APIRouter, Request, responses, status
+from fastapi import APIRouter, Request, Depends, responses, status
 
 from admin.constants import (
     CTYPES_ADD_PAGE_HEADER,
@@ -10,6 +10,8 @@ from admin.constants import (
 )
 from core.config import templates
 from core.utils import add_breadcrumb
+from dependencies.auth import get_current_admin
+from models.users import User
 from services.carrier_types import CarrierTypesServise
 
 
@@ -27,6 +29,7 @@ async def get_ctypes_admin(
     msg: str = None,
     sort: Optional[str] = None,
     q: Optional[str] = None,
+    user: User = Depends(get_current_admin)
 ):
     records, counter = await CarrierTypesServise.all(sort=sort, q=q)
     return templates.TemplateResponse(
@@ -48,12 +51,13 @@ async def get_ctypes_admin(
                     is_active=True,
                 )
             ],
+            "user": user,
         },
     )
 
 
 @router.get("/add")
-async def add_ctype_admin(request: Request):
+async def add_ctype_admin(request: Request, user: User = Depends(get_current_admin)):
     return templates.TemplateResponse(
         form_teplate,
         context={
@@ -66,12 +70,13 @@ async def add_ctype_admin(request: Request):
                     router, CTYPES_ADD_PAGE_HEADER, "add_ctype_admin", is_active=True
                 ),
             ],
+            "user": user,
         },
     )
 
 
 @router.post("/add")
-async def create_ctype_admin(request: Request):
+async def create_ctype_admin(request: Request, user: User = Depends(get_current_admin)):
     form = CtypeForm(request)
     await form.load_data()
     if await form.is_valid():
@@ -89,13 +94,14 @@ async def create_ctype_admin(request: Request):
     context = {
         "page_header_text": CTYPES_ADD_PAGE_HEADER,
         "page_header_help_text": CTYPES_HELP_TEXT,
+        "user": user,
     }
     context.update(form.__dict__)
     return templates.TemplateResponse(form_teplate, context)
 
 
 @router.get("/{ctype_id}/edit")
-async def edit_ctype_admin(ctype_id: int, request: Request):
+async def edit_ctype_admin(ctype_id: int, request: Request, user: User = Depends(get_current_admin)):
     obj = await CarrierTypesServise.get_by_id(ctype_id)
     return templates.TemplateResponse(
         form_teplate,
@@ -110,12 +116,13 @@ async def edit_ctype_admin(ctype_id: int, request: Request):
                     router, CTYPES_EDIT_PAGE_HEADER, "edit_ctype_admin", is_active=True
                 ),
             ],
+            "user": user,
         },
     )
 
 
 @router.post("/{ctype_id}/edit")
-async def update_ctype_admin(ctype_id: int, request: Request):
+async def update_ctype_admin(ctype_id: int, request: Request, user: User = Depends(get_current_admin)):
     form = CtypeForm(request)
     await form.load_data()
     if await form.is_valid():
@@ -136,13 +143,14 @@ async def update_ctype_admin(ctype_id: int, request: Request):
     context = {
         "page_header_text": CTYPES_EDIT_PAGE_HEADER,
         "page_header_help_text": CTYPES_HELP_TEXT,
+        "user": user,
     }
     context.update(form.__dict__)
     return templates.TemplateResponse(form_teplate, context)
 
 
 @router.get("/{ctype_id}/delete")
-async def delete_ctype_admin(ctype_id: int, request: Request):
+async def delete_ctype_admin(ctype_id: int, request: Request, user: User = Depends(get_current_admin)):
     redirect_url = request.url_for("get_ctypes_admin")
     redirect_code = status.HTTP_307_TEMPORARY_REDIRECT
     try:

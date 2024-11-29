@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request, responses, status
+from fastapi import APIRouter, Request, Depends, responses, status
 
 from admin.constants import (
     ORG_ADD_HEADER,
@@ -8,6 +8,8 @@ from admin.constants import (
 )
 from core.config import templates
 from core.utils import add_breadcrumb
+from dependencies.auth import get_current_admin
+from models.users import User
 from services.organisation import OrganisationServise
 
 
@@ -20,7 +22,7 @@ router = APIRouter(prefix=app_prefix, tags=[OGR_HELP_TEXT])
 
 # ========= Organisations =========
 @router.get("/")
-async def get_organisation_admin(request: Request):
+async def get_organisation_admin(request: Request, user: User = Depends(get_current_admin)):
     organisation = await OrganisationServise.all()
     if not organisation:
         return responses.RedirectResponse(
@@ -43,12 +45,13 @@ async def get_organisation_admin(request: Request):
                     is_active=True,
                 ),
             ],
+            "user": user
         },
     )
 
 
 @router.get("/add")
-async def add_organisation_admin(request: Request):
+async def add_organisation_admin(request: Request, user: User = Depends(get_current_admin)):
     return templates.TemplateResponse(
         form_teplate,
         context={
@@ -59,15 +62,17 @@ async def add_organisation_admin(request: Request):
                 add_breadcrumb(router, ORG_INDEX_PAGE_HEADER, "get_organisation_admin"),
                 add_breadcrumb(router, ORG_ADD_HEADER, "add_organisation_admin", True),
             ],
+            "user": user
         },
     )
 
 
 @router.post("/add")
-async def create_organisation_admin(request: Request):
+async def create_organisation_admin(request: Request, user: User = Depends(get_current_admin)):
     context = {
         "page_header": "Добавление должности",
         "page_header_help": "Администрирование должностей сотрудников",
+        "user": user
     }
     form = OrganisationForm(request)
     await form.load_data()
@@ -99,7 +104,7 @@ async def create_organisation_admin(request: Request):
 
 
 @router.get("/{organisation_id}/edit")
-async def edit_organisation_admin(organisation_id: int, request: Request):
+async def edit_organisation_admin(organisation_id: int, request: Request, user: User = Depends(get_current_admin)):
     organisation = await OrganisationServise.get_one_or_none(id=organisation_id)
     return templates.TemplateResponse(
         form_teplate,
@@ -120,15 +125,17 @@ async def edit_organisation_admin(organisation_id: int, request: Request):
                     router, ORG_EDIT_HEADER, "edit_organisation_admin", True
                 ),
             ],
+            "user": user
         },
     )
 
 
 @router.post("/{organisation_id}/edit")
-async def update_organisation_admin(organisation_id: int, request: Request):
+async def update_organisation_admin(organisation_id: int, request: Request, user: User = Depends(get_current_admin)):
     context = {
         "page_header": ORG_EDIT_HEADER,
         "page_header_help": OGR_HELP_TEXT,
+        "user": user
     }
     form = OrganisationForm(request)
     await form.load_data()

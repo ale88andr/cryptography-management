@@ -23,6 +23,9 @@
                                 class="img-fluid my-5"
                                 style="width: 100px;"
                             />
+                            {% if user.employee %}
+                                <h3 class="text-light">{{ user.employee }}</h3>
+                            {% endif %}
                             <h5>{{ user.email }}</h5>
                             <p><span class="badge bg-light mb-4">{% if user.is_admin %}Администратор{%else%}Пользователь{%endif%}</span></p>
                         </div>
@@ -32,8 +35,8 @@
                                     <h6 class="lead fw-normal mb-0">Профиль сотрудника</h6>
                                     {% if user.employee_id %}
                                         <p class="mb-0 text-muted">
-                                            <a href="{{ url_for('detail_employee_admin', employee_id=user.employee_id) }}" class="btn btn-info mt-2">
-                                                <i class="bi bi-person-dash"></i> Перейти в профиль
+                                            <a href="{{ url_for('detail_employee_admin', employee_id=user.employee_id) }}" class="btn btn-outline-dark mt-3">
+                                                <i class="bi bi-person-bounding-box me-1"></i> Перейти в профиль
                                             </a>
                                         </p>
                                     {% else %}

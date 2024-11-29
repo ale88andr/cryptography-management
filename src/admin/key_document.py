@@ -1,5 +1,5 @@
 from typing import Optional
-from fastapi import APIRouter, Request, responses, status
+from fastapi import APIRouter, Request, Depends, responses, status
 
 from admin.constants import (
     KD_HELP_TEXT as hepl_text,
@@ -9,6 +9,7 @@ from admin.constants import (
 )
 from core.config import templates
 from core.utils import create_breadcrumbs
+from dependencies.auth import get_current_admin
 from forms.destruction import DestructionForm
 from models.logbook import ActRecordTypes
 from services.c_action import CActionServise
@@ -18,6 +19,7 @@ from services.carrier_types import CarrierTypesServise
 from services.employee import EmployeeServise
 from models.cryptography import CRYPTO_MODEL_TYPES
 from models.cryptography import CPRODUCT_GRADES
+from models.users import User
 from utils.formatting import format_date
 
 app_prefix = "/admin/cryptography/keys"
@@ -42,6 +44,7 @@ async def get_key_documents_admin(
     filter_type_id: Optional[int] = None,
     filter_owner_id: Optional[int] = None,
     status: Optional[str] = None,
+    user: User = Depends(get_current_admin)
 ):
     filters = {}
     if filter_type_id and filter_type_id > 0:
@@ -92,13 +95,14 @@ async def get_key_documents_admin(
         "breadcrumbs": create_breadcrumbs(
             router, [index_page_header], ["get_cversions_admin"]
         ),
+        "user": user
     }
 
     return templates.TemplateResponse(list_teplate, context)
 
 
 @router.get("/{pk}")
-async def detail_key_document_admin(pk: int, request: Request):
+async def detail_key_document_admin(pk: int, request: Request, user: User = Depends(get_current_admin)):
     key = await KeyDocumentServise.get_by_id(pk)
     context = {
         "request": request,
@@ -112,12 +116,13 @@ async def detail_key_document_admin(pk: int, request: Request):
             [index_page_header, key.serial],
             ["get_key_documents_admin", "detail_key_document_admin"],
         ),
+        "user": user
     }
     return templates.TemplateResponse(detail_tepmlate, context)
 
 
 @router.get("/{pk}/destruction")
-async def destruction_key_document_admin(pk: int, request: Request):
+async def destruction_key_document_admin(pk: int, request: Request, user: User = Depends(get_current_admin)):
     key = await KeyDocumentServise.get_by_id(pk)
     security_staff_members = await EmployeeServise.security_staff_members()
     context = {
@@ -134,12 +139,13 @@ async def destruction_key_document_admin(pk: int, request: Request):
             [index_page_header, destruction_page_header],
             ["get_key_documents_admin", "destruction_key_document_admin"],
         ),
+        "user": user
     }
     return templates.TemplateResponse(destruction_tepmlate, context)
 
 
 @router.post("/{pk}/destruction")
-async def destruct_key_document_admin(pk: int, request: Request):
+async def destruct_key_document_admin(pk: int, request: Request, user: User = Depends(get_current_admin)):
     key = await KeyDocumentServise.get_by_id(pk)
     form = DestructionForm(request, is_create=False)
     await form.load_data()
@@ -185,6 +191,7 @@ async def destruct_key_document_admin(pk: int, request: Request):
             [index_page_header, destruction_page_header],
             ["get_key_documents_admin", "decommissioning_cversion_admin"],
         ),
+        "user": user
     }
     context.update(form.__dict__)
     context.update(form.fields)
@@ -192,7 +199,7 @@ async def destruct_key_document_admin(pk: int, request: Request):
 
 
 @router.get("/{pk}/c_destruction")
-async def destruct_employee_cversion_admin(pk: int, request: Request):
+async def destruct_employee_cversion_admin(pk: int, request: Request, user: User = Depends(get_current_admin)):
     key = await KeyDocumentServise.get_by_id(pk)
     responsible_user_cryptography_keys, _ = await KeyDocumentServise.all(
         filters={
@@ -217,18 +224,20 @@ async def destruct_employee_cversion_admin(pk: int, request: Request):
             [index_page_header, c_destruction_page_header],
             ["get_key_documents_admin", "destruct_employee_cversion_admin"],
         ),
+        "user": user
     }
     return templates.TemplateResponse(c_destruction_tepmlate, context)
 
 
 @router.post("/{pk}/c_destruction")
-async def destruct_key_cversion_admin(pk: int, request: Request):
+async def destruct_key_cversion_admin(pk: int, request: Request, user: User = Depends(get_current_admin)):
     key = await KeyDocumentServise.get_by_id(pk)
     user_cryptography_keys, _ = await KeyDocumentServise.all(
         filters={
             "owner_id": key.owner_id,
             "cryptography_version_id": key.cryptography_version_id,
             "remove_act_record_id": None,
+            "user": user
         }
     )
     form = DestructionForm(request, is_create=False)
@@ -282,6 +291,7 @@ async def destruct_key_cversion_admin(pk: int, request: Request):
             [index_page_header, destruction_page_header],
             ["get_key_documents_admin", "decommissioning_cversion_admin"],
         ),
+        "user": user
     }
     context.update(form.__dict__)
     context.update(form.fields)

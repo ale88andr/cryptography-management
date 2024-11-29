@@ -1,5 +1,5 @@
 from typing import Optional
-from fastapi import APIRouter, Request, responses, status
+from fastapi import APIRouter, Request, Depends, responses, status
 
 from admin.constants import (
     DP_ADD_PAGE_HEADER,
@@ -9,6 +9,8 @@ from admin.constants import (
 )
 from core.config import templates
 from core.utils import add_breadcrumb
+from dependencies.auth import get_current_admin
+from models.users import User
 from services.department import DepartmentServise
 
 
@@ -26,6 +28,7 @@ async def get_departments_admin(
     msg: str = None,
     sort: Optional[str] = None,
     q: Optional[str] = None,
+    user: User = Depends(get_current_admin)
 ):
     records, counter = await DepartmentServise.all(sort=sort, q=q)
     return templates.TemplateResponse(
@@ -47,12 +50,13 @@ async def get_departments_admin(
                     is_active=True,
                 )
             ],
+            "user": user
         },
     )
 
 
 @router.get("/add")
-async def add_department_admin(request: Request):
+async def add_department_admin(request: Request, user: User = Depends(get_current_admin)):
     return templates.TemplateResponse(
         form_teplate,
         context={
@@ -65,15 +69,17 @@ async def add_department_admin(request: Request):
                     router, DP_INDEX_PAGE_HEADER, "add_department_admin", is_active=True
                 ),
             ],
+            "user": user
         },
     )
 
 
 @router.post("/add")
-async def create_position_admin(request: Request):
+async def create_position_admin(request: Request, user: User = Depends(get_current_admin)):
     context = {
         "page_header_text": DP_ADD_PAGE_HEADER,
         "page_header_help_text": DP_HELP_TEXT,
+        "user": user
     }
     form = DepartmentForm(request)
     await form.load_data()
@@ -94,7 +100,7 @@ async def create_position_admin(request: Request):
 
 
 @router.get("/{department_id}/edit")
-async def edit_department_admin(department_id: int, request: Request):
+async def edit_department_admin(department_id: int, request: Request, user: User = Depends(get_current_admin)):
     dept = await DepartmentServise.get_by_id(department_id)
     return templates.TemplateResponse(
         form_teplate,
@@ -111,15 +117,17 @@ async def edit_department_admin(department_id: int, request: Request):
                     router, DP_EDIT_PAGE_HEADER, "edit_department_admin", is_active=True
                 ),
             ],
+            "user": user
         },
     )
 
 
 @router.post("/{department_id}/edit")
-async def update_position_admin(department_id: int, request: Request):
+async def update_position_admin(department_id: int, request: Request, user: User = Depends(get_current_admin)):
     context = {
         "page_header_text": DP_EDIT_PAGE_HEADER,
         "page_header_help_text": DP_HELP_TEXT,
+        "user": user
     }
     form = DepartmentForm(request)
     await form.load_data()
@@ -143,7 +151,7 @@ async def update_position_admin(department_id: int, request: Request):
 
 
 @router.get("/{department_id}/delete")
-async def delete_department_admin(department_id: int, request: Request):
+async def delete_department_admin(department_id: int, request: Request, user: User = Depends(get_current_admin)):
     redirect_url = request.url_for("get_departments_admin")
     try:
         await DepartmentServise.delete(department_id)

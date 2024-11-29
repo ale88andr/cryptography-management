@@ -1,5 +1,5 @@
 from typing import Optional
-from fastapi import APIRouter, Request, responses, status
+from fastapi import APIRouter, Request, Depends, responses, status
 
 from admin.constants import (
     CARRIERS_ADD_PAGE_HEADER,
@@ -9,6 +9,8 @@ from admin.constants import (
 )
 from core.config import templates
 from core.utils import add_breadcrumb
+from dependencies.auth import get_current_admin
+from models.users import User
 from services.key_carrier import KeyCarrierServise
 from services.carrier_types import CarrierTypesServise
 
@@ -27,6 +29,7 @@ async def get_carriers_admin(
     sort: Optional[str] = None,
     q: Optional[str] = None,
     filter_type_id: Optional[int] = None,
+    user: User = Depends(get_current_admin)
 ):
     filters = {}
     if filter_type_id and filter_type_id > 0:
@@ -55,12 +58,13 @@ async def get_carriers_admin(
                     is_active=True,
                 )
             ],
+            "user": user
         },
     )
 
 
 @router.get("/add")
-async def add_carrier_admin(request: Request):
+async def add_carrier_admin(request: Request, user: User = Depends(get_current_admin)):
     c_types, _ = await CarrierTypesServise.all()
     return templates.TemplateResponse(
         form_teplate,
@@ -80,12 +84,13 @@ async def add_carrier_admin(request: Request):
                     is_active=True,
                 ),
             ],
+            "user": user
         },
     )
 
 
 @router.post("/add")
-async def create_carrier_admin(request: Request):
+async def create_carrier_admin(request: Request, user: User = Depends(get_current_admin)):
     form = KeyCarrierForm(request)
     await form.load_data()
     if await form.is_valid():
@@ -107,13 +112,14 @@ async def create_carrier_admin(request: Request):
         "carrier_types": c_types,
         "page_header_text": CARRIERS_ADD_PAGE_HEADER,
         "page_header_help_text": CARRIERS_HELP_TEXT,
+        "user": user
     }
     context.update(form.__dict__)
     return templates.TemplateResponse(form_teplate, context)
 
 
 @router.get("/{carrier_id}/edit")
-async def edit_carrier_admin(carrier_id: int, request: Request):
+async def edit_carrier_admin(carrier_id: int, request: Request, user: User = Depends(get_current_admin)):
     obj = await KeyCarrierServise.get_by_id(carrier_id)
     c_types, _ = await CarrierTypesServise.all()
     return templates.TemplateResponse(
@@ -136,12 +142,13 @@ async def edit_carrier_admin(carrier_id: int, request: Request):
                     is_active=True,
                 ),
             ],
+            "user": user
         },
     )
 
 
 @router.post("/{carrier_id}/edit")
-async def update_carrier_admin(carrier_id: int, request: Request):
+async def update_carrier_admin(carrier_id: int, request: Request, user: User = Depends(get_current_admin)):
     form = KeyCarrierForm(request)
     await form.load_data()
     if await form.is_valid():
@@ -162,13 +169,14 @@ async def update_carrier_admin(carrier_id: int, request: Request):
     context = {
         "page_header_text": CARRIERS_EDIT_PAGE_HEADER,
         "page_header_help_text": CARRIERS_HELP_TEXT,
+        "user": user
     }
     context.update(form.__dict__)
     return templates.TemplateResponse(form_teplate, context)
 
 
 @router.get("/{carrier_id}/delete")
-async def delete_carrier_admin(carrier_id: int, request: Request):
+async def delete_carrier_admin(carrier_id: int, request: Request, user: User = Depends(get_current_admin)):
     redirect_url = request.url_for("get_carriers_admin")
     redirect_code = status.HTTP_307_TEMPORARY_REDIRECT
     try:

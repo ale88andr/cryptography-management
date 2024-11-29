@@ -27,7 +27,7 @@ class IncorrectEmailOrPasswordException(
 
 class TokenExpiredException(CustomHTTPException):
     status_code = status.HTTP_401_UNAUTHORIZED
-    detail = "Токен истек! Требуется повторная аутентификация."
+    detail = "Токен безопасности истек! Требуется аутентификация."
 
 
 class TokenDoesntExistsException(CustomHTTPException):

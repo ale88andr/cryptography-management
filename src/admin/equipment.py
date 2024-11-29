@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Optional
-from fastapi import APIRouter, Request, responses, status
+from fastapi import APIRouter, Request, Depends, responses, status
 
 from admin.constants import (
     EQ_ADD_PAGE_HEADER as add_page_header,
@@ -11,12 +11,14 @@ from admin.constants import (
 from core.config import templates
 from core.utils import create_breadcrumbs, create_file_response
 from core.templater import LogbookTemplatesEnum
+from dependencies.auth import get_current_admin
 from forms.equipment import EquipmentForm
 from forms.hwlog import HWLogbookForm
 from services.c_version import CVersionServise
 from services.equipment import EquipmentServise
 from services.c_hardware_logbook import CHardwareLogbookServise
 from models.logbook import RECORD_TYPES, HardwareLogbookRecordType
+from models.users import User
 from utils.formatting import format_date
 
 
@@ -38,6 +40,7 @@ async def get_equipments_admin(
     limit: int = 20,
     sort: Optional[str] = None,
     q: Optional[str] = None,
+    user: User = Depends(get_current_admin)
 ):
     records, counter, total_records, total_pages = (
         await EquipmentServise.all_with_pagination(
@@ -60,12 +63,13 @@ async def get_equipments_admin(
         "breadcrumbs": create_breadcrumbs(
             router, [index_page_header], ["get_cversions_admin"]
         ),
+        "user": user
     }
     return templates.TemplateResponse(list_teplate, context)
 
 
 @router.get("/add")
-async def add_equipment_admin(request: Request):
+async def add_equipment_admin(request: Request, user: User = Depends(get_current_admin)):
     context = {
         "request": request,
         "page_header": add_page_header,
@@ -75,12 +79,13 @@ async def add_equipment_admin(request: Request):
             [index_page_header, add_page_header],
             ["get_equipments_admin", "add_equipment_admin"],
         ),
+        "user": user
     }
     return templates.TemplateResponse(form_teplate, context)
 
 
 @router.post("/add")
-async def create_equipment_admin(request: Request):
+async def create_equipment_admin(request: Request, user: User = Depends(get_current_admin)):
     form = EquipmentForm(request)
     await form.load_data()
     if await form.is_valid():
@@ -108,6 +113,7 @@ async def create_equipment_admin(request: Request):
             [index_page_header, add_page_header],
             ["get_equipments_admin", "add_equipment_admin"],
         ),
+        "user": user
     }
     context.update(form.__dict__)
     context.update(form.fields)
@@ -115,7 +121,7 @@ async def create_equipment_admin(request: Request):
 
 
 @router.get("/{equipment_id}")
-async def detail_equipment_admin(equipment_id: str, request: Request):
+async def detail_equipment_admin(equipment_id: str, request: Request, user: User = Depends(get_current_admin)):
     equipment = await EquipmentServise.get_by_id(equipment_id)
 
     context = {
@@ -129,12 +135,13 @@ async def detail_equipment_admin(equipment_id: str, request: Request):
             [index_page_header, equipment.id],
             ["get_equipments_admin", "detail_equipment_admin"],
         ),
+        "user": user
     }
     return templates.TemplateResponse(detail_teplate, context)
 
 
 @router.get("/{equipment_id}/edit")
-async def edit_equipment_admin(equipment_id: str, request: Request):
+async def edit_equipment_admin(equipment_id: str, request: Request, user: User = Depends(get_current_admin)):
     obj = await EquipmentServise.get_by_id(equipment_id)
     context = {
         "request": request,
@@ -145,13 +152,14 @@ async def edit_equipment_admin(equipment_id: str, request: Request):
             [index_page_header, edit_page_header],
             ["get_equipments_admin", "edit_equipment_admin"],
         ),
+        "user": user
     }
     context.update(obj.__dict__)
     return templates.TemplateResponse(form_teplate, context)
 
 
 @router.post("/{equipment_id}/edit")
-async def update_equipment_admin(equipment_id: str, request: Request):
+async def update_equipment_admin(equipment_id: str, request: Request, user: User = Depends(get_current_admin)):
     form = EquipmentForm(request, is_create=False)
     await form.load_data()
     if await form.is_valid():
@@ -180,6 +188,7 @@ async def update_equipment_admin(equipment_id: str, request: Request):
             [index_page_header, edit_page_header],
             ["get_equipments_admin", "add_equipment_admin"],
         ),
+        "user": user
     }
     context.update(form.__dict__)
     context.update(form.fields)
@@ -187,7 +196,7 @@ async def update_equipment_admin(equipment_id: str, request: Request):
 
 
 @router.get("/{equipment_id}/delete")
-async def delete_equipment_admin(equipment_id: str, request: Request):
+async def delete_equipment_admin(equipment_id: str, request: Request, user: User = Depends(get_current_admin)):
     redirect_url = request.url_for("get_equipments_admin")
     redirect_code = status.HTTP_307_TEMPORARY_REDIRECT
     try:
@@ -200,7 +209,7 @@ async def delete_equipment_admin(equipment_id: str, request: Request):
 
 
 @router.get("/{equipment_id}/hw/add")
-async def add_hardware_logbook_admin(equipment_id: str, request: Request):
+async def add_hardware_logbook_admin(equipment_id: str, request: Request, user: User = Depends(get_current_admin)):
     equipment = await EquipmentServise.get_by_id(equipment_id)
     versions, _ = await CVersionServise.all()
     add_hw_page_header = (
@@ -220,12 +229,13 @@ async def add_hardware_logbook_admin(equipment_id: str, request: Request):
             [index_page_header, add_hw_page_header],
             ["get_equipments_admin", "add_hardware_logbook_admin"],
         ),
+        "user": user
     }
     return templates.TemplateResponse(hw_form_teplate, context)
 
 
 @router.post("/{equipment_id}/hw/add")
-async def add_hardware_logbook_admin(equipment_id: str, request: Request):
+async def add_hardware_logbook_admin(equipment_id: str, request: Request, user: User = Depends(get_current_admin)):
     form = HWLogbookForm(request)
     await form.load_data()
     if await form.is_valid():
@@ -259,6 +269,7 @@ async def add_hardware_logbook_admin(equipment_id: str, request: Request):
             [index_page_header, add_page_header],
             ["get_equipments_admin", "add_equipment_admin"],
         ),
+        "user": user
     }
     context.update(form.__dict__)
     context.update(form.fields)
@@ -266,7 +277,7 @@ async def add_hardware_logbook_admin(equipment_id: str, request: Request):
 
 
 @router.get("/{equipment_id}/hw/doc")
-async def download_hardware_logbook_admin(equipment_id: str, request: Request):
+async def download_hardware_logbook_admin(equipment_id: str, request: Request, user: User = Depends(get_current_admin)):
     equipment = await EquipmentServise.get_by_id(equipment_id)
     items, _ = await CHardwareLogbookServise.get_by_equipment(equipment_id)
 

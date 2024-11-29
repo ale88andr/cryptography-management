@@ -19,3 +19,6 @@ class User(Base):
     employee: Mapped["Employee"] = relationship(
         back_populates="user", lazy="joined"
     )
+
+    def __str__(self) -> str:
+        return self.email

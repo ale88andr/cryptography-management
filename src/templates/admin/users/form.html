@@ -1,0 +1,57 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}{{ page_header }}{% endblock %}
+{% block breadcrumb %}{% include 'admin/common/breadcrumbs.html' %}{% endblock %}
+{% block page_header_text %}{{ page_header }}{% endblock %}
+{% block page_header_help_text %}{{ page_header_help }}{% endblock %}
+
+{% from "admin/common/form_macros.html" import input_field, email_field, password_field, select_field, checkbox %}
+
+{% block content %}
+    <form method="POST" class="custom">
+        <div class="card">
+            <div class="card-body">
+                <fieldset>
+                    <legend class="text-success">
+                        <strong>Данные пользователя</strong>
+                    </legend>
+                    <hr class="mt-0 mb-4">
+
+                    <div class="row mb-3">
+                        <div class="col-4">
+                            {{ email_field("email", "Электронная почта:", errors, email, "Электронная почта") }}
+                        </div>
+
+                        <div class="col-4">
+                            {{ password_field("password", "Пароль:", errors) }}
+                        </div>
+
+                        <div class="col-lg-4">
+                            <div class="float-end">
+                                <a href="{{ url_for('add_position_admin') }}" class="btn btn-sm btn-success">&#10133; Добавить сотрудника</a>
+                            </div>
+                            {{ select_field("employee_id", "Профиль сотрудника:", employees, errors, employee_id) }}
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+
+                        {% if not is_created %}
+                            <legend class="text-success mt-3">
+                                <strong>Дополнительные сведения</strong>
+                            </legend>
+                            <hr class="mt-0 mb-4">
+                            <div class="col-lg-4">
+                                {{ checkbox("is_admin", "Администратор", is_admin) }}
+                            </div>
+                        {% endif %}
+
+                    </div>
+                </fieldset>
+            </div>
+        </div>
+
+        {% include 'admin/common/form_buttons.html' %}
+
+    </form>
+{% endblock %}

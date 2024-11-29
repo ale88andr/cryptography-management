@@ -1,5 +1,5 @@
 from typing import Optional
-from fastapi import APIRouter, Request, responses, status
+from fastapi import APIRouter, Request, Depends, responses, status
 
 from admin.constants import (
     CMODEL_ADD_PAGE_HEADER,
@@ -9,10 +9,13 @@ from admin.constants import (
 )
 from core.config import templates
 from core.utils import create_breadcrumbs
+from dependencies.auth import get_current_admin
 from forms.c_model import CModelForm
 from services.c_model import CModelServise
 from services.c_manufacturer import CManufacturerServise
 from models.cryptography import CRYPTO_MODEL_TYPES, ModelTypes
+from models.users import User
+
 
 app_prefix = "/admin/cryptography/models"
 form_teplate = f"{app_prefix}/form.html"
@@ -30,6 +33,7 @@ async def get_cmodels_admin(
     q: Optional[str] = None,
     filter_manufacturer_id: Optional[int] = None,
     filter_type: Optional[int] = None,
+    user: User = Depends(get_current_admin)
 ):
     filters = {}
 
@@ -57,12 +61,13 @@ async def get_cmodels_admin(
         "breadcrumbs": create_breadcrumbs(
             router, [CMODEL_INDEX_PAGE_HEADER], ["get_cmodels_admin"]
         ),
+        "user": user,
     }
     return templates.TemplateResponse(list_teplate, context)
 
 
 @router.get("/add")
-async def add_cmodel_admin(request: Request):
+async def add_cmodel_admin(request: Request, user: User = Depends(get_current_admin)):
     manufacturers, _ = await CManufacturerServise.all()
     context = {
         "request": request,
@@ -77,12 +82,13 @@ async def add_cmodel_admin(request: Request):
             [CMODEL_INDEX_PAGE_HEADER, CMODEL_ADD_PAGE_HEADER],
             ["get_cmodels_admin", "add_cmodel_admin"],
         ),
+        "user": user,
     }
     return templates.TemplateResponse(form_teplate, context)
 
 
 @router.post("/add")
-async def create_cmodel_admin(request: Request):
+async def create_cmodel_admin(request: Request, user: User = Depends(get_current_admin)):
     form = CModelForm(request)
     await form.load_data()
     if await form.is_valid():
@@ -113,6 +119,7 @@ async def create_cmodel_admin(request: Request):
             [CMODEL_INDEX_PAGE_HEADER, CMODEL_ADD_PAGE_HEADER],
             ["get_cmodels_admin", "add_cmodel_admin"],
         ),
+        "user": user,
     }
     context.update(form.__dict__)
     context.update(form.fields)
@@ -120,7 +127,7 @@ async def create_cmodel_admin(request: Request):
 
 
 @router.get("/{cmodel_id}/edit")
-async def edit_cmodel_admin(cmodel_id: int, request: Request):
+async def edit_cmodel_admin(cmodel_id: int, request: Request, user: User = Depends(get_current_admin)):
     obj = await CModelServise.get_by_id(cmodel_id)
     manufacturers, _ = await CManufacturerServise.all()
     context = {
@@ -138,12 +145,13 @@ async def edit_cmodel_admin(cmodel_id: int, request: Request):
             [CMODEL_INDEX_PAGE_HEADER, CMODEL_EDIT_PAGE_HEADER],
             ["get_cmodels_admin", "add_cmodel_admin"],
         ),
+        "user": user,
     }
     return templates.TemplateResponse(form_teplate, context)
 
 
 @router.post("/{cmodel_id}/edit")
-async def update_cmodel_admin(cmodel_id: int, request: Request):
+async def update_cmodel_admin(cmodel_id: int, request: Request, user: User = Depends(get_current_admin)):
     form = CModelForm(request, is_create=False)
     await form.load_data()
     if await form.is_valid():
@@ -175,6 +183,7 @@ async def update_cmodel_admin(cmodel_id: int, request: Request):
             [CMODEL_INDEX_PAGE_HEADER, CMODEL_EDIT_PAGE_HEADER],
             ["get_cmodels_admin", "add_cmodel_admin"],
         ),
+        "user": user,
     }
     context.update(form.__dict__)
     context.update(form.fields)
@@ -182,7 +191,7 @@ async def update_cmodel_admin(cmodel_id: int, request: Request):
 
 
 @router.get("/{cmodel_id}/delete")
-async def delete_cmodel_admin(cmodel_id: int, request: Request):
+async def delete_cmodel_admin(cmodel_id: int, request: Request, user: User = Depends(get_current_admin)):
     redirect_url = request.url_for("get_cmodels_admin")
     redirect_code = status.HTTP_307_TEMPORARY_REDIRECT
     try:

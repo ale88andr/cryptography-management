@@ -1,22 +1,22 @@
 from dataclasses import asdict
-import os
 
 from typing import Optional
-from fastapi import APIRouter, Request, responses, status
+from fastapi import APIRouter, Request, Depends, responses, status
 
 from admin.constants import (
     CLOG_HELP_TEXT as hepl_text,
     CLOG_INDEX_PAGE_HEADER as index_page_header,
 )
-from core.config import templates, BASE_DIR
+from core.config import templates
 from core.utils import create_breadcrumbs, create_file_response
+from dependencies.auth import get_current_admin
+from models.users import User
 
 from services.c_logbook import CLogbookServise
 from core.templater import (
     DocumentTemplatesEnum,
     InstallVersionActDocumentContext,
     LogbookTemplatesEnum,
-    RenderTemplate,
     UninstallVersionActDocumentContext,
 )
 from services.c_version import CVersionServise
@@ -39,6 +39,7 @@ async def get_clogbook_admin(
     q: Optional[str] = None,
     filter_model_id: Optional[int] = None,
     filter_grade: Optional[int] = None,
+    user: User = Depends(get_current_admin)
 ):
     # filters = {}
 
@@ -63,12 +64,13 @@ async def get_clogbook_admin(
         "breadcrumbs": create_breadcrumbs(
             router, [index_page_header], ["get_clogbook_admin"]
         ),
+        "user": user,
     }
     return templates.TemplateResponse(list_teplate, context)
 
 
 @router.get("/{record_id}/delete")
-async def delete_clogbook_admin(record_id: int, request: Request):
+async def delete_clogbook_admin(record_id: int, request: Request, user: User = Depends(get_current_admin)):
     redirect_url = request.url_for("get_clogbook_admin")
     redirect_code = status.HTTP_307_TEMPORARY_REDIRECT
     try:
@@ -81,7 +83,7 @@ async def delete_clogbook_admin(record_id: int, request: Request):
 
 
 @router.get("/{record_id}/install/doc")
-async def download_creation_act_admin(record_id: int, request: Request):
+async def download_creation_act_admin(record_id: int, request: Request, user: User = Depends(get_current_admin)):
     cryptography = await CVersionServise.get_by_id(record_id)
     _, month, year = get_date_tuple(cryptography.install_act.action_date)
 
@@ -107,7 +109,7 @@ async def download_creation_act_admin(record_id: int, request: Request):
 
 
 @router.get("/{record_id}/remove/doc")
-async def download_decommissioning_act_admin(record_id: int, request: Request):
+async def download_decommissioning_act_admin(record_id: int, request: Request, user: User = Depends(get_current_admin)):
     cryptography = await CVersionServise.get_by_id(record_id)
     _, month, year = get_date_tuple(cryptography.remove_act.action_date)
 
@@ -136,7 +138,7 @@ async def download_decommissioning_act_admin(record_id: int, request: Request):
 
 
 @router.get("/doc")
-async def download_clogbook_admin(request: Request):
+async def download_clogbook_admin(request: Request, user: User = Depends(get_current_admin)):
     objects, _ = await CLogbookServise.all()
 
     return create_file_response(

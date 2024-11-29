@@ -103,3 +103,11 @@ KD_INDEX_PAGE_HEADER = "Ключевые документы"
 KD_HELP_TEXT = "Администрироваие ключевых документов"
 KD_DESTRUCTION_PAGE_HEADER = "Изъятие (уничтожение) ключевого документа"
 KD_C_DESTRUCTION_PAGE_HEADER = "Изъятие (уничтожение) СКЗИ"
+
+
+# ========= Users =========
+USR_INDEX_PAGE_HEADER = "Пользователи системы"
+USR_ADD_PAGE_HEADER = "Добавление пользователя"
+USR_EDIT_PAGE_HEADER = "Редактирование данных пользователя"
+USR_DETAIL_PAGE_HEADER = "Просмотр данных пользователя"
+USR_HELP_TEXT = "Администрироваие пользователей системы"

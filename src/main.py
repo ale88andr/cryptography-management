@@ -23,8 +23,9 @@ from admin import c_logbook as admin_c_logbook
 from admin import c_instance_logbook as admin_c_instance_logbook
 from admin import key_document as admin_key_document
 from admin import dashboard as admin_dashboard
+from admin import user as admin_user
 from core import config
-from core.exceptions import TokenDoesntExistsException, TokenExpiredException
+from core.exceptions import TokenDoesntExistsException, TokenExpiredException, UserActionForbiddenException
 from core.logger import LOGGING
 from db.connection import db
 
@@ -93,6 +94,7 @@ app.include_router(admin_equipment.router)
 app.include_router(admin_c_logbook.router)
 app.include_router(admin_c_instance_logbook.router)
 app.include_router(admin_dashboard.router)
+app.include_router(admin_user.router)
 
 # ========= Разрешаем CORS запросы из списка config.origins =========
 app.add_middleware(
@@ -110,16 +112,6 @@ app.add_middleware(
 )
 
 
-@app.get("/hi/{who}")
-def greet(who: str):
-    return f"Hello? {who}?"
-
-
-@app.get("/hi2")
-def greet2(who: str):
-    return f"Hello? {who}?"
-
-
 @app.exception_handler(TokenDoesntExistsException)
 async def unicorn_exception_handler(
     request: Request,
@@ -135,6 +127,15 @@ async def unicorn_exception_handler(
 async def unicorn_exception_handler(
     request: Request,
     exc: TokenExpiredException
+):
+    redirect_url = request.url_for("login").include_query_params(msg=exc.detail)
+    return RedirectResponse(redirect_url)
+
+
+@app.exception_handler(UserActionForbiddenException)
+async def unicorn_exception_handler(
+    request: Request,
+    exc: UserActionForbiddenException
 ):
     redirect_url = request.url_for("login").include_query_params(msg=exc.detail)
     return RedirectResponse(redirect_url)
