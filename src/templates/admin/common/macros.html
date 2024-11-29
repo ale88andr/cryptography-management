@@ -6,6 +6,12 @@
     {% endif %}
 {% endmacro %}
 
+{% macro format_dtime(dt) %}
+    {% if dt %}
+        {{ dt.strftime('%d.%m.%Y %H:%M:%S %Z%z') }}
+    {% endif %}
+{% endmacro %}
+
 {% macro no_data(colspan) %}
     <tr class="text-center">
         <td colspan="{{ colspan }}" class="p-3">

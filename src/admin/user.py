@@ -11,6 +11,7 @@ from core.config import templates
 from core.utils import create_breadcrumbs
 from dependencies.auth import get_current_user
 from forms.user import UserForm
+from services.auth import get_password_hash
 from services.users import UsersDAO
 from services.employee import EmployeeServise
 from models.users import User
@@ -74,7 +75,7 @@ async def add_user_admin(request: Request, user: User = Depends(get_current_user
             "employees": employees,
             "page_header": add_page_header,
             "page_header_help": hepl_text,
-            "is_created": True,
+            "is_create": True,
             "breadcrumbs": create_breadcrumbs(
                 router,
                 [index_page_header, add_page_header],
@@ -85,42 +86,40 @@ async def add_user_admin(request: Request, user: User = Depends(get_current_user
     )
 
 
-# @router.post("/add")
-# async def create_employee_admin(request: Request):
-#     form = EmployeeForm(request)
-#     await form.load_data()
-#     if await form.is_valid():
-#         try:
-#             emp = await EmployeeServise.add(
-#                 name=form.name,
-#                 surname=form.surname,
-#                 middle_name=form.middle_name,
-#                 position_id=int(form.position_id),
-#                 department_id=int(form.department_id),
-#                 location_id=int(form.location_id),
-#                 organisation_id=organisation.id,
-#             )
-#             redirect_url = request.url_for("get_employees_admin").include_query_params(
-#                 msg=f"Сотрудник '{emp.short_name}' добавлен!"
-#             )
-#             return responses.RedirectResponse(
-#                 redirect_url, status_code=status.HTTP_303_SEE_OTHER
-#             )
-#         except Exception as e:
-#             form.__dict__.get("errors").setdefault("non_field_error", e)
+@router.post("/add")
+async def create_user_admin(request: Request, user: User = Depends(get_current_user)):
+    form = UserForm(request)
+    await form.load_data()
+    if await form.is_valid():
+        try:
+            user = await UsersDAO.add(
+                email=form.email,
+                hashed_password=get_password_hash(form.password),
+                is_password_temporary=True
+            )
 
-#     context = {
-#         "page_header": add_employee_admin,
-#         "page_header_help": hepl_text,
-#         "breadcrumbs": create_breadcrumbs(
-#             router,
-#             [index_page_header, add_page_header],
-#             ["get_employees_admin", "add_employee_admin"],
-#         ),
-#     }
-#     context.update(form.__dict__)
-#     context.update(form.fields)
-#     return templates.TemplateResponse(form_teplate, context)
+            redirect_url = request.url_for("get_users_admin").include_query_params(
+                msg=f"Пользователь '{user}' добавлен!"
+            )
+            return responses.RedirectResponse(
+                redirect_url, status_code=status.HTTP_303_SEE_OTHER
+            )
+        except Exception as e:
+            form.__dict__.get("errors").setdefault("non_field_error", e)
+
+    context = {
+        "page_header": add_page_header,
+        "page_header_help": hepl_text,
+        "breadcrumbs": create_breadcrumbs(
+            router,
+            [index_page_header, add_page_header],
+            ["get_users_admin", "add_user_admin"],
+        ),
+        "user": user
+    }
+    context.update(form.__dict__)
+    context.update(form.fields)
+    return templates.TemplateResponse(form_teplate, context)
 
 
 @router.get("/{pk}/edit")
@@ -148,7 +147,7 @@ async def edit_user_admin(pk: int, request: Request, user: User = Depends(get_cu
 
 
 @router.post("/{pk}/edit")
-async def update_employee_admin(pk: int, request: Request, user: User = Depends(get_current_user)):
+async def update_user_admin(pk: int, request: Request, user: User = Depends(get_current_user)):
     form = UserForm(request, is_create=False)
     await form.load_data()
     if await form.is_valid():
@@ -179,8 +178,8 @@ async def update_employee_admin(pk: int, request: Request, user: User = Depends(
             [index_page_header, edit_page_header],
             ["get_users_admin", "edit_user_admin"],
         ),
-        "user": user
-    },
+        "user": user,
+    }
     context.update(form.__dict__)
     context.update(form.fields)
     return templates.TemplateResponse(form_teplate, context)

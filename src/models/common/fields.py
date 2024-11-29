@@ -1,7 +1,7 @@
 import datetime
 from typing import Annotated
 
-from sqlalchemy import String, Date, text
+from sqlalchemy import String, Date, DateTime, text
 from sqlalchemy.orm import mapped_column
 
 
@@ -22,5 +22,7 @@ updated_at = Annotated[
 title = Annotated[str, mapped_column(String(50), nullable=False, unique=True)]
 
 date = Annotated[datetime.date, mapped_column(Date, nullable=True)]
+
+dtime = Annotated[datetime.datetime, mapped_column(DateTime, nullable=True)]
 
 required_date = Annotated[datetime.date, mapped_column(Date, nullable=False)]

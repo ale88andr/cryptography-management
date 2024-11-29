@@ -57,3 +57,8 @@ class UserAddException(CustomHTTPException):
 class LogbookOnDeleteException(CustomHTTPException):
     status_code = status.HTTP_303_SEE_OTHER
     detail = "Данное СКЗИ зарегистрированно в журнале учёта, удалите запись из журнала!"
+
+
+class UserHasTemporaryPassword(CustomHTTPException):
+    status_code = status.HTTP_409_CONFLICT
+    detail = "Вход под техническим паролем"

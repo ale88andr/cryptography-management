@@ -12,6 +12,10 @@ class User(Base):
     email: Mapped[str] = mapped_column(String(50), nullable=False)
     hashed_password: Mapped[str] = mapped_column(String(250), nullable=False)
     is_admin: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    is_password_temporary: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    last_login_at: Mapped[fields.dtime]
+    last_login_from: Mapped[str] = mapped_column(String(250), nullable=True)
+    last_login_ip: Mapped[str] = mapped_column(String(50), nullable=True)
     employee_id: Mapped[int] = mapped_column(
         ForeignKey("employee.id", ondelete="CASCADE"), nullable=True
     )
