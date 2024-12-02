@@ -160,6 +160,12 @@ async def update_user_admin(pk: int, request: Request, user: User = Depends(get_
                 is_admin=get_bool_from_checkbox(form.is_admin),
                 is_blocked=get_bool_from_checkbox(form.is_blocked),
             )
+            if form.password:
+                await UsersDAO.update(
+                    pk,
+                    hashed_password=get_password_hash(form.password),
+                    is_password_temporary=True,
+                )
             redirect_url = request.url_for("get_users_admin").include_query_params(
                 msg=f"Данные пользователя '{obj}' обновлены!"
             )

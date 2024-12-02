@@ -23,21 +23,19 @@
                 <div class="col-md-6 col-lg-7 d-flex align-items-center">
                   <div class="card-body p-4 p-lg-5 text-black">
 
-                      {% if errors %}
+                      <!-- Блок сообщений страницы -->
+                      {% if msg %}
+                        <div class="alert alert-dismissible alert-warning">
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            <strong>{{ msg }}</strong>
+                        </div>
+                      {% elif errors %}
                         <div class="alert alert-dismissible alert-danger">
                             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                             <strong>Обнаружены ошибки!</strong> <a href="#" class="alert-link">Исправте их</a> и повторите отправку формы снова.
                             {% if "non_field_error" in errors %}
                                 <br>{{ errors["non_field_error"] }}
                             {% endif %}
-                        </div>
-                      {% endif %}
-
-                      <!-- Блок сообщений страницы -->
-                      {% if msg %}
-                        <div class="alert alert-dismissible alert-warning">
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                            <strong>{{ msg }}</strong>
                         </div>
                       {% endif %}
 

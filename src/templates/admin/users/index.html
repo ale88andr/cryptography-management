@@ -75,9 +75,9 @@
                                 <p class="fw-bold mb-1">{{ user.email }}</p>
                                 <p class="mb-0">
                                     {% if user.is_password_temporary %}
-                                        <span class="badge bg-danger">
+                                        <small class="text-sm text-danger">
                                             Пароль назначен администратором
-                                        </span>
+                                        </small>
                                     {% endif %}
                                 </p>
                             </div>
@@ -89,7 +89,7 @@
                                 {{ user.employee }}
                             </a>
                         {% else %}
-                            <span class="badge bg-danger">не назначен</span>
+                            <span class="badge bg-light">не назначен</span>
                         {% endif %}
                     </td>
                     <td>
@@ -110,8 +110,8 @@
                         {%endif%}
                     </td>
                     <td>
-                        <a href="{{ url_for('edit_user_admin', pk=user.id) }}" class="btn btn-sm btn-outline-primary me-1" title="Редактировать"><i class="bi bi-pencil-square"></i></a>
-                        <a href="#" class="btn btn-sm btn-outline-danger" title="Удалить"><i class="bi bi-person-x-fill"></i></a>
+                        <a href="{{ url_for('edit_user_admin', pk=user.id) }}" class="btn btn-sm btn-outline-primary ms-4" title="Редактировать"><i class="bi bi-pencil-square"></i></a>
+                        <!-- <a href="#" class="btn btn-sm btn-outline-danger" title="Удалить"><i class="bi bi-person-x-fill"></i></a> -->
                     </td>
                 </tr>
             {% else %}
