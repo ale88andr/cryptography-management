@@ -45,7 +45,9 @@ async def login(response: Response, request: Request):
         user = await authenticate_user(form.email, form.password)
 
         if not user:
-            form.__dict__.update("non_field_error", "Некорректные данные аутентификации")
+            form.__dict__.get("errors").setdefault(
+                "non_field_error", "Некорректные данные аутентификации"
+            )
             return templates.TemplateResponse("login.html", form.__dict__)
 
         response = responses.RedirectResponse(
