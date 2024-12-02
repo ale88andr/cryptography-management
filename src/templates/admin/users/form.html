@@ -36,12 +36,21 @@
 
                     {% if not is_create %}
                         <legend class="text-success mt-3">
-                            <strong>Дополнительные сведения</strong>
+                            <strong>Привилегии</strong>
                         </legend>
                         <hr class="mt-0 mb-4">
                         <div class="row mb-3">
                             <div class="col-lg-4">
                                 {{ checkbox("is_admin", "Администратор", is_admin) }}
+                            </div>
+                        </div>
+                        <legend class="text-success mt-3">
+                            <strong>Доступ к системе</strong>
+                        </legend>
+                        <hr class="mt-0 mb-4">
+                        <div class="row mb-3">
+                            <div class="col-lg-4">
+                                {{ checkbox("is_blocked", "Заблокирован", is_blocked) }}
                             </div>
                         </div>
                     {% endif %}

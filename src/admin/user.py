@@ -8,7 +8,7 @@ from admin.constants import (
     USR_INDEX_PAGE_HEADER as index_page_header,
 )
 from core.config import templates
-from core.utils import create_breadcrumbs
+from core.utils import create_breadcrumbs, get_bool_from_checkbox
 from dependencies.auth import get_current_user
 from forms.user import UserForm
 from services.auth import get_password_hash
@@ -132,6 +132,7 @@ async def edit_user_admin(pk: int, request: Request, user: User = Depends(get_cu
             "request": request,
             "email": edit_user.email,
             "is_admin": edit_user.is_admin,
+            "is_blocked": edit_user.is_blocked,
             "employee_id": edit_user.employee_id,
             "employees": employees,
             "page_header": edit_page_header,
@@ -155,8 +156,9 @@ async def update_user_admin(pk: int, request: Request, user: User = Depends(get_
             obj = await UsersDAO.update(
                 pk,
                 email=form.email,
-                employee_id=int(form.employee_id),
-                is_admin=True if form.is_admin == "on" else False,
+                employee_id=form.employee_id,
+                is_admin=get_bool_from_checkbox(form.is_admin),
+                is_blocked=get_bool_from_checkbox(form.is_blocked),
             )
             redirect_url = request.url_for("get_users_admin").include_query_params(
                 msg=f"Данные пользователя '{obj}' обновлены!"

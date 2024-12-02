@@ -38,6 +38,7 @@
                 <th scope="col">Последний вход</th>
                 <th scope="col">Последний вход (браузер)</th>
                 <th scope="col">Последний вход (ip)</th>
+                <th scope="col">Статус</th>
                 <th scope="col" class="col-1">Действия</th>
             </tr>
             <tr>
@@ -45,6 +46,7 @@
                     <th scope="col" width="1px"></th>
                     <td scope="col"></td>
                     <td scope="col">{{ search_field(value=q) }}</td>
+                    <td scope="col"></td>
                     <td scope="col"></td>
                     <td scope="col"></td>
                     <td scope="col"></td>
@@ -87,7 +89,7 @@
                                 {{ user.employee }}
                             </a>
                         {% else %}
-                            Профиль не назначен
+                            <span class="badge bg-danger">не назначен</span>
                         {% endif %}
                     </td>
                     <td>
@@ -101,8 +103,15 @@
                     <td>{% if user.last_login_from %}{{ user.last_login_from }}{% else %}Вход не осуществлялся{% endif %}</td>
                     <td>{% if user.last_login_ip %}<strong>{{ user.last_login_ip }}</strong>{% else %}Вход не осуществлялся{% endif %}</td>
                     <td>
+                        {% if user.is_blocked %}
+                            <span class="badge bg-danger">Заблокирован</span>
+                        {%else%}
+                            <span class="badge bg-success">Активен</span>
+                        {%endif%}
+                    </td>
+                    <td>
                         <a href="{{ url_for('edit_user_admin', pk=user.id) }}" class="btn btn-sm btn-outline-primary me-1" title="Редактировать"><i class="bi bi-pencil-square"></i></a>
-                        <a href="#" class="btn btn-sm btn-outline-warning" title="Удалить"><i class="bi bi-person-x-fill"></i></a>
+                        <a href="#" class="btn btn-sm btn-outline-danger" title="Удалить"><i class="bi bi-person-x-fill"></i></a>
                     </td>
                 </tr>
             {% else %}

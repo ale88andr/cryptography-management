@@ -21,6 +21,8 @@ class UserForm(Form):
         if self.is_create and not self.password:
             self.errors.setdefault("password", self.REQUIRED_ERROR)
 
+        self.employee_id = None if not self.employee_id or self.employee_id == '0' else int(self.employee_id)
+
         if not self.errors:
             return True
 

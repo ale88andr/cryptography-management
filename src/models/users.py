@@ -13,6 +13,7 @@ class User(Base):
     hashed_password: Mapped[str] = mapped_column(String(250), nullable=False)
     is_admin: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     is_password_temporary: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    is_blocked: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     last_login_at: Mapped[fields.dtime]
     last_login_from: Mapped[str] = mapped_column(String(250), nullable=True)
     last_login_ip: Mapped[str] = mapped_column(String(50), nullable=True)

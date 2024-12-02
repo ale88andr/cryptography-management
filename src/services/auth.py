@@ -28,6 +28,6 @@ def create_jwt_token(data: dict) -> str:
 
 async def authenticate_user(email: EmailStr, password: str):
     user = await UsersDAO.get_one_or_none(email=email)
-    if not user or not verify_password(password, user.hashed_password):
+    if not user or not verify_password(password, user.hashed_password) or user.is_blocked:
         return None
     return user

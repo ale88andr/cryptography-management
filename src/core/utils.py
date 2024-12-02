@@ -46,3 +46,7 @@ def create_file_response(template, context, name):
         media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         headers={"Content-Disposition": content_disposition},
     )
+
+
+def get_bool_from_checkbox(param: str) -> bool:
+    return True if param == "on" else False
