@@ -1,4 +1,4 @@
-from sqlalchemy import String, Boolean, ForeignKey
+from sqlalchemy import String, Boolean, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 from db.connection import Base
@@ -7,6 +7,8 @@ from models.common import fields
 
 class User(Base):
     __tablename__ = "user"
+    # One to One relation
+    __table_args__ = (UniqueConstraint("employee_id"),)
 
     id: Mapped[fields.pk]
     email: Mapped[str] = mapped_column(String(50), nullable=False)
@@ -26,4 +28,4 @@ class User(Base):
     )
 
     def __str__(self) -> str:
-        return self.email
+        return self.email.split('@')[0]

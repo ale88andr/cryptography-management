@@ -49,7 +49,7 @@
             </g>
           </svg>
         </div>
-        <span class="app-brand app-brand-text me-4"><span class="fw-bold">CryMan</span> <sup class="text-muted"><small>Админ</small></sup></span>
+        <span class="app-brand app-brand-text me-4"><span class="fw-bold mt-1">CryMan</span> <sup class="text-muted"><small>Админ</small></sup></span>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
@@ -97,7 +97,8 @@
           <ul class="list-group list-unstyled">
             <li class="nav-item dropdown">
               <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
-                <strong>{{ user.email }}</strong>
+                <i class="bi bi-person-circle"></i>
+                <strong>{{ user }}</strong>
               </a>
               <div class="dropdown-menu">
                 <a class="dropdown-item" href="{{ url_for('profile') }}">
