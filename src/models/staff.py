@@ -125,11 +125,21 @@ class Employee(Base):
     __tablename__ = "employee"
 
     id: Mapped[fields.pk]
-    surname: Mapped[str] = mapped_column(String(30), nullable=False)
-    name: Mapped[str] = mapped_column(String(30), nullable=False)
-    middle_name: Mapped[str] = mapped_column(String(30))
-    is_worked: Mapped[bool] = mapped_column(nullable=False, default=True)
-    is_security_staff: Mapped[bool] = mapped_column(nullable=False, default=False)
+    surname: Mapped[str] = mapped_column(
+        String(30), nullable=False, index=True
+    )
+    name: Mapped[str] = mapped_column(
+        String(30), nullable=False
+    )
+    middle_name: Mapped[str] = mapped_column(
+        String(30)
+    )
+    is_worked: Mapped[bool] = mapped_column(
+        nullable=False, default=True, index=True
+    )
+    is_security_staff: Mapped[bool] = mapped_column(
+        nullable=False, default=False, index=True
+    )
     position_id: Mapped[int] = mapped_column(
         ForeignKey("employee_position.id", ondelete="CASCADE")
     )

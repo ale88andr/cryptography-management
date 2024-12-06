@@ -190,6 +190,28 @@ class EmployeeServise(BaseRepository):
         records = (await db.execute(query)).scalars().all()
         return records
 
+    @classmethod
+    async def get_all_shortened(
+        cls,
+        is_leadership: bool = False,
+        is_staff: bool = False,
+        is_worked: bool = True,
+    ):
+        """Function used for HTML select lists options."""
+        query = select(
+            cls.model.id,
+            cls.model.name,
+            cls.model.surname,
+            cls.model.middle_name
+        ).filter(
+            cls.model.position.is_leadership.is_(is_leadership),
+            cls.model.is_worked.is_(is_worked),
+            cls.model.is_security_staff.is_(is_staff)
+        ).order_by(cls.model.surname)
+
+        result = await db.execute(query)
+        return result.scalars().all()
+
     # @classmethod
     # async def add(
     #     cls,
