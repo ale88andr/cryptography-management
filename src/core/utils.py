@@ -1,5 +1,5 @@
 import os
-from fastapi import APIRouter, responses, Request
+from fastapi import APIRouter, responses, Request, status
 
 from core.config import BASE_DIR
 from core.templater import RenderTemplate
@@ -65,3 +65,25 @@ def create_base_admin_context(
         "page_header_help": page_header_help,
         "user": user,
     }
+
+
+def redirect_with_message(
+    request: Request,
+    endpoint: str,
+    msg: str,
+    status: status=status.HTTP_307_TEMPORARY_REDIRECT
+) -> responses.RedirectResponse:
+    """Редирект с сообщением"""
+    redirect_url = request.url_for(endpoint).include_query_params(msg=msg)
+    return responses.RedirectResponse(redirect_url, status_code=status)
+
+
+def redirect_with_error(
+    request: Request,
+    endpoint: str,
+    errors: dict,
+    status: status=status.HTTP_307_TEMPORARY_REDIRECT
+) -> responses.RedirectResponse:
+    """Редирект с ошибкой"""
+    redirect_url = request.url_for(endpoint).include_query_params(errors=errors)
+    return responses.RedirectResponse(redirect_url, status_code=status)
