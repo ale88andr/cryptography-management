@@ -116,6 +116,7 @@ async def create_position_admin(
         request, POS_ADD_PAGE_HEADER, POS_HELP_TEXT, user
     )
     context.update(form.__dict__)
+    context.update(form.fields)
     return templates.TemplateResponse(form_template, context)
 
 
@@ -172,6 +173,7 @@ async def update_position_admin(
         request, POS_EDIT_PAGE_HEADER, POS_HELP_TEXT, user
     )
     context.update(form.__dict__)
+    context.update(form.fields)
     return templates.TemplateResponse(form_template, context)
 
 

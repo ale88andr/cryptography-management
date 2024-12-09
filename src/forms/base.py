@@ -2,7 +2,10 @@ from fastapi import Request
 
 
 class Form:
+    NON_NUMERIC_ERROR = "Поле должно содержать только числа"
     REQUIRED_ERROR = "Поле должно быть заполнено!"
+
+    DEFAULT_MIN_LENGTH = 3
 
     def __init__(self, request: Request, is_create: bool = True):
         self.request: Request = request

@@ -5,10 +5,9 @@ from services.position import PositionServise
 class PositionForm(Form):
 
     async def is_valid(self):
-        name_min_length = 3
-        if not self.name or not len(self.name) >= name_min_length:
+        if not self.name or not len(self.name) >= self.DEFAULT_MIN_LENGTH:
             self.errors.setdefault(
-                "name", f"Поле должно содержать как минимум {name_min_length} символа!"
+                "name", f"Поле должно содержать как минимум {self.DEFAULT_MIN_LENGTH} символа!"
             )
         if self.name:
             db_position = await PositionServise.get_one_or_none(name=self.name)

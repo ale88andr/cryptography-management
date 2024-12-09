@@ -7,68 +7,67 @@ from admin.constants import (
     BUILD_INDEX_PAGE_HEADER,
 )
 from core.config import templates
-from core.utils import add_breadcrumb
+from core.utils import create_base_admin_context, create_breadcrumbs
 from dependencies.auth import get_current_admin
+from forms.building import BuildingForm
 from models.users import User
 from services.building import BuildingServise
 
 
 app_prefix = "/admin/staff/locations/buildings"
-form_teplate = f"{app_prefix}/form.html"
-list_teplate = f"{app_prefix}/index.html"
+form_template = f"{app_prefix}/form.html"
+list_template = f"{app_prefix}/index.html"
 
 router = APIRouter(prefix=app_prefix, tags=[BUILD_HELP_TEXT])
 
 
 # ========= Buildings =========
 @router.get("/")
-async def get_buildings_admin(request: Request, msg: str = None, user: User = Depends(get_current_admin)):
+async def get_buildings_admin(
+    request: Request, msg: str = None, user: User = Depends(get_current_admin)
+):
     records = await BuildingServise.all()
-    return templates.TemplateResponse(
-        list_teplate,
-        context={
-            "request": request,
+
+    # Создаем базовый контекст
+    context = create_base_admin_context(
+        request, BUILD_INDEX_PAGE_HEADER, BUILD_HELP_TEXT, user
+    )
+    context.update(
+        {
             "buildings": records,
             "counter": len(records),
             "msg": msg,
-            "page_header": BUILD_INDEX_PAGE_HEADER,
-            "page_header_help": BUILD_HELP_TEXT,
-            "breadcrumbs": [
-                add_breadcrumb(
-                    router, BUILD_INDEX_PAGE_HEADER, "get_buildings_admin", True
-                ),
-            ],
-            "user": user
-        },
+            "breadcrumbs": create_breadcrumbs(
+                router, [BUILD_INDEX_PAGE_HEADER], ["get_buildings_admin"]
+            ),
+        }
     )
+
+    return templates.TemplateResponse(list_template, context)
 
 
 @router.get("/add")
 async def add_building_admin(request: Request, user: User = Depends(get_current_admin)):
-    return templates.TemplateResponse(
-        form_teplate,
-        context={
-            "request": request,
-            "page_header": BUILD_ADD_PAGE_HEADER,
-            "page_header_help": BUILD_HELP_TEXT,
-            "breadcrumbs": [
-                add_breadcrumb(router, BUILD_INDEX_PAGE_HEADER, "get_buildings_admin"),
-                add_breadcrumb(
-                    router, BUILD_ADD_PAGE_HEADER, "add_buildings_admin", True
-                ),
-            ],
-            "user": user
-        },
+    # Создаем базовый контекст
+    context = create_base_admin_context(
+        request, BUILD_ADD_PAGE_HEADER, BUILD_HELP_TEXT, user
     )
+    context.update(
+        {
+            "breadcrumbs": create_breadcrumbs(
+                router,
+                [BUILD_INDEX_PAGE_HEADER, BUILD_ADD_PAGE_HEADER],
+                ["get_buildings_admin", "add_buildings_admin"],
+            ),
+        }
+    )
+    return templates.TemplateResponse(form_template, context)
 
 
 @router.post("/add")
-async def create_building_admin(request: Request, user: User = Depends(get_current_admin)):
-    context = {
-        "page_header": BUILD_ADD_PAGE_HEADER,
-        "page_header_help": BUILD_HELP_TEXT,
-        "user": user
-    }
+async def create_building_admin(
+    request: Request, user: User = Depends(get_current_admin)
+):
     form = BuildingForm(request)
     await form.load_data()
     if await form.is_valid():
@@ -88,43 +87,43 @@ async def create_building_admin(request: Request, user: User = Depends(get_curre
             )
         except Exception as e:
             form.__dict__.get("errors").setdefault("non_field_error", e)
-            return templates.TemplateResponse(form_teplate, form.__dict__)
+            return templates.TemplateResponse(form_template, form.__dict__)
+    # Создаем базовый контекст
+    context = create_base_admin_context(
+        request, BUILD_ADD_PAGE_HEADER, BUILD_HELP_TEXT, user
+    )
     context.update(form.__dict__)
-    return templates.TemplateResponse(form_teplate, context)
+    context.update(form.fields)
+    return templates.TemplateResponse(form_template, context)
 
 
 @router.get("/{building_id}/edit")
-async def edit_building_admin(building_id: int, request: Request, user: User = Depends(get_current_admin)):
-    organisation = await BuildingServise.get_one_or_none(id=building_id)
-    return templates.TemplateResponse(
-        form_teplate,
-        context={
-            "request": request,
-            "name": organisation.name,
-            "city": organisation.city,
-            "street": organisation.street,
-            "building": organisation.building,
-            "index": organisation.index,
-            "page_header": BUILD_EDIT_PAGE_HEADER,
-            "page_header_help": BUILD_HELP_TEXT,
-            "breadcrumbs": [
-                add_breadcrumb(router, BUILD_INDEX_PAGE_HEADER, "get_buildings_admin"),
-                add_breadcrumb(
-                    router, BUILD_EDIT_PAGE_HEADER, "edit_building_admin", True
-                ),
-            ],
-            "user": user
-        },
+async def edit_building_admin(
+    building_id: int, request: Request, user: User = Depends(get_current_admin)
+):
+    building = await BuildingServise.get_one_or_none(id=building_id)
+    # Создаем базовый контекст
+    context = create_base_admin_context(
+        request, BUILD_EDIT_PAGE_HEADER, BUILD_HELP_TEXT, user
     )
+    context.update(
+        {
+            "breadcrumbs": create_breadcrumbs(
+                router,
+                [BUILD_INDEX_PAGE_HEADER, BUILD_EDIT_PAGE_HEADER],
+                ["get_buildings_admin", "edit_buildings_admin"],
+            ),
+            **vars(building),
+        }
+    )
+
+    return templates.TemplateResponse(form_template, context)
 
 
 @router.post("/{building_id}/edit")
-async def update_building_admin(building_id: int, request: Request, user: User = Depends(get_current_admin)):
-    context = {
-        "page_header": BUILD_EDIT_PAGE_HEADER,
-        "page_header_help": BUILD_HELP_TEXT,
-        "user": user
-    }
+async def update_building_admin(
+    building_id: int, request: Request, user: User = Depends(get_current_admin)
+):
     form = BuildingForm(request)
     await form.load_data()
     if await form.is_valid():
@@ -145,64 +144,37 @@ async def update_building_admin(building_id: int, request: Request, user: User =
             )
         except Exception as e:
             form.__dict__.get("errors").setdefault("non_field_error", e)
-            return templates.TemplateResponse(form_teplate, form.__dict__)
+            return templates.TemplateResponse(form_template, form.__dict__)
+    # Создаем базовый контекст
+    context = create_base_admin_context(
+        request, BUILD_EDIT_PAGE_HEADER, BUILD_HELP_TEXT, user
+    )
+    context.update(
+        {
+            "breadcrumbs": create_breadcrumbs(
+                router,
+                [BUILD_INDEX_PAGE_HEADER, BUILD_EDIT_PAGE_HEADER],
+                ["get_buildings_admin", "edit_buildings_admin"],
+            ),
+        }
+    )
     context.update(form.__dict__)
-    return templates.TemplateResponse(form_teplate, context)
+    context.update(form.fields)
+    return templates.TemplateResponse(form_template, context)
 
 
 @router.get("/{building_id}/delete")
-async def delete_building_admin(building_id: int, request: Request, user: User = Depends(get_current_admin)):
+async def delete_building_admin(
+    building_id: int, request: Request, user: User = Depends(get_current_admin)
+):
     redirect_url = request.url_for("get_buildings_admin")
+    redirect_status = status.HTTP_307_TEMPORARY_REDIRECT
     try:
         await BuildingServise.delete(building_id)
         redirect = request.url_for("get_buildings_admin").include_query_params(
             msg="Филиал удален!"
         )
-        return responses.RedirectResponse(
-            redirect, status_code=status.HTTP_307_TEMPORARY_REDIRECT
-        )
+        return responses.RedirectResponse(redirect, status_code=redirect_status)
     except Exception as e:
         redirect_url.include_query_params(errors={"non_field_error": e})
-        return responses.RedirectResponse(
-            redirect_url, status_code=status.HTTP_307_TEMPORARY_REDIRECT
-        )
-
-
-class BuildingForm:
-    REQUIRED_ERROR = "Поле должно быть заполнено!"
-
-    def __init__(self, request: Request):
-        self.request: Request = request
-        self.errors: dict = {}
-        self.name: str
-        self.city: str
-        self.street: str
-        self.building: str
-        self.index: int
-
-    async def load_data(self):
-        form = await self.request.form()
-        self.name: str = form.get("name")
-        self.city: str = form.get("city")
-        self.street: str = form.get("street")
-        self.building: str = form.get("building")
-        self.index: int = form.get("index")
-
-    async def is_valid(self):
-        name_min_length = 3
-        if not self.name or not len(self.name) >= name_min_length:
-            self.errors.setdefault(
-                "name", f"Поле должно содержать как минимум {name_min_length} символа!"
-            )
-        if not self.city:
-            self.errors.setdefault("city", self.REQUIRED_ERROR)
-        if not self.street:
-            self.errors.setdefault("street", self.REQUIRED_ERROR)
-        if not self.building:
-            self.errors.setdefault("building", self.REQUIRED_ERROR)
-        if self.index and not self.index.isnumeric():
-            self.errors.setdefault("index", self.REQUIRED_ERROR)
-
-        if not self.errors:
-            return True
-        return False
+        return responses.RedirectResponse(redirect_url, status_code=redirect_status)
