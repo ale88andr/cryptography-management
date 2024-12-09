@@ -1,3 +1,9 @@
+# ========= Positions =========
+POS_INDEX_PAGE_HEADER = "Должности сотрудников"
+POS_HELP_TEXT = "Администрирование должностей сотрудников"
+POS_ADD_PAGE_HEADER = "Добавление должности"
+POS_EDIT_PAGE_HEADER = "Редактирование должности"
+
 # ========= Organisations =========
 ORG_INDEX_PAGE_HEADER = "Организация"
 OGR_HELP_TEXT = "Администрироваие данных организации"

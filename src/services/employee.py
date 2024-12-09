@@ -3,7 +3,7 @@ from functools import lru_cache
 import math
 from typing import Optional
 from sqlalchemy import select, text, func, extract
-from sqlalchemy.orm import joinedload, selectinload
+from sqlalchemy.orm import joinedload, selectinload, load_only
 
 from db.connection import db
 from models.cryptography import KeyCarrier, KeyDocument, Version
@@ -171,19 +171,19 @@ class EmployeeServise(BaseRepository):
         return month_users
 
     @classmethod
-    async def get_all_shortened(
+    async def get_short_list(
         cls,
         is_leadership: bool = False,
         is_staff: bool = False,
         is_worked: bool = True,
     ):
         """Function used for HTML select lists options."""
-        query = select(
+        query = select(cls.model).options(load_only(
             cls.model.id,
             cls.model.name,
             cls.model.surname,
             cls.model.middle_name
-        ).filter(
+        )).filter(
             cls.model.is_worked.is_(is_worked)
         )
 
@@ -195,17 +195,8 @@ class EmployeeServise(BaseRepository):
                 cls.model.position.has(is_leadership=is_leadership)
             )
 
-        result = await db.execute(query.order_by(cls.model.surname))
-        mapped_result = [
-            Employee(
-                id=row.id,
-                name=row.name,
-                surname=row.surname,
-                middle_name=row.middle_name
-            ) for row in result.fetchall()
-        ]
-
-        return mapped_result
+        result = await db.execute(query)
+        return result.scalars().all()
 
     # @classmethod
     # async def add(

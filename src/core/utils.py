@@ -1,8 +1,9 @@
 import os
-from fastapi import APIRouter, responses
+from fastapi import APIRouter, responses, Request
 
 from core.config import BASE_DIR
 from core.templater import RenderTemplate
+from models.users import User
 
 
 def add_breadcrumb(
@@ -50,3 +51,17 @@ def create_file_response(template, context, name):
 
 def get_bool_from_checkbox(param: str) -> bool:
     return True if param == "on" else False
+
+
+def create_base_admin_context(
+    request: Request,
+    page_header: str,
+    page_header_help: str,
+    user: User) -> dict:
+    """Создает базовый контекст для HTML страниц админ панели"""
+    return {
+        "request": request,
+        "page_header": page_header,
+        "page_header_help": page_header_help,
+        "user": user,
+    }

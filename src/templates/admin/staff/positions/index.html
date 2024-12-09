@@ -2,8 +2,8 @@
 
 {% block title %}{{ page_header_text }}{% endblock %}
 {% block breadcrumb %}{% include 'admin/common/breadcrumbs.html' %}{% endblock %}
-{% block page_header_text %}{{ page_header_text }}{% endblock %}
-{% block page_header_help_text %}{{ page_header_help_text }}{% endblock %}
+{% block page_header_text %}{{ page_header }}{% endblock %}
+{% block page_header_help_text %}{{ page_header_help }}{% endblock %}
 
 {% from "admin/common/macros.html" import no_data %}
 {% from "admin/common/form_macros.html" import select_filter, search_field %}
@@ -71,7 +71,7 @@
                     </td>
                     <td>
                         <a href="{{ url_for('edit_position_admin', position_id=position.id) }}" class="btn btn-sm btn-outline-info me-1" title="Редактировать"><i class="bi bi-pencil-square"></i></a>
-                        <a href="{{ url_for('delete_position_admin', position_id=position.id) }}" class="btn btn-sm btn-outline-warning" title="Удалить"><i class="bi bi-trash"></i></a>
+                        <a href="{{ url_for('delete_position_admin', pk=position.id) }}" class="btn btn-sm btn-outline-warning" title="Удалить"><i class="bi bi-trash"></i></a>
                     </td>
                 </tr>
             {% else %}

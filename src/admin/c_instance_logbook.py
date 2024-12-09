@@ -88,10 +88,10 @@ async def get_cilogbook_admin(
 @router.get("/add")
 async def add_cilogbook_admin(request: Request, user: User = Depends(get_current_admin)):
     versions = await CVersionServise.all_used()
-    equipments = await EquipmentServise.all()
-    employees = await EmployeeServise.get_all_shortened()
-    security_staff_members = await EmployeeServise.get_all_shortened(is_staff=True)
-    leadership_members = await EmployeeServise.get_all_shortened(is_leadership=True)
+    equipments = await EquipmentServise.get_short_list()
+    employees = await EmployeeServise.get_short_list()
+    security_staff_members = await EmployeeServise.get_short_list(is_staff=True)
+    leadership_members = await EmployeeServise.get_short_list(is_leadership=True)
     carriers, _ = await KeyCarrierServise.all()
     context = {
         "request": request,
@@ -132,10 +132,10 @@ async def create_cilogbook_admin(request: Request, user: User = Depends(get_curr
             form.__dict__.get("errors").setdefault("non_field_error", e)
 
     versions, _ = await CVersionServise.all()
-    equipments = await EquipmentServise.all()
-    employees = await EmployeeServise.all()
-    leadership_members = await EmployeeServise.get_all_shortened(is_leadership=True)
-    security_staff_members = await EmployeeServise.get_all_shortened(is_staff=True)
+    equipments = await EquipmentServise.get_short_list()
+    employees = await EmployeeServise.get_short_list()
+    leadership_members = await EmployeeServise.get_short_list(is_leadership=True)
+    security_staff_members = await EmployeeServise.get_short_list(is_staff=True)
     carriers, _ = await KeyCarrierServise.all()
     context = {
         "request": request,

@@ -1,22 +1,40 @@
-from typing import Optional
+from typing import Dict, Optional
 from fastapi import APIRouter, Request, Depends, responses, status
+from admin.constants import (
+    POS_ADD_PAGE_HEADER,
+    POS_EDIT_PAGE_HEADER,
+    POS_HELP_TEXT,
+    POS_INDEX_PAGE_HEADER,
+)
 
 from core.config import templates
-from core.utils import add_breadcrumb
+from core.utils import (
+    create_base_admin_context,
+    create_breadcrumbs,
+    get_bool_from_checkbox,
+)
 from dependencies.auth import get_current_admin
+from forms.position import PositionForm
 from models.users import User
 from services.position import PositionServise
 
 
 app_prefix = "/admin/staff/positions"
-form_teplate = f"{app_prefix}/form.html"
-list_teplate = f"{app_prefix}/index.html"
+form_template = f"{app_prefix}/form.html"
+list_template = f"{app_prefix}/index.html"
 
 router = APIRouter(prefix=app_prefix, tags=["Должности сотрудников"])
 
 
+def create_filters(is_leadership: Optional[str]) -> Dict[str, bool]:
+    filters = {}
+    if is_leadership is not None and is_leadership != "all":
+        filters["is_leadership"] = True if is_leadership == "True" else False
+    return filters
+
+
 # ========= Positions =========
-@router.get("/positions", response_class=responses.HTMLResponse)
+@router.get("/", response_class=responses.HTMLResponse)
 async def get_positions_admin(
     request: Request,
     msg: str = None,
@@ -24,74 +42,64 @@ async def get_positions_admin(
     q: Optional[str] = None,
     columns: str = None,
     is_leadership: Optional[str] = None,
-    user: User = Depends(get_current_admin)
+    user: User = Depends(get_current_admin),
 ):
-    page_header_text = "Должности сотрудников"
-    page_header_help_text = "Администрирование должностей сотрудников"
-
-    filters = {}
-    if is_leadership is not None and is_leadership != "all":
-        filters["is_leadership"] = True if is_leadership == "True" else False
+    filters = create_filters(is_leadership)
 
     records, counter = await PositionServise.all(
         sort=sort, q=q, columns=columns, filters=filters
     )
-    return templates.TemplateResponse(
-        list_teplate,
-        context={
-            "request": request,
+
+    # Создаем базовый контекст
+    context = create_base_admin_context(
+        request, POS_INDEX_PAGE_HEADER, POS_HELP_TEXT, user
+    )
+    context.update(
+        {
             "positions": records,
             "counter": counter,
-            "page_header_text": page_header_text,
-            "page_header_help_text": page_header_help_text,
             "msg": msg,
             "is_leadership": is_leadership,
             "sort": sort,
             "q": q,
-            "breadcrumbs": [
-                add_breadcrumb(
-                    router, page_header_text, "get_positions_admin", is_active=True
-                )
-            ],
-            "user": user
-        },
+            "breadcrumbs": create_breadcrumbs(
+                router, [POS_INDEX_PAGE_HEADER], ["get_positions_admin"]
+            ),
+        }
     )
 
+    return templates.TemplateResponse(list_template, context)
 
-@router.get("/positions/add")
+
+@router.get("/add")
 async def add_position_admin(request: Request, user: User = Depends(get_current_admin)):
-    page_header_text = "Добавление должности"
-    page_header_help_text = "Администрирование должностей сотрудников"
-    return templates.TemplateResponse(
-        form_teplate,
-        context={
-            "request": request,
-            "page_header_text": page_header_text,
-            "page_header_help_text": page_header_help_text,
-            "breadcrumbs": [
-                add_breadcrumb(router, "Должности сотрудников", "get_positions_admin"),
-                add_breadcrumb(
-                    router, page_header_text, "add_position_admin", is_active=True
-                ),
-            ],
-            "user": user
-        },
+    # Создаем базовый контекст
+    context = create_base_admin_context(
+        request, POS_ADD_PAGE_HEADER, POS_HELP_TEXT, user
+    )
+    context.update(
+        {
+            "breadcrumbs": create_breadcrumbs(
+                router,
+                [POS_INDEX_PAGE_HEADER, POS_ADD_PAGE_HEADER],
+                ["get_positions_admin", "add_position_admin"],
+            ),
+        }
     )
 
+    return templates.TemplateResponse(form_template, context)
 
-@router.post("/positions/add")
-async def create_position_admin(request: Request, user: User = Depends(get_current_admin)):
-    context = {
-        "page_header_text": "Добавление должности",
-        "page_header_help_text": "Администрирование должностей сотрудников",
-        "user": user
-    }
+
+@router.post("/add")
+async def create_position_admin(
+    request: Request, user: User = Depends(get_current_admin)
+):
     form = PositionForm(request)
     await form.load_data()
     if await form.is_valid():
         try:
-            position = await PositionServise.create(
-                name=form.name, is_leadership=form.is_leadership
+            position = await PositionServise.add(
+                name=form.name, is_leadership=get_bool_from_checkbox(form.is_leadership)
             )
             redirect_url = request.url_for("get_positions_admin").include_query_params(
                 msg=f"Должность '{position.name}' успешно создана!"
@@ -101,49 +109,53 @@ async def create_position_admin(request: Request, user: User = Depends(get_curre
             )
         except Exception as e:
             form.__dict__.get("errors").setdefault("non_field_error", e)
-            return templates.TemplateResponse(form_teplate, form.__dict__)
+            return templates.TemplateResponse(form_template, form.__dict__)
+
+    # Создаем базовый контекст
+    context = create_base_admin_context(
+        request, POS_ADD_PAGE_HEADER, POS_HELP_TEXT, user
+    )
     context.update(form.__dict__)
-    print(context)
-    return templates.TemplateResponse(form_teplate, context)
+    return templates.TemplateResponse(form_template, context)
 
 
-@router.get("/positions/{position_id}/edit")
-async def edit_position_admin(position_id: int, request: Request, user: User = Depends(get_current_admin)):
-    page_header_text = "Редактирование должности"
-    page_header_help_text = "Администрирование должностей сотрудников"
-    position = await PositionServise.get_by_id(position_id)
-    return templates.TemplateResponse(
-        form_teplate,
-        context={
-            "request": request,
-            "name": position.name,
-            "is_leadership": position.is_leadership,
-            "page_header_text": page_header_text,
-            "page_header_help_text": page_header_help_text,
-            "breadcrumbs": [
-                add_breadcrumb(router, "Должности сотрудников", "get_positions_admin"),
-                add_breadcrumb(
-                    router, page_header_text, "edit_position_admin", is_active=True
-                ),
-            ],
-            "user": user
-        },
+@router.get("/{position_id}/edit")
+async def edit_position_admin(
+    position_id: int, request: Request, user: User = Depends(get_current_admin)
+):
+    # Создаем базовый контекст
+    context = create_base_admin_context(
+        request, POS_EDIT_PAGE_HEADER, POS_HELP_TEXT, user
     )
 
+    position = await PositionServise.get_by_id(position_id)
 
-@router.post("/positions/{position_id}/edit")
-async def update_position_admin(position_id: int, request: Request, user: User = Depends(get_current_admin)):
-    context = {
-        "page_header_text": "Редактирование должности",
-        "page_header_help_text": "Администрирование должностей сотрудников",
-        "user": user
-    }
+    context.update(
+        {
+            "breadcrumbs": create_breadcrumbs(
+                router,
+                [POS_INDEX_PAGE_HEADER, POS_EDIT_PAGE_HEADER],
+                ["get_positions_admin", "edit_position_admin"],
+            ),
+            **vars(position),
+        }
+    )
+
+    return templates.TemplateResponse(form_template, context)
+
+
+@router.post("/{position_id}/edit")
+async def update_position_admin(
+    position_id: int, request: Request, user: User = Depends(get_current_admin)
+):
     form = PositionForm(request)
     await form.load_data()
     if await form.is_valid():
         try:
             position = await PositionServise.update(
-                position_id, name=form.name, is_leadership=form.is_leadership
+                position_id,
+                name=form.name,
+                is_leadership=get_bool_from_checkbox(form.is_leadership),
             )
             redirect_url = request.url_for("get_positions_admin").include_query_params(
                 msg=f"Должность '{position.name}' успешно обновлена!"
@@ -153,53 +165,28 @@ async def update_position_admin(position_id: int, request: Request, user: User =
             )
         except Exception as e:
             form.__dict__.get("errors").setdefault("non_field_error", e)
-            return templates.TemplateResponse(form_teplate, form.__dict__)
+            return templates.TemplateResponse(form_template, form.__dict__)
+
+    # Создаем базовый контекст
+    context = create_base_admin_context(
+        request, POS_EDIT_PAGE_HEADER, POS_HELP_TEXT, user
+    )
     context.update(form.__dict__)
-    return templates.TemplateResponse(form_teplate, context)
+    return templates.TemplateResponse(form_template, context)
 
 
-@router.get("/positions/{position_id}/delete")
-async def delete_position_admin(position_id: int, request: Request, user: User = Depends(get_current_admin)):
+@router.get("/{pk}/delete")
+async def delete_position_admin(
+    pk: int, request: Request, user: User = Depends(get_current_admin)
+):
     redirect_url = request.url_for("get_positions_admin")
+    redirect_status = status.HTTP_307_TEMPORARY_REDIRECT
     try:
-        await PositionServise.delete(model_id=position_id)
+        await PositionServise.delete(pk)
         redirect = request.url_for("get_positions_admin").include_query_params(
             msg="Должность удалена!"
         )
-        return responses.RedirectResponse(
-            redirect, status_code=status.HTTP_307_TEMPORARY_REDIRECT
-        )
+        return responses.RedirectResponse(redirect, status_code=redirect_status)
     except Exception as e:
         redirect_url.include_query_params(errors={"non_field_error": e})
-        return responses.RedirectResponse(
-            redirect_url, status_code=status.HTTP_307_TEMPORARY_REDIRECT
-        )
-
-
-class PositionForm:
-    def __init__(self, request: Request):
-        self.request: Request = request
-        self.errors: dict = {}
-        self.name: str
-        self.is_leadership: bool = False
-
-    async def load_data(self):
-        form = await self.request.form()
-        self.name: str = form.get("name")
-        self.is_leadership: bool = True if form.get("is_leadership") == "on" else False
-
-    async def is_valid(self):
-        name_min_length = 3
-        if not self.name or not len(self.name) >= name_min_length:
-            self.errors.setdefault(
-                "name", f"Поле должно содержать как минимум {name_min_length} символа!"
-            )
-        if self.name:
-            db_position = await PositionServise.get_one_or_none(name=self.name)
-            if db_position:
-                self.errors.setdefault(
-                    "name", f"'{self.name}' - Такая должность уже существует!"
-                )
-        if not self.errors:
-            return True
-        return False
+        return responses.RedirectResponse(redirect_url, status_code=redirect_status)

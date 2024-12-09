@@ -1,7 +1,7 @@
 import math
 from typing import Optional
 from sqlalchemy import select, text, func
-from sqlalchemy.orm import joinedload, selectinload, subqueryload
+from sqlalchemy.orm import joinedload, selectinload, load_only
 
 from db.connection import db
 from models.cryptography import KeyCarrier, KeyDocument, Version
@@ -24,7 +24,6 @@ class EquipmentServise(BaseRepository):
         cls,
         page: int = 0,
         limit: int = 0,
-        columns: str = None,
         sort: str = None,
         q: str = None,
         filters: Optional[dict] = None,
@@ -86,3 +85,10 @@ class EquipmentServise(BaseRepository):
         )
         result = await cls.db.execute(query)
         return result.scalar_one_or_none()
+
+    @classmethod
+    async def get_short_list(cls):
+        """Method used for HTML select lists options."""
+        query = select(cls.model).options(load_only(cls.model.id, cls.model.sticker))
+        result = await db.execute(query)
+        return result.scalars().all()
