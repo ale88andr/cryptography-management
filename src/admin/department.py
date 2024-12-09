@@ -106,16 +106,14 @@ async def edit_department_admin(
 ):
     dept = await DepartmentServise.get_by_id(department_id)
     context = create_base_admin_context(request, edit_header, help_text, user)
-    context.update(
-        {
-            "breadcrumbs": create_breadcrumbs(
-                router,
-                [index_header, edit_header],
-                ["get_departments_admin", "edit_department_admin"],
-            ),
-            **vars(dept),
-        }
-    )
+    context.update({
+        "breadcrumbs": create_breadcrumbs(
+            router,
+            [index_header, edit_header],
+            ["get_departments_admin", "edit_department_admin"],
+        ),
+        **vars(dept),
+    })
     return templates.TemplateResponse(form_template, context)
 
 
@@ -138,15 +136,13 @@ async def update_position_admin(
             form.__dict__.get("errors").setdefault("non_field_error", e)
             return templates.TemplateResponse(form_template, form.__dict__)
     context = create_base_admin_context(request, edit_header, help_text, user)
-    context.update(
-        {
-            "breadcrumbs": create_breadcrumbs(
-                router,
-                [index_header, edit_header],
-                ["get_departments_admin", "edit_department_admin"],
-            ),
-        }
-    )
+    context.update({
+        "breadcrumbs": create_breadcrumbs(
+            router,
+            [index_header, edit_header],
+            ["get_departments_admin", "edit_department_admin"],
+        )
+    })
     context.update(form.__dict__)
     context.update(form.fields)
     return templates.TemplateResponse(form_template, context)

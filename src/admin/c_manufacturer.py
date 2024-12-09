@@ -14,8 +14,8 @@ from services.c_manufacturer import CManufacturerServise
 from models.users import User
 
 app_prefix = "/admin/cryptography/manufacturers"
-form_teplate = f"{app_prefix}/form.html"
-list_teplate = f"{app_prefix}/index.html"
+form_template = f"{app_prefix}/form.html"
+list_template = f"{app_prefix}/index.html"
 
 router = APIRouter(prefix=app_prefix, tags=[CM_HELP_TEXT])
 
@@ -31,7 +31,7 @@ async def get_cmanufacturers_admin(
 ):
     records, counter = await CManufacturerServise.all(sort=sort, q=q)
     return templates.TemplateResponse(
-        name=list_teplate,
+        name=list_template,
         context={
             "request": request,
             "objects": records,
@@ -57,7 +57,7 @@ async def get_cmanufacturers_admin(
 @router.get("/add")
 async def add_cmanufacturer_admin(request: Request, user: User = Depends(get_current_admin)):
     return templates.TemplateResponse(
-        form_teplate,
+        form_template,
         {
             "request": request,
             "page_header": CM_ADD_PAGE_HEADER,
@@ -93,21 +93,21 @@ async def create_cmanufacturer_admin(request: Request, user: User = Depends(get_
             )
         except Exception as e:
             form.__dict__.get("errors").setdefault("non_field_error", e)
-            return templates.TemplateResponse(form_teplate, form.__dict__)
+            return templates.TemplateResponse(form_template, form.__dict__)
     context = {
         "page_header_text": CM_ADD_PAGE_HEADER,
         "page_header_help_text": CM_HELP_TEXT,
         "user": user,
     }
     context.update(form.__dict__)
-    return templates.TemplateResponse(form_teplate, context)
+    return templates.TemplateResponse(form_template, context)
 
 
 @router.get("/{cm_id}/edit")
 async def edit_cmanufacturer_admin(cm_id: int, request: Request, user: User = Depends(get_current_admin)):
     obj = await CManufacturerServise.get_by_id(cm_id)
     return templates.TemplateResponse(
-        form_teplate,
+        form_template,
         {
             "request": request,
             "name": obj.name,
@@ -147,14 +147,14 @@ async def update_carrier_admin(cm_id: int, request: Request, user: User = Depend
             )
         except Exception as e:
             form.__dict__.get("errors").setdefault("non_field_error", e)
-            return templates.TemplateResponse(form_teplate, form.__dict__)
+            return templates.TemplateResponse(form_template, form.__dict__)
     context = {
         "page_header_text": CM_EDIT_PAGE_HEADER,
         "page_header_help_text": CM_HELP_TEXT,
         "user": user,
     }
     context.update(form.__dict__)
-    return templates.TemplateResponse(form_teplate, context)
+    return templates.TemplateResponse(form_template, context)
 
 
 @router.get("/{cm_id}/delete")

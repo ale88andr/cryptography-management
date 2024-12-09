@@ -1,28 +1,35 @@
 from fastapi import APIRouter, Request, Depends, responses, status
 
 from admin.constants import (
-    ORG_ADD_HEADER,
-    ORG_EDIT_HEADER,
-    ORG_INDEX_PAGE_HEADER,
-    OGR_HELP_TEXT,
+    ORG_ADD_HEADER as add_header,
+    ORG_EDIT_HEADER as edit_header,
+    ORG_INDEX_PAGE_HEADER as index_header,
+    OGR_HELP_TEXT as help_text,
 )
 from core.config import templates
-from core.utils import add_breadcrumb
+from core.utils import (
+    create_base_admin_context,
+    create_breadcrumbs,
+    redirect_with_message,
+)
 from dependencies.auth import get_current_admin
+from forms.organisation import OrganisationForm
 from models.users import User
 from services.organisation import OrganisationServise
 
 
 app_prefix = "/admin/staff/organisations"
-form_teplate = f"{app_prefix}/form.html"
-list_teplate = f"{app_prefix}/organisation.html"
+form_template = f"{app_prefix}/form.html"
+list_template = f"{app_prefix}/organisation.html"
 
-router = APIRouter(prefix=app_prefix, tags=[OGR_HELP_TEXT])
+router = APIRouter(prefix=app_prefix, tags=[help_text])
 
 
 # ========= Organisations =========
 @router.get("/")
-async def get_organisation_admin(request: Request, user: User = Depends(get_current_admin)):
+async def get_organisation_admin(
+    request: Request, user: User = Depends(get_current_admin)
+):
     organisation = await OrganisationServise.all()
     if not organisation:
         return responses.RedirectResponse(
@@ -30,55 +37,44 @@ async def get_organisation_admin(request: Request, user: User = Depends(get_curr
             status_code=status.HTTP_303_SEE_OTHER,
         )
 
-    return templates.TemplateResponse(
-        list_teplate,
-        context={
-            "request": request,
-            "organisation": organisation,
-            "page_header": ORG_INDEX_PAGE_HEADER,
-            "page_header_help": OGR_HELP_TEXT,
-            "breadcrumbs": [
-                add_breadcrumb(
-                    router,
-                    ORG_INDEX_PAGE_HEADER,
-                    "get_organisation_admin",
-                    is_active=True,
-                ),
-            ],
-            "user": user
-        },
-    )
+    # Создаем базовый контекст
+    context = create_base_admin_context(request, index_header, help_text, user)
+    context.update({
+        "organisation": organisation,
+        "breadcrumbs": create_breadcrumbs(
+            router, [index_header], ["get_organisation_admin"]
+        ),
+    })
+
+    return templates.TemplateResponse(list_template, context)
 
 
 @router.get("/add")
-async def add_organisation_admin(request: Request, user: User = Depends(get_current_admin)):
-    return templates.TemplateResponse(
-        form_teplate,
-        context={
-            "request": request,
-            "page_header": ORG_ADD_HEADER,
-            "page_header_help": OGR_HELP_TEXT,
-            "breadcrumbs": [
-                add_breadcrumb(router, ORG_INDEX_PAGE_HEADER, "get_organisation_admin"),
-                add_breadcrumb(router, ORG_ADD_HEADER, "add_organisation_admin", True),
-            ],
-            "user": user
-        },
-    )
+async def add_organisation_admin(
+    request: Request, user: User = Depends(get_current_admin)
+):
+    # Создаем базовый контекст
+    context = create_base_admin_context(request, index_header, help_text, user)
+    context.update({
+        "breadcrumbs": create_breadcrumbs(
+            router,
+            [index_header, add_header],
+            ["get_organisation_admin", "add_organisation_admin"],
+        ),
+    })
+
+    return templates.TemplateResponse(form_template, context)
 
 
 @router.post("/add")
-async def create_organisation_admin(request: Request, user: User = Depends(get_current_admin)):
-    context = {
-        "page_header": "Добавление должности",
-        "page_header_help": "Администрирование должностей сотрудников",
-        "user": user
-    }
+async def create_organisation_admin(
+    request: Request, user: User = Depends(get_current_admin)
+):
     form = OrganisationForm(request)
     await form.load_data()
     if await form.is_valid():
         try:
-            organisation = await OrganisationServise.create(
+            organisation = await OrganisationServise.add(
                 name=form.name,
                 short_name=form.short_name,
                 chief=form.chief,
@@ -87,56 +83,53 @@ async def create_organisation_admin(request: Request, user: User = Depends(get_c
                 building=form.building,
                 index=int(form.index),
             )
-            redirect_url = request.url_for(
-                "get_organisations_admin"
-            ).include_query_params(
-                msg=f"Организация '{organisation.name}' успешно создана!"
-            )
-            return responses.RedirectResponse(
-                redirect_url, status_code=status.HTTP_303_SEE_OTHER
+            return redirect_with_message(
+                request,
+                "get_organisations_admin",
+                msg=f"Организация '{organisation.name}' успешно создана!",
+                status=status.HTTP_303_SEE_OTHER,
             )
         except Exception as e:
             form.__dict__.get("errors").setdefault("non_field_error", e)
-            return templates.TemplateResponse(form_teplate, form.__dict__)
+            return templates.TemplateResponse(form_template, form.__dict__)
+    # Создаем базовый контекст
+    context = create_base_admin_context(request, add_header, help_text, user)
+    context.update({
+        "breadcrumbs": create_breadcrumbs(
+            router,
+            [index_header, add_header],
+            ["get_organisation_admin", "add_organisation_admin"],
+        ),
+    })
     context.update(form.__dict__)
-    print(context)
-    return templates.TemplateResponse(form_teplate, context)
+    context.update(form.fields)
+    return templates.TemplateResponse(form_template, context)
 
 
 @router.get("/{organisation_id}/edit")
-async def edit_organisation_admin(organisation_id: int, request: Request, user: User = Depends(get_current_admin)):
+async def edit_organisation_admin(
+    organisation_id: int, request: Request, user: User = Depends(get_current_admin)
+):
     organisation = await OrganisationServise.get_one_or_none(id=organisation_id)
-    return templates.TemplateResponse(
-        form_teplate,
-        context={
-            "request": request,
-            "name": organisation.name,
-            "short_name": organisation.short_name,
-            "city": organisation.city,
-            "street": organisation.street,
-            "building": organisation.building,
-            "index": organisation.index,
-            "chief": organisation.chief,
-            "page_header": ORG_EDIT_HEADER,
-            "page_header_help": OGR_HELP_TEXT,
-            "breadcrumbs": [
-                add_breadcrumb(router, ORG_INDEX_PAGE_HEADER, "get_organisation_admin"),
-                add_breadcrumb(
-                    router, ORG_EDIT_HEADER, "edit_organisation_admin", True
-                ),
-            ],
-            "user": user
-        },
-    )
+
+    # Создаем базовый контекст
+    context = create_base_admin_context(request, edit_header, help_text, user)
+    context.update({
+        "breadcrumbs": create_breadcrumbs(
+            router,
+            [index_header, edit_header],
+            ["get_organisation_admin", "edit_organisation_admin"],
+        ),
+        **vars(organisation),
+    })
+
+    return templates.TemplateResponse(form_template, context)
 
 
 @router.post("/{organisation_id}/edit")
-async def update_organisation_admin(organisation_id: int, request: Request, user: User = Depends(get_current_admin)):
-    context = {
-        "page_header": ORG_EDIT_HEADER,
-        "page_header_help": OGR_HELP_TEXT,
-        "user": user
-    }
+async def update_organisation_admin(
+    organisation_id: int, request: Request, user: User = Depends(get_current_admin)
+):
     form = OrganisationForm(request)
     await form.load_data()
     if await form.is_valid():
@@ -151,61 +144,25 @@ async def update_organisation_admin(organisation_id: int, request: Request, user
                 building=form.building,
                 index=int(form.index),
             )
-            redirect_url = request.url_for(
-                "get_organisation_admin"
-            ).include_query_params(msg=f"Данные '{organisation.name}' обновлены!")
-            return responses.RedirectResponse(
-                redirect_url, status_code=status.HTTP_303_SEE_OTHER
+            return redirect_with_message(
+                request,
+                "get_organisation_admin",
+                msg=f"Данные '{organisation.name}' обновлены!",
+                status=status.HTTP_303_SEE_OTHER,
             )
         except Exception as e:
             form.__dict__.get("errors").setdefault("non_field_error", e)
-            return templates.TemplateResponse(form_teplate, form.__dict__)
+            return templates.TemplateResponse(form_template, form.__dict__)
+
+    # Создаем базовый контекст
+    context = create_base_admin_context(request, edit_header, help_text, user)
+    context.update({
+        "breadcrumbs": create_breadcrumbs(
+            router,
+            [index_header, edit_header],
+            ["get_organisation_admin", "edit_organisation_admin"],
+        )
+    })
     context.update(form.__dict__)
-    return templates.TemplateResponse(form_teplate, context)
-
-
-class OrganisationForm:
-    def __init__(self, request: Request):
-        self.request: Request = request
-        self.errors: dict = {}
-        self.name: str
-        self.short_name: str
-        self.city: str
-        self.street: str
-        self.building: str
-        self.index: int
-        self.chief: str
-
-    async def load_data(self):
-        form = await self.request.form()
-        self.name: str = form.get("name")
-        self.short_name: str = form.get("short_name")
-        self.city: str = form.get("city")
-        self.street: str = form.get("street")
-        self.building: str = form.get("building")
-        self.index: int = form.get("index")
-        self.chief: str = form.get("chief")
-
-    async def is_valid(self):
-        name_min_length = 3
-        if not self.name or not len(self.name) >= name_min_length:
-            self.errors.setdefault(
-                "name", f"Поле должно содержать как минимум {name_min_length} символа!"
-            )
-        if not self.short_name or not len(self.short_name) >= name_min_length:
-            self.errors.setdefault(
-                "short_name",
-                f"Поле должно содержать как минимум {name_min_length} символа!",
-            )
-        if not self.city:
-            self.errors.setdefault("city", "Поле должно быть заполнено!")
-        if not self.building:
-            self.errors.setdefault("building", "Поле должно быть заполнено!")
-        if not self.chief:
-            self.errors.setdefault("chief", "Поле должно быть заполнено!")
-        if self.index and not self.index.isnumeric():
-            self.errors.setdefault("index", "Поле должно состоять из цифр!")
-
-        if not self.errors:
-            return True
-        return False
+    context.update(form.fields)
+    return templates.TemplateResponse(form_template, context)
