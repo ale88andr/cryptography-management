@@ -78,7 +78,7 @@ async def get_cversions_admin(
 @router.get("/add")
 async def add_cversion_admin(request: Request, user: User = Depends(get_current_admin)):
     models, _ = await CModelServise.all()
-    responsible_users = await EmployeeServise.security_staff_members()
+    responsible_users = await EmployeeServise.get_all_shortened(is_staff=True)
     context = {
         "request": request,
         "page_header": add_page_header,
@@ -133,7 +133,7 @@ async def create_cversion_admin(request: Request, user: User = Depends(get_curre
             form.__dict__.get("errors").setdefault("non_field_error", e)
 
     models, _ = await CModelServise.all()
-    responsible_users = await EmployeeServise.security_staff_members()
+    responsible_users = await EmployeeServise.get_all_shortened(is_staff=True)
     context = {
         "page_header": add_page_header,
         "page_header_help": hepl_text,
@@ -156,7 +156,7 @@ async def create_cversion_admin(request: Request, user: User = Depends(get_curre
 @router.get("/{cversion_id}/edit")
 async def edit_cversion_admin(cversion_id: int, request: Request, user: User = Depends(get_current_admin)):
     obj = await CVersionServise.get_by_id(cversion_id)
-    responsible_users = await EmployeeServise.security_staff_members()
+    responsible_users = await EmployeeServise.get_all_shortened(is_staff=True)
     models, _ = await CModelServise.all()
     context = {
         "request": request,
@@ -208,7 +208,7 @@ async def update_cversion_admin(cversion_id: int, request: Request, user: User =
             form.errors.setdefault("non_field_error", e)
 
     models, _ = await CModelServise.all()
-    responsible_users = await EmployeeServise.security_staff_members()
+    responsible_users = await EmployeeServise.get_all_shortened(is_staff=True)
     context = {
         "request": request,
         "id": cversion_id,
@@ -231,7 +231,7 @@ async def update_cversion_admin(cversion_id: int, request: Request, user: User =
 
 @router.get("/{cversion_id}/decommissioning")
 async def decommissioning_cversion_admin(cversion_id: int, request: Request, user: User = Depends(get_current_admin)):
-    performers = await EmployeeServise.security_staff_members()
+    performers = await EmployeeServise.get_all_shortened(is_staff=True)
     context = {
         "request": request,
         "page_header": decommissioning_page_header,

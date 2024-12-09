@@ -171,26 +171,6 @@ class EmployeeServise(BaseRepository):
         return month_users
 
     @classmethod
-    async def security_staff_members(cls):
-        query = (
-            select(cls.model)
-            .filter_by(is_security_staff=True)
-            .order_by(cls.model.surname)
-        )
-        records = (await db.execute(query)).scalars().all()
-        return records
-
-    @classmethod
-    async def leadership_members(cls):
-        query = (
-            select(cls.model)
-            .filter(cls.model.position.has(is_leadership=True))
-            .order_by(cls.model.surname)
-        )
-        records = (await db.execute(query)).scalars().all()
-        return records
-
-    @classmethod
     async def get_all_shortened(
         cls,
         is_leadership: bool = False,
@@ -204,13 +184,28 @@ class EmployeeServise(BaseRepository):
             cls.model.surname,
             cls.model.middle_name
         ).filter(
-            cls.model.position.is_leadership.is_(is_leadership),
-            cls.model.is_worked.is_(is_worked),
-            cls.model.is_security_staff.is_(is_staff)
-        ).order_by(cls.model.surname)
+            cls.model.is_worked.is_(is_worked)
+        )
 
-        result = await db.execute(query)
-        return result.scalars().all()
+        if is_staff:
+            query = query.filter(cls.model.is_security_staff.is_(True))
+
+        if is_leadership:
+            query = query.filter(
+                cls.model.position.has(is_leadership=is_leadership)
+            )
+
+        result = await db.execute(query.order_by(cls.model.surname))
+        mapped_result = [
+            Employee(
+                id=row.id,
+                name=row.name,
+                surname=row.surname,
+                middle_name=row.middle_name
+            ) for row in result.fetchall()
+        ]
+
+        return mapped_result
 
     # @classmethod
     # async def add(

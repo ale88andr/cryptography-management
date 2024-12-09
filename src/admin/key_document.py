@@ -124,7 +124,7 @@ async def detail_key_document_admin(pk: int, request: Request, user: User = Depe
 @router.get("/{pk}/destruction")
 async def destruction_key_document_admin(pk: int, request: Request, user: User = Depends(get_current_admin)):
     key = await KeyDocumentServise.get_by_id(pk)
-    security_staff_members = await EmployeeServise.security_staff_members()
+    security_staff_members = await EmployeeServise.get_all_shortened(is_staff=True)
     context = {
         "request": request,
         "key": key,
@@ -176,7 +176,7 @@ async def destruct_key_document_admin(pk: int, request: Request, user: User = De
         except Exception as e:
             form.errors.setdefault("non_field_error", e)
 
-    security_staff_members = await EmployeeServise.security_staff_members()
+    security_staff_members = await EmployeeServise.get_all_shortened(is_staff=True)
     context = {
         "request": request,
         "key": key,
@@ -208,7 +208,7 @@ async def destruct_employee_cversion_admin(pk: int, request: Request, user: User
             "remove_act_record_id": None,
         }
     )
-    security_staff_members = await EmployeeServise.security_staff_members()
+    security_staff_members = await EmployeeServise.get_all_shortened(is_staff=True)
     context = {
         "request": request,
         "key": key,
@@ -275,7 +275,7 @@ async def destruct_key_cversion_admin(pk: int, request: Request, user: User = De
             print("-------------------------------")
             form.errors.setdefault("non_field_error", e)
 
-    security_staff_members = await EmployeeServise.security_staff_members()
+    security_staff_members = await EmployeeServise.get_all_shortened(is_staff=True)
     context = {
         "request": request,
         "key": key,
