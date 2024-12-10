@@ -27,7 +27,7 @@
                 <td>
                     <ul class="list-unstyled mb-0">
                         <li>
-                            <a href="{{ url_for('edit_cversion_admin', cversion_id=log.cryptography_version_id) }}">
+                            <a href="{{ url_for('edit_cversion_admin', pk=log.cryptography_version_id) }}">
                                 <strong>{{ log.cryptography_version.model.name }} {{ log.cryptography_version.version }}</strong>
                             </a>
                         </li>

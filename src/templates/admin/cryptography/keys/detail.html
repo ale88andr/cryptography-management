@@ -99,7 +99,7 @@
                             <p class="mb-0">Наименование:</p>
                         </div>
                         <div class="col-sm-7">
-                            <a href="{{ url_for('edit_cversion_admin', cversion_id=key.cryptography_version_id) }}">
+                            <a href="{{ url_for('edit_cversion_admin', pk=key.cryptography_version_id) }}">
                                 {{ key.cryptography_version.model }} {{ key.cryptography_version.version }}
                             </a>
                         </div>

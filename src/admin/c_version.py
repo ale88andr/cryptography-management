@@ -1,16 +1,19 @@
-from datetime import datetime
-from typing import Optional
+from typing import Dict, Optional
 from fastapi import APIRouter, Request, Depends, responses, status
 
 from admin.constants import (
-    VER_ADD_PAGE_HEADER as add_page_header,
-    VER_EDIT_PAGE_HEADER as edit_page_header,
-    VER_HELP_TEXT as hepl_text,
-    VER_INDEX_PAGE_HEADER as index_page_header,
-    VER_DECOMMISSIONING_TEXT as decommissioning_page_header,
+    VER_ADD_PAGE_HEADER as add_header,
+    VER_EDIT_PAGE_HEADER as edit_header,
+    VER_HELP_TEXT as help_text,
+    VER_INDEX_PAGE_HEADER as index_header,
+    VER_DECOMMISSIONING_TEXT as decommissioning_header,
 )
 from core.config import templates
-from core.utils import create_breadcrumbs
+from core.utils import (
+    create_base_admin_context,
+    create_breadcrumbs,
+    redirect_with_message,
+)
 from dependencies.auth import get_current_admin
 from forms.c_version import CVersionForm
 from forms.c_version_decommissioning import CVersionDecommissioningForm
@@ -24,11 +27,23 @@ from core.exceptions import LogbookOnDeleteException
 from utils.formatting import format_date, format_string
 
 app_prefix = "/admin/cryptography/versions"
-form_teplate = f"{app_prefix}/form.html"
+form_template = f"{app_prefix}/form.html"
 decommissioning_form_template = f"{app_prefix}/decommissioning.html"
-list_teplate = f"{app_prefix}/index.html"
+list_template = f"{app_prefix}/index.html"
 
-router = APIRouter(prefix=app_prefix, tags=[hepl_text])
+router = APIRouter(prefix=app_prefix, tags=[help_text])
+
+
+def create_filters(
+    filter_model_id: Optional[int], filter_grade: Optional[int]
+) -> Dict[str, int]:
+    filters = {}
+    if filter_model_id and filter_model_id > 0:
+        filters["model_id"] = filter_model_id
+
+    if filter_grade:
+        filters["grade"] = CryptographyGrade(filter_grade)
+    return filters
 
 
 # ========= Cryptography Models Versions =========
@@ -41,24 +56,18 @@ async def get_cversions_admin(
     q: Optional[str] = None,
     filter_model_id: Optional[int] = None,
     filter_grade: Optional[int] = None,
-    user: User = Depends(get_current_admin)
+    user: User = Depends(get_current_admin),
 ):
-    filters = {}
-
-    if filter_model_id and filter_model_id > 0:
-        filters["model_id"] = filter_model_id
-
-    if filter_grade:
-        filters["grade"] = filter_grade
+    filters = create_filters(filter_model_id, filter_grade)
 
     records, counter = await CVersionServise.all(sort=sort, q=q, filters=filters)
     models, _ = await CModelServise.all()
-    context = {
-        "request": request,
+
+    # Создаем базовый контекст
+    context = create_base_admin_context(request, index_header, help_text, user)
+    context.update({
         "versions": records,
         "counter": counter,
-        "page_header": index_page_header,
-        "page_header_help": hepl_text,
         "grades": CPRODUCT_GRADES,
         "models": models,
         "filter_model_id": filter_model_id,
@@ -68,39 +77,40 @@ async def get_cversions_admin(
         "sort": sort,
         "q": q,
         "breadcrumbs": create_breadcrumbs(
-            router, [index_page_header], ["get_cversions_admin"]
+            router, [index_header], ["get_cversions_admin"]
         ),
-        "user": user,
-    }
-    return templates.TemplateResponse(list_teplate, context)
+    })
+    return templates.TemplateResponse(list_template, context)
 
 
 @router.get("/add")
 async def add_cversion_admin(request: Request, user: User = Depends(get_current_admin)):
     models, _ = await CModelServise.all()
     responsible_users = await EmployeeServise.get_short_list(is_staff=True)
-    context = {
-        "request": request,
-        "page_header": add_page_header,
-        "page_header_help": hepl_text,
+
+    # Создаем базовый контекст
+    context = create_base_admin_context(request, add_header, help_text, user)
+    context.update({
+        "grades": CPRODUCT_GRADES,
         "models": models,
         "model_id": None,
         "is_created": True,
         "responsible_user_id": None,
         "responsible_users": responsible_users,
-        "grades": CPRODUCT_GRADES,
         "breadcrumbs": create_breadcrumbs(
             router,
-            [index_page_header, add_page_header],
+            [index_header, add_header],
             ["get_cversions_admin", "add_cversion_admin"],
         ),
-        "user": user,
-    }
-    return templates.TemplateResponse(form_teplate, context)
+    })
+
+    return templates.TemplateResponse(form_template, context)
 
 
 @router.post("/add")
-async def create_cversion_admin(request: Request, user: User = Depends(get_current_admin)):
+async def create_cversion_admin(
+    request: Request, user: User = Depends(get_current_admin)
+):
     form = CVersionForm(request)
     await form.load_data()
     if await form.is_valid():
@@ -122,69 +132,72 @@ async def create_cversion_admin(request: Request, user: User = Depends(get_curre
                 comment=format_string(form.comment),
                 action_date=format_date(form.happened_at),
             )
-
-            return responses.RedirectResponse(
-                request.url_for("get_cversions_admin").include_query_params(
-                    msg="Версия СКЗИ зарегистрирована!"
-                ),
-                status_code=status.HTTP_303_SEE_OTHER,
+            return redirect_with_message(
+                request,
+                "get_cversions_admin",
+                msg=f"Версия СКЗИ зарегистрирована!",
+                status=status.HTTP_303_SEE_OTHER,
             )
         except Exception as e:
             form.__dict__.get("errors").setdefault("non_field_error", e)
 
     models, _ = await CModelServise.all()
     responsible_users = await EmployeeServise.get_short_list(is_staff=True)
-    context = {
-        "page_header": add_page_header,
-        "page_header_help": hepl_text,
-        "models": models,
-        "responsible_users": responsible_users,
-        "is_created": True,
+
+    # Создаем базовый контекст
+    context = create_base_admin_context(request, add_header, help_text, user)
+    context.update({
         "grades": CPRODUCT_GRADES,
+        "models": models,
+        "is_created": True,
+        "responsible_user_id": None,
+        "responsible_users": responsible_users,
         "breadcrumbs": create_breadcrumbs(
             router,
-            [index_page_header, add_page_header],
+            [index_header, add_header],
             ["get_cversions_admin", "add_cversion_admin"],
         ),
-        "user": user,
-    }
+    })
     context.update(form.__dict__)
     context.update(form.fields)
-    return templates.TemplateResponse(form_teplate, context)
+    return templates.TemplateResponse(form_template, context)
 
 
-@router.get("/{cversion_id}/edit")
-async def edit_cversion_admin(cversion_id: int, request: Request, user: User = Depends(get_current_admin)):
-    obj = await CVersionServise.get_by_id(cversion_id)
+@router.get("/{pk}/edit")
+async def edit_cversion_admin(
+    pk: int, request: Request, user: User = Depends(get_current_admin)
+):
+    obj = await CVersionServise.get_by_id(pk)
     responsible_users = await EmployeeServise.get_short_list(is_staff=True)
     models, _ = await CModelServise.all()
-    context = {
-        "request": request,
-        "page_header": edit_page_header,
-        "page_header_help": hepl_text,
+
+    # Создаем базовый контекст
+    context = create_base_admin_context(request, edit_header, help_text, user)
+    context.update({
+        "grades": CPRODUCT_GRADES,
+        "models": models,
         "responsible_users": responsible_users,
         "happened_at": obj.install_act.action_date,
-        "models": models,
-        "grades": CPRODUCT_GRADES,
         "breadcrumbs": create_breadcrumbs(
             router,
-            [index_page_header, edit_page_header],
-            ["get_cversions_admin", "add_cversion_admin"],
+            [index_header, edit_header],
+            ["get_cversions_admin", "edit_cversion_admin"],
         ),
-        "user": user,
-    }
+    })
     context.update(obj.__dict__)
-    return templates.TemplateResponse(form_teplate, context)
+    return templates.TemplateResponse(form_template, context)
 
 
-@router.post("/{cversion_id}/edit")
-async def update_cversion_admin(cversion_id: int, request: Request, user: User = Depends(get_current_admin)):
+@router.post("/{pk}/edit")
+async def update_cversion_admin(
+    pk: int, request: Request, user: User = Depends(get_current_admin)
+):
     form = CVersionForm(request, is_create=False)
     await form.load_data()
     if await form.is_valid():
         try:
             obj = await CVersionServise.update(
-                cversion_id,
+                pk,
                 version=format_string(form.version),
                 grade=CryptographyGrade(int(form.grade)),
                 serial=format_string(form.serial),
@@ -198,110 +211,116 @@ async def update_cversion_admin(cversion_id: int, request: Request, user: User =
                 license=format_string(form.license),
                 comment=format_string(form.comment),
             )
-            redirect_url = request.url_for("get_cversions_admin").include_query_params(
-                msg=f"Версия СКЗИ '{obj.version}' обновлена!"
-            )
-            return responses.RedirectResponse(
-                redirect_url, status_code=status.HTTP_303_SEE_OTHER
+            return redirect_with_message(
+                request,
+                "get_cversions_admin",
+                msg=f"Версия СКЗИ '{obj.version}' обновлена!",
+                status=status.HTTP_303_SEE_OTHER,
             )
         except Exception as e:
             form.errors.setdefault("non_field_error", e)
 
     models, _ = await CModelServise.all()
     responsible_users = await EmployeeServise.get_short_list(is_staff=True)
-    context = {
-        "request": request,
-        "id": cversion_id,
-        "page_header": edit_page_header,
-        "page_header_help": hepl_text,
-        "responsible_users": responsible_users,
-        "models": models,
+
+    # Создаем базовый контекст
+    context = create_base_admin_context(request, edit_header, help_text, user)
+    context.update({
         "grades": CPRODUCT_GRADES,
+        "models": models,
+        "responsible_users": responsible_users,
+        "id": pk,
         "breadcrumbs": create_breadcrumbs(
             router,
-            [index_page_header, edit_page_header],
-            ["get_cversions_admin", "add_cversion_admin"],
+            [index_header, edit_header],
+            ["get_cversions_admin", "edit_cversion_admin"],
         ),
-        "user": user,
-    }
+    })
     context.update(form.__dict__)
     context.update(form.fields)
-    return templates.TemplateResponse(form_teplate, context)
+    return templates.TemplateResponse(form_template, context)
 
 
-@router.get("/{cversion_id}/decommissioning")
-async def decommissioning_cversion_admin(cversion_id: int, request: Request, user: User = Depends(get_current_admin)):
+@router.get("/{pk}/decommissioning")
+async def decommissioning_cversion_admin(
+    pk: int, request: Request, user: User = Depends(get_current_admin)
+):
     performers = await EmployeeServise.get_short_list(is_staff=True)
-    context = {
-        "request": request,
-        "page_header": decommissioning_page_header,
-        "page_header_help": hepl_text,
+
+    # Создаем базовый контекст
+    context = create_base_admin_context(
+        request, decommissioning_header, help_text, user
+    )
+    context.update({
         "performers": performers,
         "head_commision_member_id": None,
         "commision_member_id": None,
         "performer_id": None,
         "breadcrumbs": create_breadcrumbs(
             router,
-            [index_page_header, decommissioning_page_header],
+            [index_header, decommissioning_header],
             ["get_cversions_admin", "decommissioning_cversion_admin"],
         ),
-        "user": user,
-    }
+    })
     return templates.TemplateResponse(decommissioning_form_template, context)
 
 
-@router.post("/{cversion_id}/decommissioning")
-async def set_decommissioning_cversion_admin(cversion_id: int, request: Request, user: User = Depends(get_current_admin)):
-    version = await CVersionServise.get_by_id(cversion_id)
+@router.post("/{pk}/decommissioning")
+async def set_decommissioning_cversion_admin(
+    pk: int, request: Request, user: User = Depends(get_current_admin)
+):
+    version = await CVersionServise.get_by_id(pk)
     form = CVersionDecommissioningForm(request, is_create=False)
     await form.load_data()
     if await form.is_valid() and not version.remove_act_record_id:
         try:
             await CVersionServise.unregister(
-                version_id=cversion_id,
+                version_id=pk,
                 head_commision_member_id=int(form.head_commision_member_id),
                 commision_member_id=int(form.commision_member_id),
                 performer_id=int(form.performer_id),
                 reason=format_string(form.reason),
                 action_date=format_date(form.action_date),
             )
-
-            redirect_url = request.url_for("get_cversions_admin").include_query_params(
-                msg=f"Экземпляр СКЗИ выведен из эксплуатации!"
-            )
-            return responses.RedirectResponse(
-                redirect_url, status_code=status.HTTP_303_SEE_OTHER
+            return redirect_with_message(
+                request,
+                "get_cversions_admin",
+                msg=f"Экземпляр СКЗИ выведен из эксплуатации!",
+                status=status.HTTP_303_SEE_OTHER,
             )
         except Exception as e:
             form.errors.setdefault("non_field_error", e)
 
     performers = await EmployeeServise.all()
-    context = {
-        "request": request,
-        "page_header": decommissioning_page_header,
-        "page_header_help": hepl_text,
+
+    # Создаем базовый контекст
+    context = create_base_admin_context(
+        request, decommissioning_header, help_text, user
+    )
+    context.update({
         "performers": performers,
         "breadcrumbs": create_breadcrumbs(
             router,
-            [index_page_header, decommissioning_page_header],
+            [index_header, decommissioning_header],
             ["get_cversions_admin", "decommissioning_cversion_admin"],
         ),
-        "user": user,
-    }
+    })
     context.update(form.__dict__)
     context.update(form.fields)
     return templates.TemplateResponse(decommissioning_form_template, context)
 
 
-@router.get("/{cversion_id}/delete")
-async def delete_cversion_admin(cversion_id: int, request: Request, user: User = Depends(get_current_admin)):
+@router.get("/{pk}/delete")
+async def delete_cversion_admin(
+    pk: int, request: Request, user: User = Depends(get_current_admin)
+):
     redirect_url = request.url_for("get_cversions_admin")
     redirect_code = status.HTTP_303_SEE_OTHER
     try:
-        log = await CLogbookServise.get_one_or_none(cryptography_version_id=cversion_id)
+        log = await CLogbookServise.get_one_or_none(cryptography_version_id=pk)
         if log:
             raise LogbookOnDeleteException
-        await CVersionServise.delete(cversion_id)
+        await CVersionServise.delete(pk)
         redirect_url = redirect_url.include_query_params(msg="Версия СКЗИ удалена!")
     except Exception as e:
         redirect_url = redirect_url.include_query_params(error=e)

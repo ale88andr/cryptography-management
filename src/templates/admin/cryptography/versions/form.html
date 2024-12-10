@@ -32,7 +32,7 @@
                         <strong>Параметры СКЗИ</strong>
                         <div class="float-end">
                             {% if not remove_act_record_id and not is_created %}
-                                <a href="{{ url_for('decommissioning_cversion_admin', cversion_id=id) }}" class="btn btn-outline-danger">
+                                <a href="{{ url_for('decommissioning_cversion_admin', pk=id) }}" class="btn btn-outline-danger">
                                     <i class="bi bi-calendar2-x me-1"></i> Вывести СКЗИ из эксплуатации
                                 </a>
                             {% endif %}
