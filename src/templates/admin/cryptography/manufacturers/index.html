@@ -60,8 +60,8 @@
                         </div>
                     </td>
                     <td>
-                        <a href="{{ url_for('edit_cmanufacturer_admin', cm_id=object.id) }}" class="btn btn-sm btn-outline-info me-1" title="Редактировать"><i class="bi bi-pencil-square"></i></a>
-                        <a href="{{ url_for('delete_cmanufacturer_admin', cm_id=object.id) }}" class="btn btn-sm btn-outline-warning" title="Удалить"><i class="bi bi-trash"></i></a>
+                        <a href="{{ url_for('edit_cmanufacturer_admin', pk=object.id) }}" class="btn btn-sm btn-outline-info me-1" title="Редактировать"><i class="bi bi-pencil-square"></i></a>
+                        <a href="{{ url_for('delete_cmanufacturer_admin', pk=object.id) }}" class="btn btn-sm btn-outline-warning" title="Удалить"><i class="bi bi-trash"></i></a>
                     </td>
                 </tr>
             {% else %}
