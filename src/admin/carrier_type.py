@@ -29,7 +29,7 @@ async def get_ctypes_admin(
     msg: str = None,
     sort: Optional[str] = None,
     q: Optional[str] = None,
-    user: User = Depends(get_current_admin)
+    user: User = Depends(get_current_admin),
 ):
     records, counter = await CarrierTypesServise.all(sort=sort, q=q)
     return templates.TemplateResponse(
@@ -101,7 +101,9 @@ async def create_ctype_admin(request: Request, user: User = Depends(get_current_
 
 
 @router.get("/{ctype_id}/edit")
-async def edit_ctype_admin(ctype_id: int, request: Request, user: User = Depends(get_current_admin)):
+async def edit_ctype_admin(
+    ctype_id: int, request: Request, user: User = Depends(get_current_admin)
+):
     obj = await CarrierTypesServise.get_by_id(ctype_id)
     return templates.TemplateResponse(
         form_teplate,
@@ -122,7 +124,9 @@ async def edit_ctype_admin(ctype_id: int, request: Request, user: User = Depends
 
 
 @router.post("/{ctype_id}/edit")
-async def update_ctype_admin(ctype_id: int, request: Request, user: User = Depends(get_current_admin)):
+async def update_ctype_admin(
+    ctype_id: int, request: Request, user: User = Depends(get_current_admin)
+):
     form = CtypeForm(request)
     await form.load_data()
     if await form.is_valid():
@@ -150,7 +154,9 @@ async def update_ctype_admin(ctype_id: int, request: Request, user: User = Depen
 
 
 @router.get("/{ctype_id}/delete")
-async def delete_ctype_admin(ctype_id: int, request: Request, user: User = Depends(get_current_admin)):
+async def delete_ctype_admin(
+    ctype_id: int, request: Request, user: User = Depends(get_current_admin)
+):
     redirect_url = request.url_for("get_ctypes_admin")
     redirect_code = status.HTTP_307_TEMPORARY_REDIRECT
     try:
