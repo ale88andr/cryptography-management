@@ -12,7 +12,7 @@ services:
       PGDATA: /var/lib/postgresql/data
     volumes:
        - postgres_data:/var/lib/postgresql/data
-       - ./cm2.dump:/tmp/cm2.dump
+      #  - ./cm2.dump:/tmp/cm2.dump
     ports:
       - "54322:5432"
     networks:

@@ -111,7 +111,8 @@ class KeyDocumentServise(BaseRepository):
 
         if not sort and sort != "null":
             query = query.order_by(
-                ActRecord.action_date.desc(), cls.model.install_act_record_id
+                ActRecord.action_date.desc(),
+                cls.model.install_act_record_id.desc()
             )
         else:
             query = query.order_by(text(sort))

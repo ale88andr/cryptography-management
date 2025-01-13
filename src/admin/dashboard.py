@@ -74,7 +74,7 @@ async def get_dashboard_admin(
         "total_unused_versions": total_unused_versions,
         "now": now,
         "organisation": organisation,
-        "version_chart_labels": [item[0].title for item in key_versions],
+        "version_chart_labels": [item[0].version for item in key_versions],
         "version_chart_data": [item[1] for item in key_versions],
         "act_chart_labels": [
             calendar.month_abbr[int(item[0])] for item in installs_by_month

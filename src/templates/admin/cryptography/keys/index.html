@@ -29,7 +29,7 @@
                 <th scope="col">АРМ</th>
                 <th scope="col">Получен</th>
                 <th scope="col">Владелец</th>
-                <th scope="col" class="col-1">Действия</th>
+                <th scope="col" class="col-2">Действия</th>
             </tr>
             <tr>
                 <form method="get">
@@ -103,7 +103,7 @@
                             {{ object.owner.short_name }}
                         </a>
                     </td>
-                    <td>
+                    <td class="text-end">
                         <a
                             href="{{ url_for('detail_key_document_admin', pk=object.id) }}"
                             class="btn btn-sm btn-outline-info me-1"
@@ -121,6 +121,13 @@
                                     <i class="bi bi-shield-x"></i>
                                 </a>
                             {% else %}
+                                <!-- <a
+                                    href="{{ url_for('destruction_key_document_admin', pk=object.id) }}"
+                                    class="btn btn-sm btn-outline-success me-1"
+                                    title="Заменить ключевой документ"
+                                >
+                                    <i class="bi bi-file-earmark-x"></i>
+                                </a> -->
                                 <a
                                     href="{{ url_for('destruction_key_document_admin', pk=object.id) }}"
                                     class="btn btn-sm btn-outline-danger"
