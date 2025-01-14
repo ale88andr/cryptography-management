@@ -43,6 +43,7 @@ EMP_EDIT_PAGE_HEADER = "Редактирование даных сотрудни
 EMP_DETAIL_PAGE_HEADER = "Просмотр даных сотрудника"
 EMP_HELP_TEXT = "Администрироваие сотрудников организации"
 EMP_CUSERS_PAGE_HEADER = "Пользователи СКЗИ"
+EMP_DISMISS_PAGE_HEADER = "Увольнение сотрудника"
 
 
 # ========= Carrier types =========

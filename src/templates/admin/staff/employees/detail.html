@@ -35,7 +35,7 @@
                                         <h6 class="lead fw-normal mb-0">Сведения о сотруднике</h6>
                                         {% if employee.is_worked %}
                                             <p class="mb-0 text-muted">
-                                                <a href="#" class="btn btn-danger mt-2"><i class="bi bi-person-dash"></i> Уволить</a>
+                                                <a href="{{ url_for('termination_employee_admin', pk=employee.id) }}" class="btn btn-danger mt-2"><i class="bi bi-person-dash"></i> Уволить</a>
                                             </p>
                                         {% endif %}
                                     </div>

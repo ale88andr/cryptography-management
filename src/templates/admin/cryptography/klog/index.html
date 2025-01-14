@@ -120,25 +120,26 @@
                             {{ empty_value() }}
                         {% endif %}
                     </td>
-                    <td>
-                        {% if object.remove_action %}
+                    <td class="text-muted">
+                        {% if object.remove_act %}
                             {{ format_date(object.remove_act.action_date) }}
                         {% else %}
                             {{ empty_value() }}
                         {% endif %}
                     </td>
-                    <td class="text-nowrap">
-                        {% if object.remove_action %}
+                    <td class="text-nowrap text-muted text-uppercase">
+                        {% if object.remove_act %}
                             {{ object.remove_act.performer.short_name }}
                         {% else %}
                             {{ empty_value() }}
                         {% endif %}
                     </td>
-                    <td class="text-nowrap">
+                    <td class="text-nowrap text-muted">
                         {% if object.remove_act %}
                             <a href="{{ url_for('download_instance_destruction_act_admin', key_id=object.id) }}">
                                 {{ object.remove_act }}
                             </a>
+                            <br>от {{ format_date(object.remove_act.action_date) }}
                         {% else %}
                             {{ empty_value() }}
                         {% endif %}

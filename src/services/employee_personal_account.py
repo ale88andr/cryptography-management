@@ -30,7 +30,7 @@ class EmployeePersonalAccountService(BaseRepository):
         return records, len(records)
 
     @classmethod
-    async def get_by_user(cls, user_id: int = None):
+    async def get_by_user(cls, user_id: int = None, only_active: bool = False):
         if user_id:
             query = (
                 select(cls.model)
@@ -43,5 +43,9 @@ class EmployeePersonalAccountService(BaseRepository):
                 )
                 .filter_by(user_id=user_id)
             )
+
+            if only_active:
+                query = query.filter(cls.model.remove_action_id.is_(None))
+
             records = (await db.execute(query)).scalars().all()
             return records, len(records)

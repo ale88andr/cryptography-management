@@ -7,25 +7,31 @@ from admin.constants import (
     EMP_HELP_TEXT as hepl_text,
     EMP_INDEX_PAGE_HEADER as index_page_header,
     EMP_CUSERS_PAGE_HEADER as index_cusers_page_header,
+    EMP_DISMISS_PAGE_HEADER as termination_page_header
 )
 from core.config import templates
 from core.utils import create_breadcrumbs, create_file_response
 from core.templater import LogbookTemplatesEnum
 from dependencies.auth import get_current_admin
+from models.logbook import ActRecordTypes
 from models.users import User
 from services.c_version import CVersionServise
+from services.c_action import CActionServise
 from services.department import DepartmentServise
 from services.employee import EmployeeServise
+from services.key_document import KeyDocumentServise
 from services.location import LocationServise
 from services.organisation import OrganisationServise
 from services.position import PositionServise
 from services.employee_personal_account import EmployeePersonalAccountService
 from forms.employee import EmployeeForm
-from utils.formatting import get_str_now_date
+from forms.destruction import DestructionForm
+from utils.formatting import get_str_now_date, format_date
 
 
 app_prefix = "/admin/staff/employees"
 form_teplate = f"{app_prefix}/form.html"
+form_termination_template = f"{app_prefix}/termination_form.html"
 detail_teplate = f"{app_prefix}/detail.html"
 list_teplate = f"{app_prefix}/index.html"
 crypto_user_list_template = f"{app_prefix}/users.html"
@@ -149,7 +155,7 @@ async def add_employee_admin(request: Request, user: User = Depends(get_current_
     locations, _ = await LocationServise.all(sort="name")
     organisation = await OrganisationServise.all()
     return templates.TemplateResponse(
-        form_teplate,
+        form_termination_template,
         context={
             "request": request,
             "page_header": add_page_header,
@@ -315,6 +321,97 @@ async def update_employee_admin(employee_id: int, request: Request, user: User =
     context.update(form.__dict__)
     context.update(form.fields)
     return templates.TemplateResponse(form_teplate, context)
+
+
+@router.get("/{pk}/termination")
+async def termination_employee_admin(pk: int, request: Request, user: User = Depends(get_current_admin)):
+    employee = await EmployeeServise.get_by_id(pk)
+    key_documents, key_documents_counter = await EmployeePersonalAccountService.get_by_user(employee.id, only_active=True)
+    staff_members = await EmployeeServise.get_short_list(is_staff=True)
+
+    return templates.TemplateResponse(
+        form_termination_template,
+        {
+            "request": request,
+            "employee": employee,
+            "key_documents": key_documents,
+            "key_documents_counter": key_documents_counter,
+            "staff_members": staff_members,
+            "page_header": termination_page_header,
+            "page_header_help": hepl_text,
+            "breadcrumbs": create_breadcrumbs(
+                router,
+                [index_page_header, termination_page_header],
+                ["get_employees_admin", "termination_employee_admin"],
+            ),
+            "user": user
+        },
+    )
+
+
+@router.post("/{pk}/termination")
+async def terminate_employee_admin(pk: int, request: Request, user: User = Depends(get_current_admin)):
+    employee = await EmployeeServise.get_by_id(pk)
+    user_cryptography_keys, _ = await KeyDocumentServise.all(
+        filters={"owner_id": employee.id, "remove_act_record_id": None}
+    )
+    form = DestructionForm(request, is_create=False)
+    await form.load_data()
+    if await form.is_valid():
+        try:
+            action_date = format_date(form.action_date)
+
+            # Запись данных акта об изъятии
+            log_action = await CActionServise.add_record(
+                ActRecordTypes.I_REMOVE,
+                action_date,
+                form.head_commision_member_id,
+                form.commision_member_id,
+                form.performer_id,
+                form.reason,
+                format_date(form.reason_date),
+            )
+
+            await EmployeeServise.terminate_employee(
+                employee=employee,
+                keys=user_cryptography_keys,
+                act_record=log_action,
+                action_date=action_date,
+            )
+
+            redirect_url = request.url_for(
+                "get_employees_admin"
+            ).include_query_params(msg=f"Сотрудник уволен, ключевая информация изъята(уничтожена)!")
+            return responses.RedirectResponse(
+                redirect_url, status_code=status.HTTP_303_SEE_OTHER
+            )
+        except Exception as e:
+            print("-------------------------------")
+            print(e)
+            print("-------------------------------")
+            form.errors.setdefault("non_field_error", e)
+
+    staff_members = await EmployeeServise.get_short_list(is_staff=True)
+    context = {
+        "request": request,
+        "employee": employee,
+        "page_header": termination_page_header,
+        "page_header_help": hepl_text,
+        "staff_members": staff_members,
+        "responsible_user_cryptography_keys": user_cryptography_keys,
+        "head_commision_member_id": None,
+        "commision_member_id": None,
+        "performer_id": None,
+        "breadcrumbs": create_breadcrumbs(
+            router,
+            [index_page_header, termination_page_header],
+            ["get_employees_admin", "termination_employee_admin"],
+        ),
+        "user": user
+    }
+    context.update(form.__dict__)
+    context.update(form.fields)
+    return templates.TemplateResponse(form_termination_template, context)
 
 
 @router.get("/{employee_id}/personal-account/doc")

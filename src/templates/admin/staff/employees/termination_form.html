@@ -1,0 +1,93 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}{{ page_header }}{% endblock %}
+{% block breadcrumb %}{% include 'admin/common/breadcrumbs.html' %}{% endblock %}
+{% block page_header_text %}{{ page_header }}{% endblock %}
+{% block page_header_help_text %}{{ page_header_help }}{% endblock %}
+
+{% from "admin/common/form_macros.html" import input_field, date_field, select_field %}
+
+{% block content %}
+
+    <div class="col-3">
+        <div class="justify-content-center align-items-center">
+            <div class="card" style="border-radius: 15px;">
+                <div class="card-header">
+                    <h5 class="card-title m-0 me-2">Увольняемый сотрудник</h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="mt-3 mb-3">
+                        <img src="{{ url_for('static', path='img/employee.png') }}"/>
+                        <h5 class="my-3">{{ employee }}</h5>
+                        <p class="mb-1 text-muted">{{ employee.position }}</p>
+                        <p class="mb-1">{{ employee.department }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-9">
+        <form method="POST" class="custom">
+            <div class="card" style="border-radius: 15px;">
+                <div class="card-header">
+                    <h5 class="card-title m-0 me-1">Изымаемые (уничтожаемые) ключи <span class="badge rounded-pill bg-success">{{ key_documents_counter }}</span></h5>
+                </div>
+                <div class="card-body">
+                    <fieldset>
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                {% for rec in key_documents %}
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="" checked="" disabled>
+                                        <label class="form-check-label">{{ rec.key_document }} установлен на: {{ rec.equipment }}</label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <legend class="text-success">Члены комиссии:</legend>
+                        <div class="row mb-3">
+                            <div class="col-lg-4">
+                                {{ select_field("head_commision_member_id", "Председатель комиссии :", staff_members, errors, head_commision_member_id) }}
+                            </div>
+                            <div class="col-lg-4">
+                                {{ select_field("commision_member_id", "Член комиссии :", staff_members, errors, commision_member_id) }}
+                            </div>
+                            <div class="col-lg-4">
+                                {{ select_field("performer_id", "Администратор СКЗИ :", staff_members, errors, performer_id) }}
+                            </div>
+                        </div>
+                        <legend class="text-success">Основание для вывода из эксплуатации</legend>
+                        <div class="row mb-3">
+                            <div class="col-lg-8">
+                                {{ input_field("reason", "Основание для вывода из эксплуатации:", errors, reason, "Укажите причину вывода") }}
+                            </div>
+                            <div class="col-lg-4">
+                                {{ date_field("reason_date", "Дата документа основания:", errors, reason_date) }}
+                            </div>
+                        </div>
+                        <legend class="text-success">Вывод из эксплуатации</legend>
+                        <div class="row mb-3">
+                            <div class="col-lg-4">
+                                {{ date_field("action_date", "Дата вывода из эксплуатации:", errors, action_date) }}
+                            </div>
+                        </div>
+                    </fieldset>
+                </div>
+            </div>
+
+            <div class="card mt-3 mb-4" style="border-radius: 15px;">
+                <div class="card-body">
+                    <button type="submit" class="btn btn-outline-danger me-2">
+                        <i class="bi bi-person-dash"></i> Провести увольнение
+                    </button>
+                    <a href="{{ request.headers.referer }}" class="btn btn-light">
+                        <i class="bi bi-x-lg"></i> Отменить
+                    </a>
+                </div>
+            </div>
+
+        </form>
+    </div>
+
+{% endblock %}
