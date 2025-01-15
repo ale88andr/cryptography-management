@@ -155,7 +155,7 @@ async def add_employee_admin(request: Request, user: User = Depends(get_current_
     locations, _ = await LocationServise.all(sort="name")
     organisation = await OrganisationServise.all()
     return templates.TemplateResponse(
-        form_termination_template,
+        form_teplate,
         context={
             "request": request,
             "page_header": add_page_header,

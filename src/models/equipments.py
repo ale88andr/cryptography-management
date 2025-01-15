@@ -15,7 +15,9 @@ class Equipment(Base):
     description: Mapped[str] = mapped_column(String(200), nullable=True)
     sticker: Mapped[str] = mapped_column(String(200), nullable=True, unique=True)
 
-    hw_logs: Mapped[list["HardwareLogbook"]] = relationship(back_populates="equipment")
+    hw_logs: Mapped[list["HardwareLogbook"]] = relationship(
+        back_populates="equipment", order_by="HardwareLogbook.happened_at"
+    )
 
     key_documents: Mapped[list["KeyDocument"]] = relationship(
         back_populates="equipment"
