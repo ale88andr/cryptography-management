@@ -10,7 +10,7 @@ from admin.constants import (
     EMP_DISMISS_PAGE_HEADER as termination_page_header
 )
 from core.config import templates
-from core.utils import create_breadcrumbs, create_file_response
+from core.utils import create_breadcrumbs, create_file_response, redirect_with_message
 from core.templater import LogbookTemplatesEnum
 from dependencies.auth import get_current_admin
 from models.logbook import ActRecordTypes
@@ -191,11 +191,10 @@ async def create_employee_admin(request: Request, user: User = Depends(get_curre
                 location_id=int(form.location_id),
                 organisation_id=organisation.id,
             )
-            redirect_url = request.url_for("get_employees_admin").include_query_params(
+            return redirect_with_message(
+                request=request,
+                endpoint="get_employees_admin",
                 msg=f"Сотрудник '{emp.short_name}' добавлен!"
-            )
-            return responses.RedirectResponse(
-                redirect_url, status_code=status.HTTP_303_SEE_OTHER
             )
         except Exception as e:
             form.__dict__.get("errors").setdefault("non_field_error", e)
@@ -286,21 +285,25 @@ async def update_employee_admin(employee_id: int, request: Request, user: User =
     await form.load_data()
     if await form.is_valid():
         try:
-            obj = await EmployeeServise.update(
-                employee_id,
-                name=form.name,
-                surname=form.surname,
-                middle_name=form.middle_name,
-                position_id=int(form.position_id),
-                department_id=int(form.department_id),
-                location_id=int(form.location_id),
-                is_security_staff=True if form.is_security_staff == "on" else False,
-            )
-            redirect_url = request.url_for("get_employees_admin").include_query_params(
+            if form.is_worked:
+                obj = await EmployeeServise.update(
+                    employee_id, is_worked=bool(form.is_worked == "on")
+                )
+            else:
+                obj = await EmployeeServise.update(
+                    employee_id,
+                    name=form.name,
+                    surname=form.surname,
+                    middle_name=form.middle_name,
+                    position_id=int(form.position_id),
+                    department_id=int(form.department_id),
+                    location_id=int(form.location_id),
+                    is_security_staff=True if form.is_security_staff == "on" else False,
+                )
+            return redirect_with_message(
+                request=request,
+                endpoint="get_employees_admin",
                 msg=f"Данные сотрудника '{obj}' обновлены!"
-            )
-            return responses.RedirectResponse(
-                redirect_url, status_code=status.HTTP_303_SEE_OTHER
             )
         except Exception as e:
             form.errors.setdefault("non_field_error", e)
@@ -352,66 +355,74 @@ async def termination_employee_admin(pk: int, request: Request, user: User = Dep
 @router.post("/{pk}/termination")
 async def terminate_employee_admin(pk: int, request: Request, user: User = Depends(get_current_admin)):
     employee = await EmployeeServise.get_by_id(pk)
-    user_cryptography_keys, _ = await KeyDocumentServise.all(
+    user_cryptography_keys, key_count = await KeyDocumentServise.all(
         filters={"owner_id": employee.id, "remove_act_record_id": None}
     )
-    form = DestructionForm(request, is_create=False)
-    await form.load_data()
-    if await form.is_valid():
-        try:
-            action_date = format_date(form.action_date)
 
-            # Запись данных акта об изъятии
-            log_action = await CActionServise.add_record(
-                ActRecordTypes.I_REMOVE,
-                action_date,
-                form.head_commision_member_id,
-                form.commision_member_id,
-                form.performer_id,
-                form.reason,
-                format_date(form.reason_date),
-            )
+    if key_count == 0:
+        await EmployeeServise.update(employee.id, is_worked=False)
+        return redirect_with_message(
+            request, "get_employees_admin", "Сотрудник уволен!"
+        )
+    else:
+        form = DestructionForm(request, is_create=False)
+        await form.load_data()
+        if await form.is_valid():
+            try:
+                action_date = format_date(form.action_date)
 
-            await EmployeeServise.terminate_employee(
-                employee=employee,
-                keys=user_cryptography_keys,
-                act_record=log_action,
-                action_date=action_date,
-            )
+                # Запись данных акта об изъятии
+                log_action = await CActionServise.add_record(
+                    ActRecordTypes.I_REMOVE,
+                    action_date,
+                    form.head_commision_member_id,
+                    form.commision_member_id,
+                    form.performer_id,
+                    form.reason,
+                    format_date(form.reason_date),
+                )
 
-            redirect_url = request.url_for(
-                "get_employees_admin"
-            ).include_query_params(msg=f"Сотрудник уволен, ключевая информация изъята(уничтожена)!")
-            return responses.RedirectResponse(
-                redirect_url, status_code=status.HTTP_303_SEE_OTHER
-            )
-        except Exception as e:
-            print("-------------------------------")
-            print(e)
-            print("-------------------------------")
-            form.errors.setdefault("non_field_error", e)
+                await EmployeeServise.terminate_employee(
+                    employee=employee,
+                    keys=user_cryptography_keys,
+                    act_record=log_action,
+                    action_date=action_date,
+                )
+                return redirect_with_message(
+                    request=request,
+                    endpoint="get_employees_admin",
+                    msg="Сотрудник уволен, ключевая информация изъята(уничтожена)!"
+                )
+            except Exception as e:
+                print("-------------------------------")
+                print(e)
+                print("-------------------------------")
+                form.errors.setdefault("non_field_error", e)
 
-    staff_members = await EmployeeServise.get_short_list(is_staff=True)
-    context = {
-        "request": request,
-        "employee": employee,
-        "page_header": termination_page_header,
-        "page_header_help": hepl_text,
-        "staff_members": staff_members,
-        "responsible_user_cryptography_keys": user_cryptography_keys,
-        "head_commision_member_id": None,
-        "commision_member_id": None,
-        "performer_id": None,
-        "breadcrumbs": create_breadcrumbs(
-            router,
-            [index_page_header, termination_page_header],
-            ["get_employees_admin", "termination_employee_admin"],
-        ),
-        "user": user
-    }
-    context.update(form.__dict__)
-    context.update(form.fields)
-    return templates.TemplateResponse(form_termination_template, context)
+        staff_members = await EmployeeServise.get_short_list(is_staff=True)
+        key_documents, key_documents_counter = await EmployeePersonalAccountService.get_by_user(employee.id, only_active=True)
+        context = {
+            "request": request,
+            "employee": employee,
+            "page_header": termination_page_header,
+            "page_header_help": hepl_text,
+            "staff_members": staff_members,
+            "responsible_user_cryptography_keys": user_cryptography_keys,
+            "head_commision_member_id": None,
+            "commision_member_id": None,
+            "performer_id": None,
+            "key_documents": key_documents,
+            "key_documents_counter": key_documents_counter,
+            "breadcrumbs": create_breadcrumbs(
+                router,
+                [index_page_header, termination_page_header],
+                ["get_employees_admin", "termination_employee_admin"],
+            ),
+            "user": user
+        }
+        context.update(form.__dict__)
+        context.update(form.fields)
+        return templates.TemplateResponse(form_termination_template, context)
 
 
 @router.get("/{employee_id}/personal-account/doc")

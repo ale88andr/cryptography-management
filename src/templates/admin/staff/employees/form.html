@@ -9,6 +9,12 @@
 
 {% block content %}
     <form method="POST" class="custom">
+        {% if not is_worked %}
+            {% set disabled=True %}
+            <div class="alert alert-dismissible alert-info">
+                <strong>Внимание!</strong> Сотрудник находится в статусе - <strong>уволен</strong>! Доступно только изменение статуса</a>.
+            </div>
+        {% endif %}
         <div class="card">
             <div class="card-body">
                 <fieldset>
@@ -19,13 +25,13 @@
 
                     <div class="row mb-3">
                         <div class="col-4">
-                            {{ input_field("surname", "Фамилия:", errors, surname, "Фамилия") }}
+                            {{ input_field("surname", "Фамилия:", errors, surname, "Фамилия", disabled) }}
                         </div>
                         <div class="col-4">
-                            {{ input_field("name", "Имя:", errors, name, "Имя") }}
+                            {{ input_field("name", "Имя:", errors, name, "Имя", disabled) }}
                         </div>
                         <div class="col-4">
-                            {{ input_field("middle_name", "Отчество:", errors, middle_name, "Отчество") }}
+                            {{ input_field("middle_name", "Отчество:", errors, middle_name, "Отчество", disabled) }}
                         </div>
                     </div>
 
@@ -34,34 +40,45 @@
                             <div class="float-end">
                                 <a href="{{ url_for('add_position_admin') }}" class="btn btn-sm btn-success">&#10133; Добавить должность</a>
                             </div>
-                            {{ select_field("position_id", "Должность:", positions, errors, position_id) }}
+                            {{ select_field("position_id", "Должность:", positions, errors, position_id, disabled) }}
                         </div>
 
                         <div class="col-lg-4">
                             <div class="float-end">
                                 <a href="{{ url_for('add_department_admin') }}" class="btn btn-sm btn-success">&#10133; Добавить отдел</a>
                             </div>
-                            {{ select_field("department_id", "Отдел:", departments, errors, department_id) }}
+                            {{ select_field("department_id", "Отдел:", departments, errors, department_id, disabled) }}
                         </div>
 
                         <div class="col-lg-4">
                             <div class="float-end">
                                 <a href="{{ url_for('add_location_admin') }}" class="btn btn-sm btn-success">&#10133; Добавить рабочее место</a>
                             </div>
-                            {{ select_field("location_id", "Рабочее место:", locations, errors, location_id) }}
+                            {{ select_field("location_id", "Рабочее место:", locations, errors, location_id, disabled) }}
+                        </div>
+                    </div>
+
+                    {% if not is_created %}
+                        <legend class="text-success mt-3">
+                            <strong>Дополнительные сведения</strong>
+                        </legend>
+                        <hr class="mt-0 mb-4">
+
+                        <div class="row mb-3">
+                            <div class="col-lg-4">
+                                {{ checkbox("is_security_staff", "Сотрудник органа криптозащиты?", is_security_staff, disabled) }}
+                            </div>
                         </div>
 
-                        {% if not is_created %}
-                            <legend class="text-success mt-3">
-                                <strong>Дополнительные сведения</strong>
-                            </legend>
-                            <hr class="mt-0 mb-4">
-                            <div class="col-lg-4">
-                                {{ checkbox("is_security_staff", "Сотрудник органа криптозащиты?", is_security_staff) }}
+                        {% if not is_worked %}
+                            <div class="row mb-3">
+                                <div class="col-lg-4">
+                                    {{ checkbox("is_worked", "Восстановить учетную запись сотрудника?", is_worked) }}
+                                </div>
                             </div>
                         {% endif %}
+                    {% endif %}
 
-                    </div>
                 </fieldset>
             </div>
         </div>

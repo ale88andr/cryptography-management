@@ -9,7 +9,7 @@ class EmployeeForm(Form):
         if not self.surname:
             self.errors.setdefault("surname", self.REQUIRED_ERROR)
 
-        if len(self.surname) < name_min_length:
+        if self.name and len(self.surname) < name_min_length:
             self.errors.setdefault(
                 "surname",
                 f"Поле должно содержать как минимум {name_min_length} символа!",
@@ -18,7 +18,7 @@ class EmployeeForm(Form):
         if not self.name:
             self.errors.setdefault("name", self.REQUIRED_ERROR)
 
-        if len(self.name) < name_min_length:
+        if self.name and len(self.name) < name_min_length:
             self.errors.setdefault(
                 "name", f"Поле должно содержать как минимум {name_min_length} символа!"
             )
@@ -44,7 +44,7 @@ class EmployeeForm(Form):
         ):
             self.errors.setdefault("location_id", self.REQUIRED_ERROR)
 
-        if not self.errors:
+        if not self.errors or self.is_worked == "on":
             return True
 
         return False

@@ -81,7 +81,7 @@
     {% endif %}
 {% endmacro %}
 
-{% macro select_filter(name, list, checked_value='') %}
+{% macro select_filter(name, list, checked_value='', disabled=False) %}
     <select class="form-select {% if name in errors %}is-invalid{% endif %}" id="{{ name }}" name="{{ name }}" {% if disabled %}disabled{% endif %}>
         <option value="0">--- Все ---</option>
         {% for item in list %}
@@ -100,9 +100,9 @@
     >{{ value }}</textarea>
 {% endmacro %}
 
-{% macro checkbox(name, label, value=False) %}
+{% macro checkbox(name, label, value=False, disabled=False) %}
     <div class="form-check form-switch mt-3">
-        <input class="form-check-input" type="checkbox" id="{{ name }}" name="{{ name }}" {% if value %}checked{% endif %}>
+        <input class="form-check-input" type="checkbox" id="{{ name }}" name="{{ name }}" {% if value %}checked{% endif %} {% if disabled %}disabled{% endif %}>
         <label for="{{ name }}" class="form-check-label">{{ label }}</label>
     </div>
 {% endmacro %}

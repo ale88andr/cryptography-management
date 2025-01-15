@@ -71,7 +71,7 @@ def redirect_with_message(
     request: Request,
     endpoint: str,
     msg: str,
-    status: status=status.HTTP_307_TEMPORARY_REDIRECT
+    status: status=status.HTTP_303_SEE_OTHER
 ) -> responses.RedirectResponse:
     """Редирект с сообщением"""
     redirect_url = request.url_for(endpoint).include_query_params(msg=msg)

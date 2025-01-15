@@ -68,7 +68,12 @@
                                 style="width: 32px; height: 32px"
                                 />
                             <div class="ms-3">
-                                <p class="fw-bold mb-1">{{ employee.short_name }}</p>
+                                <p class="fw-bold mb-1">
+                                    {{ employee.short_name }}
+                                    {% if not employee.is_worked %}
+                                        <span class="badge bg-danger ms-1">Уволен</span>
+                                    {% endif %}
+                                </p>
                                 <p class="text-muted mb-0">{{ employee.position }}</p>
                             </div>
                         </div>
