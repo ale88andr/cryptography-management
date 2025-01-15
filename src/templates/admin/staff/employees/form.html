@@ -9,7 +9,7 @@
 
 {% block content %}
     <form method="POST" class="custom">
-        {% if not is_worked %}
+        {% if not is_created and not is_worked %}
             {% set disabled=True %}
             <div class="alert alert-dismissible alert-info">
                 <strong>Внимание!</strong> Сотрудник находится в статусе - <strong>уволен</strong>! Доступно только изменение статуса</a>.
