@@ -23,6 +23,8 @@ class DocumentTemplatesEnum(enum.Enum):
     HARDWARE_LOGBOOK = "hardware_logbook.docx"
     PERSONAL_LOGBOOK = "personal_logbook.docx"
 
+    APPOINTMENT_ORDER = "appointment.docx"
+
 
 class RenderTemplate:
 

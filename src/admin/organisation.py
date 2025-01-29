@@ -7,15 +7,18 @@ from admin.constants import (
     OGR_HELP_TEXT as help_text,
 )
 from core.config import templates
+from core.templater import DocumentTemplatesEnum
 from core.utils import (
     create_base_admin_context,
     create_breadcrumbs,
+    create_file_response,
     redirect_with_message,
 )
 from dependencies.auth import get_current_admin
 from forms.organisation import OrganisationForm
 from models.users import User
 from services.organisation import OrganisationServise
+from services.employee import EmployeeServise
 
 
 app_prefix = "/admin/staff/organisations"
@@ -111,6 +114,8 @@ async def edit_organisation_admin(
     organisation_id: int, request: Request, user: User = Depends(get_current_admin)
 ):
     organisation = await OrganisationServise.get_one_or_none(id=organisation_id)
+    employees = await EmployeeServise.get_short_list(is_staff=True)
+    employees_chief = await EmployeeServise.get_short_list(is_leadership=True)
 
     # Создаем базовый контекст
     context = create_base_admin_context(request, edit_header, help_text, user)
@@ -120,6 +125,8 @@ async def edit_organisation_admin(
             [index_header, edit_header],
             ["get_organisation_admin", "edit_organisation_admin"],
         ),
+        "employees": employees,
+        "employees_chief": employees_chief,
         **vars(organisation),
     })
 
@@ -139,10 +146,13 @@ async def update_organisation_admin(
                 name=form.name,
                 short_name=form.short_name,
                 chief=form.chief,
+                chief_id=form.chief_id,
                 city=form.city,
                 street=form.street,
                 building=form.building,
                 index=int(form.index),
+                responsible_employee_id=form.responsible_employee_id,
+                spare_responsible_employee_id=form.spare_responsible_employee_id,
             )
             return redirect_with_message(
                 request,
@@ -155,14 +165,29 @@ async def update_organisation_admin(
             return templates.TemplateResponse(form_template, form.__dict__)
 
     # Создаем базовый контекст
+    employees = await EmployeeServise.get_short_list(is_staff=True)
+    employees_chief = await EmployeeServise.get_short_list(is_leadership=True)
     context = create_base_admin_context(request, edit_header, help_text, user)
     context.update({
         "breadcrumbs": create_breadcrumbs(
             router,
             [index_header, edit_header],
             ["get_organisation_admin", "edit_organisation_admin"],
-        )
+        ),
+        "employees": employees,
+        "employees_chief": employees_chief,
     })
     context.update(form.__dict__)
     context.update(form.fields)
     return templates.TemplateResponse(form_template, context)
+
+
+@router.get("/order")
+async def download_appointment_order_admin(request: Request, user: User = Depends(get_current_admin)):
+    organisation = await OrganisationServise.all()
+
+    return create_file_response(
+        DocumentTemplatesEnum.APPOINTMENT_ORDER.value,
+        {"org": organisation},
+        f"Приказ о назначении ответственного за эксплуатацию",
+    )

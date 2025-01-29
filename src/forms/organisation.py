@@ -27,4 +27,16 @@ class OrganisationForm(Form):
         if self.index and not self.index.isnumeric():
             self.errors.setdefault("index", self.NON_NUMERIC_ERROR)
 
+        self.chief_id = None if not self.chief_id or self.chief_id == '0' else int(self.chief_id)
+        self.responsible_employee_id = None if not self.responsible_employee_id or self.responsible_employee_id == '0' else int(self.responsible_employee_id)
+        self.spare_responsible_employee_id = None if not self.spare_responsible_employee_id or self.spare_responsible_employee_id == '0' else int(self.spare_responsible_employee_id)
+
+        if not self.chief_id:
+            self.errors.setdefault("chief_id", self.REQUIRED_ERROR)
+
+        if self.responsible_employee_id and self.responsible_employee_id == self.spare_responsible_employee_id:
+            err_msg = "Не может быть одно и то же лицо"
+            self.errors.setdefault("responsible_employee_id", err_msg)
+            self.errors.setdefault("spare_responsible_employee_id", err_msg)
+
         return not bool(self.errors)

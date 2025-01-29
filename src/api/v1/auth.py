@@ -50,9 +50,13 @@ async def login(response: Response, request: Request):
             )
             return templates.TemplateResponse("login.html", form.__dict__)
 
+        referer = request.cookies.get("referer", "/admin")
+
         response = responses.RedirectResponse(
-            "/admin", status_code=status.HTTP_302_FOUND
+            referer, status_code=status.HTTP_302_FOUND
         )
+
+        response.delete_cookie("referer")
 
         if user.is_password_temporary:
             response = responses.RedirectResponse(
@@ -73,7 +77,11 @@ async def login(response: Response, request: Request):
 
 @router.get("/login")
 async def login(response: Response, request: Request, msg: str = None):
-    return templates.TemplateResponse("login.html", {"request":request, "msg": msg})
+    response = templates.TemplateResponse("login.html", {"request":request, "msg": msg})
+    referer = request.headers.get("referer")
+    if referer:
+        response.set_cookie("referer", referer, httponly=True)
+    return response
 
 
 @router.get("/change")

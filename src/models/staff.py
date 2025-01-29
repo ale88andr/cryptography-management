@@ -107,8 +107,27 @@ class Organisation(Base):
     building: Mapped[str] = mapped_column(String(5), nullable=False)
     index: Mapped[int]
     chief: Mapped[str] = mapped_column(String(20), nullable=False)
+    chief_id: Mapped[int] = mapped_column(
+        ForeignKey("employee.id"), nullable=True
+    )
+    responsible_employee_id: Mapped[int] = mapped_column(
+        ForeignKey("employee.id"), nullable=True
+    )
+    spare_responsible_employee_id: Mapped[int] = mapped_column(
+        ForeignKey("employee.id"), nullable=True
+    )
 
-    employees: Mapped[list["Employee"]] = relationship(back_populates="organisation")
+    # TODO Remove!
+    # employees: Mapped[list["Employee"]] = relationship(back_populates="organisation")
+    chief_employee: Mapped["Employee"] = relationship(
+        uselist=False, foreign_keys=[chief_id]
+    )
+    responsible_employee: Mapped["Employee"] = relationship(
+        uselist=False, foreign_keys=[responsible_employee_id]
+    )
+    spare_responsible_employee: Mapped["Employee"] = relationship(
+        uselist=False, foreign_keys=[spare_responsible_employee_id]
+    )
 
     @property
     def address(self):
@@ -165,7 +184,7 @@ class Employee(Base):
 
     location: Mapped["Location"] = relationship(back_populates="employees")
 
-    organisation: Mapped["Organisation"] = relationship(back_populates="employees")
+    organisation: Mapped["Organisation"] = relationship(foreign_keys=[organisation_id])
 
     cryptography_set: Mapped[list["Version"]] = relationship(
         back_populates="responsible_user"

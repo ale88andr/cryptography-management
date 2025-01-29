@@ -5,6 +5,8 @@
 {% block page_header_text %}{{ page_header }}{% endblock %}
 {% block page_header_help_text %}{{ page_header_help }}{% endblock %}
 
+{% from "admin/common/macros.html" import print_default %}
+
 {% block content %}
     <div class="col-12">
         <div class="card border-success mb-3">
@@ -35,7 +37,54 @@
                         </div>
                         <div class="col-4 mb-3">
                             <h6>Руководитель:</h6>
-                            <p class="text-muted text-uppercase">{{ organisation.chief }}</p>
+                            {% if organisation.chief_id %}
+                                <a href="{{ url_for('detail_employee_admin', employee_id=organisation.chief_id) }}" class="text-uppercase">{{organisation.chief_employee}}</a>
+                            {% else %}
+                                ---
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-12">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-2 text-body">
+                        <h6 class="lead fw-normal mb-0"><i class="bi bi-person-lock"></i> Сведения о назначении ответственных лиц за эксплуатацию СКЗИ</h6>
+                        <p class="mb-1">
+                            <a
+                                href="{{ url_for('download_appointment_order_admin') }}"
+                                class="me-2 btn btn-outline-dark{%if not organisation.responsible_employee_id or not organisation.spare_responsible_employee_id%} disabled{%endif%}">
+                                <i class="bi bi-filetype-docx"></i> Приказ о назначении ответственного
+                            </a>
+                        </p>
+                    </div>
+                    <hr class="mt-0 mb-4">
+                    <div class="row pt-1">
+                        <div class="col-6 mb-3">
+                            <h6>Ответственный за эксплуатацию СКЗИ:</h6>
+                            {% if organisation.responsible_employee_id %}
+                                <p class="text-muted">{{ organisation.responsible_employee.full_position }}</p>
+                                <a
+                                href="{{ url_for('detail_employee_admin', employee_id=organisation.responsible_employee_id) }}"
+                                class="text-uppercase">
+                                    {{organisation.responsible_employee}}
+                                </a>
+                            {% else %}
+                                <p class="text-muted">НЕ НАЗНАЧЕН</p>
+                            {% endif %}
+                        </div>
+                        <div class="col-6 mb-3">
+                            <h6>Ответственный за эксплуатацию СКЗИ (резервный):</h6>
+                            {% if organisation.spare_responsible_employee_id %}
+                                <p class="text-muted">{{ organisation.spare_responsible_employee.full_position }}</p>
+                                <a
+                                href="{{ url_for('detail_employee_admin', employee_id=organisation.spare_responsible_employee_id) }}"
+                                class="text-uppercase">
+                                    {{organisation.spare_responsible_employee}}
+                                </a>
+                            {% else %}
+                                <p class="text-muted">НЕ НАЗНАЧЕН</p>
+                            {% endif %}
                         </div>
                     </div>
                 </div>

@@ -5,6 +5,8 @@
 {% block page_header_text %}{{ page_header }}{% endblock %}
 {% block page_header_help_text %}{{ page_header_help }}{% endblock %}
 
+{% from "admin/common/form_macros.html" import select_field %}
+
 {% block content %}
     <form method="POST">
         <div class="card">
@@ -43,6 +45,21 @@
                             {% if "chief" in errors %}
                                 <div class="text-danger font-weight-bold">{{ errors["chief"] }}</div>
                             {% endif %}
+                        </div>
+                    </div>
+
+                    <legend class="text-success">
+                        <strong>Руководитель организации</strong>
+                    </legend>
+
+                    <hr class="mt-0 mb-4">
+
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <div class="float-end">
+                                <a href="{{ url_for('add_employee_admin') }}" class="btn btn-sm btn-success">&#10133; Добавить</a>
+                            </div>
+                            {{ select_field("chief_id", "Руководитель организации:", employees_chief, errors, chief_id) }}
                         </div>
                     </div>
 
@@ -91,6 +108,29 @@
                             {% endif %}
                         </div>
                     </div>
+
+                    <legend class="text-success">
+                        <strong>Ответственные за эксплуатацию СКЗИ</strong>
+                    </legend>
+
+                    <hr class="mt-0 mb-4">
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="float-end">
+                                <a href="{{ url_for('add_employee_admin') }}" class="btn btn-sm btn-success">&#10133; Добавить</a>
+                            </div>
+                            {{ select_field("responsible_employee_id", "Ответственный за эксплуатацию СКЗИ:", employees, errors, responsible_employee_id) }}
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="float-end">
+                                <a href="{{ url_for('add_employee_admin') }}" class="btn btn-sm btn-success">&#10133; Добавить</a>
+                            </div>
+                            {{ select_field("spare_responsible_employee_id", "Ответственный за эксплуатацию СКЗИ (резервный):", employees, errors, spare_responsible_employee_id) }}
+                        </div>
+                    </div>
+
                 </div>
             </div>
 
