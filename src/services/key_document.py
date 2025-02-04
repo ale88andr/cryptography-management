@@ -57,7 +57,9 @@ class KeyDocumentServise(BaseRepository):
                 joinedload(cls.model.install_act).options(
                     joinedload(ActRecord.performer)
                 ),
-                joinedload(cls.model.owner),
+                joinedload(cls.model.owner).options(
+                    joinedload(Employee.department)
+                ),
                 joinedload(cls.model.key_carrier).options(
                     joinedload(KeyCarrier.carrier_type)
                 ),
@@ -388,7 +390,7 @@ class KeyDocumentServise(BaseRepository):
     @classmethod
     async def count_month_keys(cls):
         count_query = select(func.count(cls.model.id.distinct())).filter(
-            extract("month", cls.model.created_at) >= datetime.today().month
+            extract("month", cls.model.created_at) == datetime.today().month
         )
         count = (await db.execute(count_query)).scalar() or 0
         return count

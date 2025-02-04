@@ -14,23 +14,30 @@
             <div class="col-xxl-12 mb-12 order-0">
                 <div class="card">
                     <div class="d-flex align-items-start row">
-                        <div class="col-sm-8">
+                        <div class="col-sm-9">
                             <div class="card-body">
                                 <p class="text-welcome mb-3">Панель администратора криптографической защиты информации</p>
-                                <h5 class="text-secondary-emphasis mb-5">
+                                <h6 class="text-secondary-emphasis mb-5">
                                     {{ organisation.name }}
-                                </h5>
+                                </h6>
 
                                 <div class="btn-group" role="group" aria-label="Button group with nested dropdown">
-                                    <button type="button" class="btn btn-success"><i class="bi bi-card-checklist me-1"></i> Журналы учета</button>
+                                    <button type="button" class="btn btn-success"><i class="bi bi-journals"></i> Журналы учета</button>
                                     <div class="btn-group" role="group">
                                         <button id="btnGroupDrop2" type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
                                         <div class="dropdown-menu" aria-labelledby="btnGroupDrop2">
                                             <a href="{{ url_for('get_clogbook_admin') }}" class="dropdown-item">
-                                                <i class="bi bi-card-checklist me-1"></i> Журнал учета СКЗИ
+                                                <i class="bi bi-journal-code"></i> Журнал учета СКЗИ
                                             </a>
                                             <a href="{{ url_for('get_cilogbook_admin') }}" class="dropdown-item">
-                                                <i class="bi bi-card-checklist me-1"></i> Журнал поэкземплярного учета
+                                                <i class="bi bi-journal-text"></i> Журнал поэкземплярного учета СКЗИ
+                                            </a>
+                                            <a class="dropdown-item" href="{{ url_for('get_cusers_admin') }}">
+                                                <i class="bi bi-people-fill me-1"></i> Список пользователей СКЗИ
+                                            </a>
+                                            <div class="dropdown-divider"></div>
+                                            <a href="{{ url_for('add_cilogbook_admin') }}" class="dropdown-item">
+                                                <i class="bi bi-journal-plus"></i> Добавить запись о подключении СКЗИ
                                             </a>
                                         </div>
                                     </div>
@@ -39,8 +46,8 @@
                                 <a href="{{ url_for('get_key_documents_admin') }}" class="btn btn-outline-info"><i class="bi bi-key me-1"></i> Ключевые документы</a>
                             </div>
                         </div>
-                        <div class="col-sm-4 text-center text-sm-left">
-                            <div class="card-body pb-0 px-0 px-md-6">
+                        <div class="col-sm-3 text-center text-sm-left">
+                            <div class="card-body mb-0 pb-0 px-0 px-md-6">
                                 <img
                                     src="{{ url_for('static', path='img/welcome.png') }}"
                                     height="175"
@@ -70,7 +77,7 @@
                                 </button>
                                 <div class="dropdown-menu dropdown-menu-end" aria-labelledby="cardOpt3">
                                     <a class="dropdown-item" href="{{ url_for('add_employee_admin') }}"><i class="bi bi-person-plus me-2"></i> Добавить пользователя</a>
-                                    <a class="dropdown-item" href="#"><i class="bi bi-people-fill me-2"></i> Список пользователей СКЗИ</a>
+                                    <a class="dropdown-item" href="{{ url_for('get_cusers_admin') }}"><i class="bi bi-people-fill me-1"></i> Список пользователей СКЗИ</a>
                                     <a class="dropdown-item" href="{{ url_for('get_employees_admin') }}"><i class="bi bi-people me-2"></i> Список всех пользователей</a>
                                 </div>
                             </div>
@@ -278,10 +285,10 @@
 
             <div class="col-12 col-lg-12 col-xxl-12 d-flex">
                 <div class="card flex-fill">
-                    <div class="card-header d-flex align-items-center justify-content-between">
+                    <div class="card-header d-flex align-items-center justify-content-between mb-1 pb-1">
                         <h5 class="card-title m-0 me-2">Последние записи журнала поэкземплярного учета СКЗИ</h5>
-                        <a href="{{ url_for('add_cilogbook_admin') }}" class="btn btn-sm btn-outline-success dropdown-menu-end">
-                            <i class="bi bi-person-plus"></i> Добавить
+                        <a href="{{ url_for('add_cilogbook_admin') }}" class="btn btn-outline-success dropdown-menu-end">
+                            <i class="bi bi-plus-lg"></i> Добавить
                         </a>
                     </div>
 
@@ -293,39 +300,46 @@
                                     <th scope="col">Серийные номера ключевых документов</th>
                                     <th scope="col">Пользователь СКЗИ</th>
                                     <th scope="col">Актовая запись</th>
-                                    <th scope="col">Дата подключения</th>
+                                    <th scope="col">Сведения о подключении</th>
                                 </tr>
                             </thead>
                             {% for record in latest_logbook %}
                                 <tr>
                                     <td>
-                                        <ul class="list-unstyled mb-0">
-                                            <li class="mb-1">
-                                                <a href="{{ url_for('edit_cversion_admin', pk=record.cryptography_version_id) }}">
-                                                    {{ record.cryptography_version.model.name }} {{ record.cryptography_version.version }}
-                                                </a>
-                                            </li>
-                                        </ul>
-                                    </td>
-                                    <td class="text-nowrap">
                                         <div class="d-flex align-items-center">
                                             <div>
-                                                <p class="fw-bold">
-                                                    <ul class="list-unstyled mb-0">
-                                                        <li class="mb-1">
-                                                            <a href="{{ url_for('destruct_employee_cversion_admin', pk=record.id) }}">
-                                                                <strong>{{ record.serial }}</strong>
-                                                            </a>
-                                                        </li>
-                                                    </ul>
+                                                <p class="fw-bold mb-1">
+                                                    <a href="{{ url_for('edit_cversion_admin', pk=record.cryptography_version_id) }}">
+                                                        {{ record.cryptography_version.model.name }} {{ record.cryptography_version.version }}
+                                                    </a>
                                                 </p>
+                                                <p class="mb-0"><span class="badge bg-label-success text-uppercase">{{ record.cryptography_version.serial }}</span></p>
                                             </div>
                                         </div>
                                     </td>
                                     <td class="text-nowrap">
-                                        <a href="{{ url_for('detail_employee_admin', employee_id=record.owner_id) }}">
-                                            {{ record.owner.short_name }}
-                                        </a>
+                                        <div class="d-flex align-items-center">
+                                            <div>
+                                                <p class="fw-bold mb-1">
+                                                    <a href="{{ url_for('edit_cversion_admin', pk=record.cryptography_version_id) }}">
+                                                        {{ record.serial }}
+                                                    </a>
+                                                </p>
+                                                <p class="mb-0"><span class="badge bg-label-warning text-uppercase">{{ record.key_carrier.serial }}</span></p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="text-nowrap">
+                                        <div class="d-flex align-items-center">
+                                            <div>
+                                                <p class="fw-bold mb-1">
+                                                    <a href="{{ url_for('detail_employee_admin', employee_id=record.owner_id) }}">
+                                                        {{ record.owner.short_name }}
+                                                    </a>
+                                                </p>
+                                                <p class="text-muted mb-0">{{ record.owner.department }}</p>
+                                            </div>
+                                        </div>
                                     </td>
                                     <td class="text-muted">
                                         <a href="{{ url_for('download_instance_creation_act_admin', key_id=record.id) }}" class="text-nowrap">
@@ -333,7 +347,16 @@
                                         </a>
                                     </td>
                                     <td>
-                                        {{ format_date(record.install_act.action_date) }}
+                                        <div class="d-flex align-items-center">
+                                            <div>
+                                                <p class="fw-bold mb-1">
+                                                    <a href="{{ url_for('detail_employee_admin', employee_id=record.install_act.performer_id) }}">
+                                                        {{ record.install_act.performer }}
+                                                    </a>
+                                                </p>
+                                                <p class="text-muted mb-0">{{ format_date(record.install_act.action_date) }}</p>
+                                            </div>
+                                        </div>
                                     </td>
                                 </tr>
                             {% else %}
@@ -341,7 +364,6 @@
                             {% endfor %}
                         </table>
                     </div>
-
                 </div>
             </div>
 

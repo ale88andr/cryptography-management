@@ -77,9 +77,9 @@ async def get_dashboard_admin(
         "version_chart_labels": [item[0].version for item in key_versions],
         "version_chart_data": [item[1] for item in key_versions],
         "act_chart_labels": [
-            calendar.month_abbr[int(item[0])] for item in installs_by_month
+            f"{calendar.month_abbr[int(item[0])]} {item[1]}" for item in installs_by_month
         ],
-        "act_chart_data": [str(item[1]) for item in installs_by_month],
+        "act_chart_data": [str(item[2]) for item in installs_by_month],
         "carrier_chart_labels": [str(item[0]) for item in count_key_carriers],
         "carrier_chart_data": [str(item[1]) for item in count_key_carriers],
         "total_year_action": total_year_action,

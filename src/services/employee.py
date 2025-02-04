@@ -166,7 +166,7 @@ class EmployeeServise(BaseRepository):
             select(func.count(cls.model.id.distinct()))
             .select_from(KeyDocument)
             .join(cls.model)
-            .filter(extract("month", cls.model.created_at) >= datetime.today().month)
+            .filter(extract("month", cls.model.created_at) == datetime.today().month)
         )
         month_users = (await db.execute(count_query)).scalar() or 0
         return month_users

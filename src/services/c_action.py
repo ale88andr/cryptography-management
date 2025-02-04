@@ -1,6 +1,7 @@
 from datetime import date, datetime
 from typing import Optional, Union
 from sqlalchemy import select, text, func, extract, or_
+from sqlalchemy.sql import functions
 
 from db.connection import db
 from services.base import BaseRepository
@@ -38,7 +39,6 @@ class CActionServise(BaseRepository):
             .select_from(cls.model)
         )
         total_records = (await db.execute(count_query)).scalar() or 0
-        print(total_records)
         return f'{action_date.strftime("%y%m%d")}-{total_records + 1}'
 
     @classmethod
@@ -69,7 +69,7 @@ class CActionServise(BaseRepository):
     @classmethod
     async def count(cls) -> int:
         count_query = select(func.count(cls.model.id)).filter(
-            extract("year", cls.model.created_at) >= datetime.today().month
+            extract("year", cls.model.created_at) >= datetime.today().year
         )
         return (await db.execute(count_query)).scalar() or 0
 
@@ -107,7 +107,9 @@ class CActionServise(BaseRepository):
     async def count_by_month(cls):
         query = (
             select(
-                func.extract('month', cls.model.action_date), func.count(cls.model.id)
+                func.extract('month', cls.model.action_date),
+                func.extract('year', cls.model.action_date),
+                func.count(cls.model.id)
             )
             .filter(
                 or_(
@@ -118,7 +120,9 @@ class CActionServise(BaseRepository):
             .group_by(
                 func.extract('year', cls.model.action_date),
                 func.extract('month', cls.model.action_date),
-            )
-            .limit(12)
+            ).order_by(
+                func.extract('year', cls.model.action_date),
+                func.extract('month', cls.model.action_date)
+            ).limit(12)
         )
         return (await db.execute(query)).fetchall()
