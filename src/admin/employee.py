@@ -164,7 +164,7 @@ async def add_employee_admin(request: Request, user: User = Depends(get_current_
             "positions": positions,
             "locations": locations,
             "organisation": organisation,
-            "is_created": True,
+            "is_create": True,
             "breadcrumbs": create_breadcrumbs(
                 router,
                 [index_page_header, add_page_header],
@@ -203,7 +203,7 @@ async def create_employee_admin(request: Request, user: User = Depends(get_curre
     positions, _ = await PositionServise.all()
     locations, _ = await LocationServise.all()
     context = {
-        "page_header": add_employee_admin,
+        "page_header": add_page_header,
         "page_header_help": hepl_text,
         "departments": departments,
         "positions": positions,
