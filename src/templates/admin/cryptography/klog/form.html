@@ -148,7 +148,7 @@
                                         name="key_document_unexpired_received_from"
                                         id="kd-unexpired-received-from"
                                         placeholder="Получен от"
-                                        value="{{key_document_unexpired_received_from}}"
+                                        value="{%if key_document_unexpired_received_from%}{{key_document_unexpired_received_from}}{%else%}Изготовлены самостоятельно{%endif%}"
                                     >
                                     {% if "key_document_unexpired_received_from" in errors %}
                                         <div class="text-danger font-weight-bold">{{ errors["key_document_unexpired_received_from"] }}</div>
@@ -251,7 +251,7 @@
                                             name="key_document_expired_received_from"
                                             id="key_document_expired_received_from"
                                             placeholder="Получен от"
-                                            value="{{key_document_expired_received_from}}"
+                                            value="{%if key_document_expired_received_from%}{{key_document_expired_received_from}}{%else%}Изготовлены самостоятельно{%endif%}"
                                         >
                                         {% if "key_document_expired_received_from" in errors %}
                                             <div class="text-danger font-weight-bold">{{ errors["key_document_expired_received_from"] }}</div>
