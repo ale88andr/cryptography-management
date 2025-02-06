@@ -8,6 +8,9 @@
 {% from "admin/common/form_macros.html" import input_field, date_field, select_field %}
 
 {% block content %}
+    {% if not performer_id %}
+        {% set performer_id=user.employee_id %}
+    {% endif %}
     <form method="POST" class="custom">
         <div class="card">
             <div class="card-body">
@@ -332,6 +335,11 @@
     </form>
 
     <script>
+
+        document.getElementById("reason_date").valueAsDate = new Date();
+        document.getElementById("happened_at").valueAsDate = new Date();
+        document.getElementById("key_document_expired_received_at").valueAsDate = new Date();
+        document.getElementById("kd-unexpired-received-at").valueAsDate = new Date();
 
         const hideClassName = "d-none";
 
