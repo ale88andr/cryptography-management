@@ -80,6 +80,11 @@ form.custom label:not(.btn, .form-check-label) {
     background-color: #f6f9fc;
 }
 
+.table-hover > tbody > tr.no-hover:hover > td,
+.table-hover > tbody > tr.no-hover:hover > th {
+    box-shadow: none;
+}
+
 .card .table td,
 .card .table th {
     padding-right: 0.75rem;
