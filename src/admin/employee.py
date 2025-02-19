@@ -1,5 +1,5 @@
-from typing import Optional
-from fastapi import APIRouter, Request, Depends, responses, status
+from typing import Any, Dict, Optional
+from fastapi import APIRouter, Request, Depends, responses
 
 from admin.constants import (
     EMP_ADD_PAGE_HEADER as add_page_header,
@@ -39,6 +39,25 @@ crypto_user_list_template = f"{app_prefix}/users.html"
 router = APIRouter(prefix=app_prefix, tags=[hepl_text])
 
 
+# Создание фильтров сотрудников для методов: get_employees_admin, get_cusers_admin
+def create_employee_filters(
+    position: Optional[int] = None,
+    department: Optional[int] = None,
+    location: Optional[int] = None,
+    cryptography_version: Optional[int] = None,
+) -> Dict[str, Any]:
+    return {
+        key: value
+        for key, value in {
+            "position_id": position,
+            "department_id": department,
+            "location_id": location,
+            "cryptography_version_id": cryptography_version
+        }.items()
+        if value is not None and value > 0
+    }
+
+
 # ========= Employees =========
 @router.get("/", response_class=responses.HTMLResponse)
 async def get_employees_admin(
@@ -53,16 +72,11 @@ async def get_employees_admin(
     filter_location: Optional[int] = None,
     user: User = Depends(get_current_admin)
 ):
-    filters = {}
-
-    if filter_position and filter_position > 0:
-        filters["position_id"] = filter_position
-
-    if filter_department and filter_department > 0:
-        filters["department_id"] = filter_department
-
-    if filter_location and filter_location > 0:
-        filters["location_id"] = filter_location
+    filters = create_employee_filters(
+        position=filter_position,
+        department=filter_department,
+        location=filter_location
+    )
 
     records, counter, total_records, total_pages = (
         await EmployeeServise.all_with_pagination(
@@ -111,13 +125,10 @@ async def get_cusers_admin(
     filter_department: Optional[int] = None,
     user: User = Depends(get_current_admin)
 ):
-    filters = {}
-
-    if filter_department and filter_department > 0:
-        filters["department_id"] = filter_department
-
-    if filter_version and filter_version > 0:
-        filters["cryptography_version_id"] = filter_version
+    filters = create_employee_filters(
+        department=filter_department,
+        cryptography_version=filter_version
+    )
 
     cryptography_users, total_cryptography_users = (
         await EmployeeServise.cryptography_users(q=q, sort=sort, filters=filters)
