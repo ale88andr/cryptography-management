@@ -4,13 +4,16 @@ from typing import Optional
 from fastapi import APIRouter, Request, Depends, responses
 
 from admin.constants import (
-    CILOG_HELP_TEXT as hepl_text,
-    CILOG_INDEX_PAGE_HEADER as index_page_header,
-    CILOG_ADD_PAGE_HEADER as add_page_header,
+    ADMIN_CILOG_DESCRIPTION as hepl_text,
+    ADMIN_CILOG_INDEX_HEADER as index_page_header,
+    ADMIN_CILOG_ADD_HEADER as add_page_header,
+    ADMIN as app_prefix,
+    ADMIN_DASHBOARD_PAGE as list_template,
+    ADMIN_PROFILE_PAGE as profile_template
 )
 from core.config import templates
 from core.utils import create_breadcrumbs
-from dependencies.auth import get_current_admin, get_current_user
+from dependencies.auth import get_current_admin
 from models.users import User
 from services.c_action import CActionServise
 from services.key_carrier import KeyCarrierServise
@@ -19,10 +22,6 @@ from services.employee import EmployeeServise
 from services.c_version import CVersionServise
 from services.organisation import OrganisationServise
 
-
-app_prefix = "/admin"
-list_template = f"{app_prefix}/index.html"
-profile_template = f"{app_prefix}/profile.html"
 
 router = APIRouter(prefix=app_prefix, tags=[hepl_text])
 

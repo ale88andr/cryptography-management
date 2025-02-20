@@ -2,10 +2,13 @@ from typing import Optional
 from fastapi import APIRouter, Request, Depends, responses, status
 
 from admin.constants import (
-    CM_ADD_PAGE_HEADER as add_header,
-    CM_EDIT_PAGE_HEADER as edit_header,
-    CM_HELP_TEXT as help_text,
-    CM_INDEX_PAGE_HEADER as index_header,
+    ADMIN_CMANUFACTURER_ADD_HEADER as add_header,
+    ADMIN_CMANUFACTURER_EDIT_HEADER as edit_header,
+    ADMIN_CMANUFACTURER_DESCRIPTION as help_text,
+    ADMIN_CMANUFACTURER_INDEX_HEADER as index_header,
+    ADMIN_CMANUFACTURER as app_prefix,
+    ADMIN_CMANUFACTURER_LIST_TPL as form_template,
+    ADMIN_CMANUFACTURER_FORM_TPL as list_template,
 )
 from core.config import templates
 from core.utils import (
@@ -19,9 +22,6 @@ from forms.cryptography_manufacturer import CryptographyManufacturerForm
 from services.c_manufacturer import CManufacturerServise
 from models.users import User
 
-app_prefix = "/admin/cryptography/manufacturers"
-form_template = f"{app_prefix}/form.html"
-list_template = f"{app_prefix}/index.html"
 
 router = APIRouter(prefix=app_prefix, tags=[help_text])
 

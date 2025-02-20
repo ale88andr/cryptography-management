@@ -3,9 +3,12 @@ from typing import Optional
 from fastapi import APIRouter, Request, Depends, responses, status
 
 from admin.constants import (
-    CILOG_HELP_TEXT as hepl_text,
-    CILOG_INDEX_PAGE_HEADER as index_page_header,
-    CILOG_ADD_PAGE_HEADER as add_page_header,
+    ADMIN_CILOG_DESCRIPTION as hepl_text,
+    ADMIN_CILOG_INDEX_HEADER as index_page_header,
+    ADMIN_CILOG_ADD_HEADER as add_page_header,
+    ADMIN_CILOG as app_prefix,
+    ADMIN_CILOG_FORM_TPL as form_template,
+    ADMIN_CILOG_LIST_TPL as list_template,
 )
 from core.config import templates
 from core.templater import (
@@ -14,7 +17,7 @@ from core.templater import (
     LogbookTemplatesEnum,
     UninstallKeyActDocumentContext,
 )
-from core.utils import create_breadcrumbs, create_file_response
+from core.utils import create_breadcrumbs, create_file_response, redirect
 from dependencies.auth import get_current_admin
 from forms.c_instance_logbook import CInstanceLogbookAdd
 from models.users import User
@@ -26,10 +29,6 @@ from services.key_carrier import KeyCarrierServise
 from services.key_document import KeyDocumentServise
 from utils.formatting import format_date_to_str, get_date_tuple, get_str_now_date
 
-
-app_prefix = "/admin/cryptography/klog"
-form_teplate = f"{app_prefix}/form.html"
-list_teplate = f"{app_prefix}/index.html"
 
 router = APIRouter(prefix=app_prefix, tags=[hepl_text])
 
@@ -82,7 +81,7 @@ async def get_cilogbook_admin(
         ),
         "user": user,
     }
-    return templates.TemplateResponse(list_teplate, context)
+    return templates.TemplateResponse(list_template, context)
 
 
 @router.get("/add")
@@ -111,7 +110,7 @@ async def add_cilogbook_admin(request: Request, user: User = Depends(get_current
         ),
         "user": user,
     }
-    return templates.TemplateResponse(form_teplate, context)
+    return templates.TemplateResponse(form_template, context)
 
 
 @router.post("/add")
@@ -122,11 +121,10 @@ async def create_cilogbook_admin(request: Request, user: User = Depends(get_curr
         try:
             await KeyDocumentServise.add_personal_keys(form)
 
-            redirect_url = request.url_for("get_cilogbook_admin").include_query_params(
+            return redirect(
+                request=request,
+                endpoint="get_cilogbook_admin",
                 msg=f"Установка СКЗИ учтена!"
-            )
-            return responses.RedirectResponse(
-                redirect_url, status_code=status.HTTP_303_SEE_OTHER
             )
         except Exception as e:
             form.__dict__.get("errors").setdefault("non_field_error", e)
@@ -157,7 +155,7 @@ async def create_cilogbook_admin(request: Request, user: User = Depends(get_curr
     }
     context.update(form.__dict__)
     context.update(form.fields)
-    return templates.TemplateResponse(form_teplate, context)
+    return templates.TemplateResponse(form_template, context)
 
 
 @router.get("/{record_id}/delete")

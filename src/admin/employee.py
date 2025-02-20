@@ -2,12 +2,18 @@ from typing import Any, Dict, Optional
 from fastapi import APIRouter, Request, Depends, responses
 
 from admin.constants import (
-    EMP_ADD_PAGE_HEADER as add_page_header,
-    EMP_EDIT_PAGE_HEADER as edit_page_header,
-    EMP_HELP_TEXT as hepl_text,
-    EMP_INDEX_PAGE_HEADER as index_page_header,
-    EMP_CUSERS_PAGE_HEADER as index_cusers_page_header,
-    EMP_DISMISS_PAGE_HEADER as termination_page_header
+    ADMIN_EMPLOYEE_ADD_HEADER as add_page_header,
+    ADMIN_EMPLOYEE_EDIT_HEADER as edit_page_header,
+    ADMIN_EMPLOYEE_DESCRIPTION as hepl_text,
+    ADMIN_EMPLOYEE_INDEX_HEADER as index_page_header,
+    ADMIN_EMPLOYEE_CRYPTO_HEADER as index_cusers_page_header,
+    ADMIN_EMPLOYEE_TERMINATION_HEADER as termination_page_header,
+    ADMIN_EMPLOYEE as app_prefix,
+    ADMIN_EMPLOYEE_DETAIL_TPL,
+    ADMIN_EMPLOYEE_FORM_TPL,
+    ADMIN_EMPLOYEE_LIST_TPL,
+    ADMIN_EMPLOYEE_TERM_FORM_TPL,
+    ADMIN_EMPLOYEE_WITH_CRYPTOGRAPY_TPL
 )
 from core.config import templates
 from core.utils import create_breadcrumbs, create_file_response, redirect_with_message
@@ -27,14 +33,6 @@ from services.employee_personal_account import EmployeePersonalAccountService
 from forms.employee import EmployeeForm
 from forms.destruction import DestructionForm
 from utils.formatting import get_str_now_date, format_date
-
-
-app_prefix = "/admin/staff/employees"
-form_teplate = f"{app_prefix}/form.html"
-form_termination_template = f"{app_prefix}/termination_form.html"
-detail_teplate = f"{app_prefix}/detail.html"
-list_teplate = f"{app_prefix}/index.html"
-crypto_user_list_template = f"{app_prefix}/users.html"
 
 router = APIRouter(prefix=app_prefix, tags=[hepl_text])
 
@@ -88,7 +86,7 @@ async def get_employees_admin(
     locations, _ = await LocationServise.all()
 
     return templates.TemplateResponse(
-        list_teplate,
+        ADMIN_EMPLOYEE_LIST_TPL,
         {
             "request": request,
             "employees": records,
@@ -138,7 +136,7 @@ async def get_cusers_admin(
     versions, _ = await CVersionServise.all()
 
     return templates.TemplateResponse(
-        crypto_user_list_template,
+        ADMIN_EMPLOYEE_WITH_CRYPTOGRAPY_TPL,
         {
             "request": request,
             "users": cryptography_users,
@@ -166,7 +164,7 @@ async def add_employee_admin(request: Request, user: User = Depends(get_current_
     locations, _ = await LocationServise.all(sort="name")
     organisation = await OrganisationServise.all()
     return templates.TemplateResponse(
-        form_teplate,
+        ADMIN_EMPLOYEE_FORM_TPL,
         context={
             "request": request,
             "page_header": add_page_header,
@@ -228,14 +226,14 @@ async def create_employee_admin(request: Request, user: User = Depends(get_curre
     }
     context.update(form.__dict__)
     context.update(form.fields)
-    return templates.TemplateResponse(form_teplate, context)
+    return templates.TemplateResponse(ADMIN_EMPLOYEE_FORM_TPL, context)
 
 
 @router.get("/{employee_id}")
 async def detail_employee_admin(employee_id: int, request: Request, user: User = Depends(get_current_admin)):
     employee = await EmployeeServise.get_by_id(employee_id)
     return templates.TemplateResponse(
-        detail_teplate,
+        ADMIN_EMPLOYEE_DETAIL_TPL,
         {
             "request": request,
             "employee": employee,
@@ -261,7 +259,7 @@ async def edit_employee_admin(employee_id: int, request: Request, user: User = D
     organisation = await OrganisationServise.all()
     key_documents, _ = await EmployeePersonalAccountService.all()
     return templates.TemplateResponse(
-        form_teplate,
+        ADMIN_EMPLOYEE_FORM_TPL,
         {
             "request": request,
             "surname": emp.surname,
@@ -334,7 +332,7 @@ async def update_employee_admin(employee_id: int, request: Request, user: User =
     }
     context.update(form.__dict__)
     context.update(form.fields)
-    return templates.TemplateResponse(form_teplate, context)
+    return templates.TemplateResponse(ADMIN_EMPLOYEE_FORM_TPL, context)
 
 
 @router.get("/{pk}/termination")
@@ -344,7 +342,7 @@ async def termination_employee_admin(pk: int, request: Request, user: User = Dep
     staff_members = await EmployeeServise.get_short_list(is_staff=True)
 
     return templates.TemplateResponse(
-        form_termination_template,
+        ADMIN_EMPLOYEE_TERM_FORM_TPL,
         {
             "request": request,
             "employee": employee,
@@ -433,7 +431,7 @@ async def terminate_employee_admin(pk: int, request: Request, user: User = Depen
         }
         context.update(form.__dict__)
         context.update(form.fields)
-        return templates.TemplateResponse(form_termination_template, context)
+        return templates.TemplateResponse(ADMIN_EMPLOYEE_TERM_FORM_TPL, context)
 
 
 @router.get("/{employee_id}/personal-account/doc")

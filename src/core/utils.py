@@ -1,4 +1,6 @@
+from ast import Dict
 import os
+from typing import Optional
 from fastapi import APIRouter, responses, Request, status
 
 from core.config import BASE_DIR
@@ -87,3 +89,21 @@ def redirect_with_error(
     """Редирект с ошибкой"""
     redirect_url = request.url_for(endpoint).include_query_params(errors=errors)
     return responses.RedirectResponse(redirect_url, status_code=status)
+
+def redirect(
+    request: Request,
+    endpoint: str,
+    msg: Optional[str]=None,
+    errors: Optional[Dict]=None
+) -> responses.RedirectResponse:
+    """Редирект с возможностью добавления сообщения или ошибок"""
+    redirect_url = request.url_for(endpoint)
+    status_code = status.HTTP_303_SEE_OTHER
+
+    if msg:
+        redirect_url = redirect_url.include_query_params(msg=msg)
+    elif errors:
+        redirect_url = redirect_url.include_query_params(errors=errors)
+        status_code = status.HTTP_307_TEMPORARY_REDIRECT
+
+    return responses.RedirectResponse(url=redirect_url, status_code=status_code)

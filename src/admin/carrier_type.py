@@ -2,24 +2,22 @@ from typing import Optional
 from fastapi import APIRouter, Request, Depends, responses, status
 
 from admin.constants import (
-    CTYPES_ADD_PAGE_HEADER,
-    CTYPES_EDIT_PAGE_HEADER,
-    CTYPES_FORM_TEMPLATE,
-    CTYPES_HELP_TEXT,
-    CTYPES_INDEX_PAGE_HEADER,
+    ADMIN_CTYPE_ADD_HEADER,
+    ADMIN_CTYPE_EDIT_HEADER,
+    ADMIN_CTYPE_DESCRIPTION,
+    ADMIN_CTYPE_INDEX_HEADER,
+    ADMIN_CTYPE as app_prefix,
+    ADMIN_CTYPE_FORM_TPL as form_template,
+    ADMIN_CTYPE_LIST_TPL as list_template
 )
 from core.config import templates
-from core.utils import add_breadcrumb
+from core.utils import add_breadcrumb, redirect
 from dependencies.auth import get_current_admin
 from models.users import User
 from services.carrier_types import CarrierTypesServise
 
 
-app_prefix = "/admin/cryptography/carriers/types"
-form_teplate = f"{app_prefix}/form.html"
-list_teplate = f"{app_prefix}/index.html"
-
-router = APIRouter(prefix=app_prefix, tags=[CTYPES_HELP_TEXT])
+router = APIRouter(prefix=app_prefix, tags=[ADMIN_CTYPE_DESCRIPTION])
 
 
 # ========= Carrier types =========
@@ -33,20 +31,20 @@ async def get_ctypes_admin(
 ):
     records, counter = await CarrierTypesServise.all(sort=sort, q=q)
     return templates.TemplateResponse(
-        list_teplate,
+        list_template,
         context={
             "request": request,
             "objects": records,
             "counter": counter,
-            "page_header": CTYPES_INDEX_PAGE_HEADER,
-            "page_header_help": CTYPES_HELP_TEXT,
+            "page_header": ADMIN_CTYPE_INDEX_HEADER,
+            "page_header_help": ADMIN_CTYPE_DESCRIPTION,
             "msg": msg,
             "sort": sort,
             "q": q,
             "breadcrumbs": [
                 add_breadcrumb(
                     router,
-                    CTYPES_INDEX_PAGE_HEADER,
+                    ADMIN_CTYPE_INDEX_HEADER,
                     "get_ctypes_admin",
                     is_active=True,
                 )
@@ -59,15 +57,15 @@ async def get_ctypes_admin(
 @router.get("/add")
 async def add_ctype_admin(request: Request, user: User = Depends(get_current_admin)):
     return templates.TemplateResponse(
-        form_teplate,
+        form_template,
         context={
             "request": request,
-            "page_header": CTYPES_ADD_PAGE_HEADER,
-            "page_header_help": CTYPES_HELP_TEXT,
+            "page_header": ADMIN_CTYPE_ADD_HEADER,
+            "page_header_help": ADMIN_CTYPE_DESCRIPTION,
             "breadcrumbs": [
-                add_breadcrumb(router, CTYPES_INDEX_PAGE_HEADER, "get_ctypes_admin"),
+                add_breadcrumb(router, ADMIN_CTYPE_INDEX_HEADER, "get_ctypes_admin"),
                 add_breadcrumb(
-                    router, CTYPES_ADD_PAGE_HEADER, "add_ctype_admin", is_active=True
+                    router, ADMIN_CTYPE_ADD_HEADER, "add_ctype_admin", is_active=True
                 ),
             ],
             "user": user,
@@ -82,22 +80,22 @@ async def create_ctype_admin(request: Request, user: User = Depends(get_current_
     if await form.is_valid():
         try:
             obj = await CarrierTypesServise.add(name=form.name)
-            redirect_url = request.url_for("get_ctypes_admin").include_query_params(
+
+            return redirect(
+                request=request,
+                endpoint="get_ctypes_admin",
                 msg=f"Тип ключевого носителя '{obj.name}' создан!"
-            )
-            return responses.RedirectResponse(
-                redirect_url, status_code=status.HTTP_303_SEE_OTHER
             )
         except Exception as e:
             form.__dict__.get("errors").setdefault("non_field_error", e)
-            return templates.TemplateResponse(CTYPES_FORM_TEMPLATE, form.__dict__)
+            return templates.TemplateResponse(form_template, form.__dict__)
     context = {
-        "page_header_text": CTYPES_ADD_PAGE_HEADER,
-        "page_header_help_text": CTYPES_HELP_TEXT,
+        "page_header_text": ADMIN_CTYPE_ADD_HEADER,
+        "page_header_help_text": ADMIN_CTYPE_DESCRIPTION,
         "user": user,
     }
     context.update(form.__dict__)
-    return templates.TemplateResponse(form_teplate, context)
+    return templates.TemplateResponse(form_template, context)
 
 
 @router.get("/{ctype_id}/edit")
@@ -106,16 +104,16 @@ async def edit_ctype_admin(
 ):
     obj = await CarrierTypesServise.get_by_id(ctype_id)
     return templates.TemplateResponse(
-        form_teplate,
+        form_template,
         context={
             "request": request,
             "name": obj.name,
-            "page_header": CTYPES_EDIT_PAGE_HEADER,
-            "page_header_help": CTYPES_HELP_TEXT,
+            "page_header": ADMIN_CTYPE_EDIT_HEADER,
+            "page_header_help": ADMIN_CTYPE_DESCRIPTION,
             "breadcrumbs": [
-                add_breadcrumb(router, CTYPES_INDEX_PAGE_HEADER, "get_ctypes_admin"),
+                add_breadcrumb(router, ADMIN_CTYPE_INDEX_HEADER, "get_ctypes_admin"),
                 add_breadcrumb(
-                    router, CTYPES_EDIT_PAGE_HEADER, "edit_ctype_admin", is_active=True
+                    router, ADMIN_CTYPE_EDIT_HEADER, "edit_ctype_admin", is_active=True
                 ),
             ],
             "user": user,
@@ -131,26 +129,23 @@ async def update_ctype_admin(
     await form.load_data()
     if await form.is_valid():
         try:
-            obj = await CarrierTypesServise.update(
-                ctype_id,
-                name=form.name,
-            )
-            redirect_url = request.url_for("get_ctypes_admin").include_query_params(
+            obj = await CarrierTypesServise.update(ctype_id, name=form.name)
+
+            return redirect(
+                request=request,
+                endpoint="get_ctypes_admin",
                 msg=f"Тип ключевого носителя '{obj.name}' обновлен!"
-            )
-            return responses.RedirectResponse(
-                redirect_url, status_code=status.HTTP_303_SEE_OTHER
             )
         except Exception as e:
             form.__dict__.get("errors").setdefault("non_field_error", e)
-            return templates.TemplateResponse(CTYPES_FORM_TEMPLATE, form.__dict__)
+            return templates.TemplateResponse(form_template, form.__dict__)
     context = {
-        "page_header_text": CTYPES_EDIT_PAGE_HEADER,
-        "page_header_help_text": CTYPES_HELP_TEXT,
+        "page_header_text": ADMIN_CTYPE_EDIT_HEADER,
+        "page_header_help_text": ADMIN_CTYPE_DESCRIPTION,
         "user": user,
     }
     context.update(form.__dict__)
-    return templates.TemplateResponse(form_teplate, context)
+    return templates.TemplateResponse(form_template, context)
 
 
 @router.get("/{ctype_id}/delete")

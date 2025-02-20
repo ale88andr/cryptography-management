@@ -4,8 +4,11 @@ from typing import Optional
 from fastapi import APIRouter, Request, Depends, responses, status
 
 from admin.constants import (
-    CLOG_HELP_TEXT as hepl_text,
-    CLOG_INDEX_PAGE_HEADER as index_page_header,
+    ADMIN_CLOG_DESCRIPTION as hepl_text,
+    ADMIN_CLOG_INDEX_HEADER as index_page_header,
+    ADMIN_CLOG as app_prefix,
+    ADMIN_CLOG_FORM_TPL as form_teplate,
+    ADMIN_CLOG_LIST_TPL as list_template,
 )
 from core.config import templates
 from core.utils import create_breadcrumbs, create_file_response
@@ -22,10 +25,6 @@ from core.templater import (
 from services.c_version import CVersionServise
 from utils.formatting import get_str_now_date, format_date_to_str, get_date_tuple
 
-
-app_prefix = "/admin/cryptography/vlog"
-form_teplate = f"{app_prefix}/form.html"
-list_teplate = f"{app_prefix}/index.html"
 
 router = APIRouter(prefix=app_prefix, tags=[hepl_text])
 
@@ -66,7 +65,7 @@ async def get_clogbook_admin(
         ),
         "user": user,
     }
-    return templates.TemplateResponse(list_teplate, context)
+    return templates.TemplateResponse(list_template, context)
 
 
 @router.get("/{record_id}/delete")

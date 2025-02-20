@@ -2,10 +2,13 @@ from typing import Optional
 from fastapi import APIRouter, Request, Depends, responses, status
 
 from admin.constants import (
-    DP_ADD_PAGE_HEADER as add_header,
-    DP_EDIT_PAGE_HEADER as edit_header,
-    DP_HELP_TEXT as help_text,
-    DP_INDEX_PAGE_HEADER as index_header,
+    ADMIN_DEPARTMENT_ADD_HEADER as add_header,
+    ADMIN_DEPARTMENT_EDIT_HEADER as edit_header,
+    ADMIN_DEPARTMENT_DESCRIPTION as help_text,
+    ADMIN_DEPARTMENT_INDEX_HEADER as index_header,
+    ADMIN_DEPARTMENT as app_prefix,
+    ADMIN_DEPARTMENT_FORM_TPL as form_template,
+    ADMIN_DEPARTMENT_LIST_TPL as list_template,
 )
 from core.config import templates
 from core.utils import (
@@ -19,10 +22,6 @@ from forms.department import DepartmentForm
 from models.users import User
 from services.department import DepartmentServise
 
-
-app_prefix = "/admin/staff/departments"
-form_template = f"{app_prefix}/form.html"
-list_template = f"{app_prefix}/index.html"
 
 router = APIRouter(prefix=app_prefix, tags=[help_text])
 

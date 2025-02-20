@@ -1,10 +1,13 @@
 from fastapi import APIRouter, Request, Depends, responses, status
 
 from admin.constants import (
-    ORG_ADD_HEADER as add_header,
-    ORG_EDIT_HEADER as edit_header,
-    ORG_INDEX_PAGE_HEADER as index_header,
-    OGR_HELP_TEXT as help_text,
+    ADMIN_ORGANISATION_ADD_HEADER as add_header,
+    ADMIN_ORGANISATION_EDIT_HEADER as edit_header,
+    ADMIN_ORGANISATION_INDEX_HEADER as index_header,
+    ADMIN_ORGANISATION_DESCRIPTION as help_text,
+    ADMIN_ORGANISATION as app_prefix,
+    ADMIN_ORGANISATION_FORM_TPL as form_template,
+    ADMIN_ORGANISATION_LIST_TPL as list_template
 )
 from core.config import templates
 from core.templater import DocumentTemplatesEnum
@@ -12,7 +15,7 @@ from core.utils import (
     create_base_admin_context,
     create_breadcrumbs,
     create_file_response,
-    redirect_with_message,
+    redirect,
 )
 from dependencies.auth import get_current_admin
 from forms.organisation import OrganisationForm
@@ -20,10 +23,6 @@ from models.users import User
 from services.organisation import OrganisationServise
 from services.employee import EmployeeServise
 
-
-app_prefix = "/admin/staff/organisations"
-form_template = f"{app_prefix}/form.html"
-list_template = f"{app_prefix}/organisation.html"
 
 router = APIRouter(prefix=app_prefix, tags=[help_text])
 
@@ -34,11 +33,9 @@ async def get_organisation_admin(
     request: Request, user: User = Depends(get_current_admin)
 ):
     organisation = await OrganisationServise.all()
+
     if not organisation:
-        return responses.RedirectResponse(
-            request.url_for("add_organisation_admin"),
-            status_code=status.HTTP_303_SEE_OTHER,
-        )
+        return redirect(request, "add_organisation_admin")
 
     # Создаем базовый контекст
     context = create_base_admin_context(request, index_header, help_text, user)
@@ -86,11 +83,10 @@ async def create_organisation_admin(
                 building=form.building,
                 index=int(form.index),
             )
-            return redirect_with_message(
+            return redirect(
                 request,
                 "get_organisations_admin",
                 msg=f"Организация '{organisation.name}' успешно создана!",
-                status=status.HTTP_303_SEE_OTHER,
             )
         except Exception as e:
             form.__dict__.get("errors").setdefault("non_field_error", e)
@@ -154,11 +150,10 @@ async def update_organisation_admin(
                 responsible_employee_id=form.responsible_employee_id,
                 spare_responsible_employee_id=form.spare_responsible_employee_id,
             )
-            return redirect_with_message(
+            return redirect(
                 request,
                 "get_organisation_admin",
-                msg=f"Данные '{organisation.name}' обновлены!",
-                status=status.HTTP_303_SEE_OTHER,
+                msg=f"Данные '{organisation.name}' обновлены!"
             )
         except Exception as e:
             form.__dict__.get("errors").setdefault("non_field_error", e)
@@ -189,5 +184,5 @@ async def download_appointment_order_admin(request: Request, user: User = Depend
     return create_file_response(
         DocumentTemplatesEnum.APPOINTMENT_ORDER.value,
         {"org": organisation},
-        f"Приказ о назначении ответственного за эксплуатацию",
+        f"Приказ о назначении ответственного за эксплуатацию СКЗИ",
     )

@@ -2,10 +2,13 @@ from typing import Dict, Optional
 from fastapi import APIRouter, Request, Depends, responses, status
 
 from admin.constants import (
-    CARRIERS_ADD_PAGE_HEADER as add_header,
-    CARRIERS_EDIT_PAGE_HEADER as edit_header,
-    CARRIERS_HELP_TEXT as help_text,
-    CARRIERS_INDEX_PAGE_HEADER as index_header,
+    ADMIN_CARRIER_ADD_HEADER as add_header,
+    ADMIN_CARRIER_EDIT_HEADER as edit_header,
+    ADMIN_CARRIER_DESCRIPTION as help_text,
+    ADMIN_CARRIER_INDEX_HEADER as index_header,
+    ADMIN_CARRIER as app_prefix,
+    ADMIN_CARRIER_FORM_TPL as form_template,
+    ADMIN_CARRIER_LIST_TPL as list_template,
 )
 from core.config import templates
 from core.utils import (
@@ -20,9 +23,6 @@ from models.users import User
 from services.key_carrier import KeyCarrierServise
 from services.carrier_types import CarrierTypesServise
 
-app_prefix = "/admin/cryptography/carriers"
-form_template = f"{app_prefix}/form.html"
-list_template = f"{app_prefix}/index.html"
 
 router = APIRouter(prefix=app_prefix, tags=[help_text])
 

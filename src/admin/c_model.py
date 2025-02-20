@@ -2,10 +2,13 @@ from typing import Dict, Optional
 from fastapi import APIRouter, Request, Depends, responses, status
 
 from admin.constants import (
-    CMODEL_ADD_PAGE_HEADER as add_header,
-    CMODEL_EDIT_PAGE_HEADER as edit_header,
-    CMODEL_HELP_TEXT as help_text,
-    CMODEL_INDEX_PAGE_HEADER as index_header,
+    ADMIN_CMODEL_ADD_HEADER as add_header,
+    ADMIN_CMODEL_EDIT_HEADER as edit_header,
+    ADMIN_CMODEL_DESCRIPTION as help_text,
+    ADMIN_CMODEL_INDEX_HEADER as index_header,
+    ADMIN_CMODEL as app_prefix,
+    ADMIN_CMODEL_FORM_TPL as form_template,
+    ADMIN_CMODEL_LIST_TPL as list_template,
 )
 from core.config import templates
 from core.utils import (
@@ -21,10 +24,6 @@ from services.c_manufacturer import CManufacturerServise
 from models.cryptography import CRYPTO_MODEL_TYPES, ModelTypes
 from models.users import User
 
-
-app_prefix = "/admin/cryptography/models"
-form_template = f"{app_prefix}/form.html"
-list_template = f"{app_prefix}/index.html"
 
 router = APIRouter(prefix=app_prefix, tags=[help_text])
 

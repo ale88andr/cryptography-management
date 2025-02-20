@@ -1,24 +1,23 @@
 from fastapi import APIRouter, Request, Depends, responses, status
 
 from admin.constants import (
-    BUILD_ADD_PAGE_HEADER,
-    BUILD_EDIT_PAGE_HEADER,
-    BUILD_HELP_TEXT,
-    BUILD_INDEX_PAGE_HEADER,
+    ADMIN_BUILD_DESCRIPTION,
+    ADMIN_BUILD_INDEX_HEADER,
+    ADMIN_BUILD_ADD_HEADER,
+    ADMIN_BUILD_EDIT_HEADER,
+    ADMIN_BUILD as app_prefix,
+    ADMIN_BUILD_FORM_TPL as form_template,
+    ADMIN_BUILD_LIST_TPL as list_template,
 )
 from core.config import templates
-from core.utils import create_base_admin_context, create_breadcrumbs
+from core.utils import create_base_admin_context, create_breadcrumbs, redirect
 from dependencies.auth import get_current_admin
 from forms.building import BuildingForm
 from models.users import User
 from services.building import BuildingServise
 
 
-app_prefix = "/admin/staff/locations/buildings"
-form_template = f"{app_prefix}/form.html"
-list_template = f"{app_prefix}/index.html"
-
-router = APIRouter(prefix=app_prefix, tags=[BUILD_HELP_TEXT])
+router = APIRouter(prefix=app_prefix, tags=[ADMIN_BUILD_DESCRIPTION])
 
 
 # ========= Buildings =========
@@ -30,7 +29,7 @@ async def get_buildings_admin(
 
     # Создаем базовый контекст
     context = create_base_admin_context(
-        request, BUILD_INDEX_PAGE_HEADER, BUILD_HELP_TEXT, user
+        request, ADMIN_BUILD_INDEX_HEADER, ADMIN_BUILD_DESCRIPTION, user
     )
     context.update(
         {
@@ -38,7 +37,7 @@ async def get_buildings_admin(
             "counter": len(records),
             "msg": msg,
             "breadcrumbs": create_breadcrumbs(
-                router, [BUILD_INDEX_PAGE_HEADER], ["get_buildings_admin"]
+                router, [ADMIN_BUILD_INDEX_HEADER], ["get_buildings_admin"]
             ),
         }
     )
@@ -50,13 +49,13 @@ async def get_buildings_admin(
 async def add_building_admin(request: Request, user: User = Depends(get_current_admin)):
     # Создаем базовый контекст
     context = create_base_admin_context(
-        request, BUILD_ADD_PAGE_HEADER, BUILD_HELP_TEXT, user
+        request, ADMIN_BUILD_ADD_HEADER, ADMIN_BUILD_DESCRIPTION, user
     )
     context.update(
         {
             "breadcrumbs": create_breadcrumbs(
                 router,
-                [BUILD_INDEX_PAGE_HEADER, BUILD_ADD_PAGE_HEADER],
+                [ADMIN_BUILD_INDEX_HEADER, ADMIN_BUILD_ADD_HEADER],
                 ["get_buildings_admin", "add_buildings_admin"],
             ),
         }
@@ -79,18 +78,18 @@ async def create_building_admin(
                 building=form.building,
                 index=int(form.index) if form.index else None,
             )
-            redirect_url = request.url_for("get_buildings_admin").include_query_params(
+
+            return redirect(
+                request=request,
+                endpoint="get_buildings_admin",
                 msg=f"Филиал '{building.name}' добавлен!"
-            )
-            return responses.RedirectResponse(
-                redirect_url, status_code=status.HTTP_303_SEE_OTHER
             )
         except Exception as e:
             form.__dict__.get("errors").setdefault("non_field_error", e)
             return templates.TemplateResponse(form_template, form.__dict__)
     # Создаем базовый контекст
     context = create_base_admin_context(
-        request, BUILD_ADD_PAGE_HEADER, BUILD_HELP_TEXT, user
+        request, ADMIN_BUILD_ADD_HEADER, ADMIN_BUILD_DESCRIPTION, user
     )
     context.update(form.__dict__)
     context.update(form.fields)
@@ -104,13 +103,13 @@ async def edit_building_admin(
     building = await BuildingServise.get_one_or_none(id=building_id)
     # Создаем базовый контекст
     context = create_base_admin_context(
-        request, BUILD_EDIT_PAGE_HEADER, BUILD_HELP_TEXT, user
+        request, ADMIN_BUILD_EDIT_HEADER, ADMIN_BUILD_DESCRIPTION, user
     )
     context.update(
         {
             "breadcrumbs": create_breadcrumbs(
                 router,
-                [BUILD_INDEX_PAGE_HEADER, BUILD_EDIT_PAGE_HEADER],
+                [ADMIN_BUILD_INDEX_HEADER, ADMIN_BUILD_EDIT_HEADER],
                 ["get_buildings_admin", "edit_buildings_admin"],
             ),
             **vars(building),
@@ -136,24 +135,24 @@ async def update_building_admin(
                 building=form.building,
                 index=int(form.index) if form.index else None,
             )
-            return responses.RedirectResponse(
-                request.url_for("get_buildings_admin").include_query_params(
-                    msg=f"Данные '{building.name}' успешно обновлены!"
-                ),
-                status_code=status.HTTP_303_SEE_OTHER,
+
+            return redirect(
+                request=request,
+                endpoint="get_buildings_admin",
+                msg=f"Данные '{building.name}' успешно обновлены!"
             )
         except Exception as e:
             form.__dict__.get("errors").setdefault("non_field_error", e)
             return templates.TemplateResponse(form_template, form.__dict__)
     # Создаем базовый контекст
     context = create_base_admin_context(
-        request, BUILD_EDIT_PAGE_HEADER, BUILD_HELP_TEXT, user
+        request, ADMIN_BUILD_EDIT_HEADER, ADMIN_BUILD_DESCRIPTION, user
     )
     context.update(
         {
             "breadcrumbs": create_breadcrumbs(
                 router,
-                [BUILD_INDEX_PAGE_HEADER, BUILD_EDIT_PAGE_HEADER],
+                [ADMIN_BUILD_INDEX_HEADER, ADMIN_BUILD_EDIT_HEADER],
                 ["get_buildings_admin", "edit_buildings_admin"],
             ),
         }

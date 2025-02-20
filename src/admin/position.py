@@ -1,10 +1,14 @@
 from typing import Dict, Optional
 from fastapi import APIRouter, Request, Depends, responses, status
+
 from admin.constants import (
-    POS_ADD_PAGE_HEADER,
-    POS_EDIT_PAGE_HEADER,
-    POS_HELP_TEXT,
-    POS_INDEX_PAGE_HEADER,
+    ADMIN_POSITION_ADD_HEADER,
+    ADMIN_POSITION_EDIT_HEADER,
+    ADMIN_POSITION_DESCRIPTION,
+    ADMIN_POSITION_INDEX_HEADER,
+    ADMIN_POSITION as app_prefix,
+    ADMIN_POSITION_FORM_TPL as form_template,
+    ADMIN_POSITION_LIST_TPL as list_template,
 )
 
 from core.config import templates
@@ -12,16 +16,13 @@ from core.utils import (
     create_base_admin_context,
     create_breadcrumbs,
     get_bool_from_checkbox,
+    redirect,
 )
 from dependencies.auth import get_current_admin
 from forms.position import PositionForm
 from models.users import User
 from services.position import PositionServise
 
-
-app_prefix = "/admin/staff/positions"
-form_template = f"{app_prefix}/form.html"
-list_template = f"{app_prefix}/index.html"
 
 router = APIRouter(prefix=app_prefix, tags=["Должности сотрудников"])
 
@@ -52,7 +53,7 @@ async def get_positions_admin(
 
     # Создаем базовый контекст
     context = create_base_admin_context(
-        request, POS_INDEX_PAGE_HEADER, POS_HELP_TEXT, user
+        request, ADMIN_POSITION_INDEX_HEADER, ADMIN_POSITION_DESCRIPTION, user
     )
     context.update(
         {
@@ -63,7 +64,7 @@ async def get_positions_admin(
             "sort": sort,
             "q": q,
             "breadcrumbs": create_breadcrumbs(
-                router, [POS_INDEX_PAGE_HEADER], ["get_positions_admin"]
+                router, [ADMIN_POSITION_INDEX_HEADER], ["get_positions_admin"]
             ),
         }
     )
@@ -75,13 +76,13 @@ async def get_positions_admin(
 async def add_position_admin(request: Request, user: User = Depends(get_current_admin)):
     # Создаем базовый контекст
     context = create_base_admin_context(
-        request, POS_ADD_PAGE_HEADER, POS_HELP_TEXT, user
+        request, ADMIN_POSITION_ADD_HEADER, ADMIN_POSITION_DESCRIPTION, user
     )
     context.update(
         {
             "breadcrumbs": create_breadcrumbs(
                 router,
-                [POS_INDEX_PAGE_HEADER, POS_ADD_PAGE_HEADER],
+                [ADMIN_POSITION_INDEX_HEADER, ADMIN_POSITION_ADD_HEADER],
                 ["get_positions_admin", "add_position_admin"],
             ),
         }
@@ -101,11 +102,10 @@ async def create_position_admin(
             position = await PositionServise.add(
                 name=form.name, is_leadership=get_bool_from_checkbox(form.is_leadership)
             )
-            redirect_url = request.url_for("get_positions_admin").include_query_params(
+            return redirect(
+                request=request,
+                endpoint="get_positions_admin",
                 msg=f"Должность '{position.name}' успешно создана!"
-            )
-            return responses.RedirectResponse(
-                redirect_url, status_code=status.HTTP_303_SEE_OTHER
             )
         except Exception as e:
             form.__dict__.get("errors").setdefault("non_field_error", e)
@@ -113,7 +113,7 @@ async def create_position_admin(
 
     # Создаем базовый контекст
     context = create_base_admin_context(
-        request, POS_ADD_PAGE_HEADER, POS_HELP_TEXT, user
+        request, ADMIN_POSITION_ADD_HEADER, ADMIN_POSITION_DESCRIPTION, user
     )
     context.update(form.__dict__)
     context.update(form.fields)
@@ -126,7 +126,7 @@ async def edit_position_admin(
 ):
     # Создаем базовый контекст
     context = create_base_admin_context(
-        request, POS_EDIT_PAGE_HEADER, POS_HELP_TEXT, user
+        request, ADMIN_POSITION_EDIT_HEADER, ADMIN_POSITION_DESCRIPTION, user
     )
 
     position = await PositionServise.get_by_id(position_id)
@@ -135,7 +135,7 @@ async def edit_position_admin(
         {
             "breadcrumbs": create_breadcrumbs(
                 router,
-                [POS_INDEX_PAGE_HEADER, POS_EDIT_PAGE_HEADER],
+                [ADMIN_POSITION_INDEX_HEADER, ADMIN_POSITION_EDIT_HEADER],
                 ["get_positions_admin", "edit_position_admin"],
             ),
             **vars(position),
@@ -158,11 +158,10 @@ async def update_position_admin(
                 name=form.name,
                 is_leadership=get_bool_from_checkbox(form.is_leadership),
             )
-            redirect_url = request.url_for("get_positions_admin").include_query_params(
+            return redirect(
+                request=request,
+                endpoint="get_positions_admin",
                 msg=f"Должность '{position.name}' успешно обновлена!"
-            )
-            return responses.RedirectResponse(
-                redirect_url, status_code=status.HTTP_303_SEE_OTHER
             )
         except Exception as e:
             form.__dict__.get("errors").setdefault("non_field_error", e)
@@ -170,7 +169,7 @@ async def update_position_admin(
 
     # Создаем базовый контекст
     context = create_base_admin_context(
-        request, POS_EDIT_PAGE_HEADER, POS_HELP_TEXT, user
+        request, ADMIN_POSITION_EDIT_HEADER, ADMIN_POSITION_DESCRIPTION, user
     )
     context.update(form.__dict__)
     context.update(form.fields)

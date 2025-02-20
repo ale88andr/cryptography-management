@@ -2,11 +2,15 @@ from typing import Dict, Optional
 from fastapi import APIRouter, Request, Depends, responses, status
 
 from admin.constants import (
-    VER_ADD_PAGE_HEADER as add_header,
-    VER_EDIT_PAGE_HEADER as edit_header,
-    VER_HELP_TEXT as help_text,
-    VER_INDEX_PAGE_HEADER as index_header,
-    VER_DECOMMISSIONING_TEXT as decommissioning_header,
+    ADMIN_CVERSION_ADD_HEADER as add_header,
+    ADMIN_CVERSION_EDIT_HEADER as edit_header,
+    ADMIN_CVERSION_DESCRIPTION as help_text,
+    ADMIN_CVERSION_INDEX_HEADER as index_header,
+    ADMIN_CVERSION_DECOMIS_HEADER as decommissioning_header,
+    ADMIN_CVERSION as app_prefix,
+    ADMIN_CVERSION_FORM_TPL as form_template,
+    ADMIN_CVERSION_LIST_TPL as list_template,
+    ADMIN_CVERSION_DECOMIS_TPL as decommissioning_form_template,
 )
 from core.config import templates
 from core.utils import (
@@ -26,10 +30,6 @@ from models.users import User
 from core.exceptions import LogbookOnDeleteException
 from utils.formatting import format_date, format_string
 
-app_prefix = "/admin/cryptography/versions"
-form_template = f"{app_prefix}/form.html"
-decommissioning_form_template = f"{app_prefix}/decommissioning.html"
-list_template = f"{app_prefix}/index.html"
 
 router = APIRouter(prefix=app_prefix, tags=[help_text])
 

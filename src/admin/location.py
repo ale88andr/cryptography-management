@@ -2,10 +2,13 @@ from typing import Dict, Optional
 from fastapi import APIRouter, Request, Depends, responses, status
 
 from admin.constants import (
-    LOC_ADD_PAGE_HEADER as add_header,
-    LOC_EDIT_PAGE_HEADER as edit_header,
-    LOC_INDEX_PAGE_HEADER as index_header,
-    LOC_HELP_TEXT as help_text,
+    ADMIN_LOCATION_ADD_HEADER as add_header,
+    ADMIN_LOCATION_EDIT_HEADER as edit_header,
+    ADMIN_LOCATION_INDEX_HEADER as index_header,
+    ADMIN_LOCATION_DESCRIPTION as help_text,
+    ADMIN_LOCATION as app_prefix,
+    ADMIN_LOCATION_LIST_TPL as list_template,
+    ADMIN_LOCATION_FORM_TPL as form_template,
 )
 from core.config import templates
 from core.utils import (
@@ -20,10 +23,6 @@ from models.users import User
 from services.building import BuildingServise
 from services.location import LocationServise
 
-
-app_prefix = "/admin/staff/locations"
-form_template = f"{app_prefix}/form.html"
-list_template = f"{app_prefix}/index.html"
 
 router = APIRouter(prefix=app_prefix, tags=[help_text])
 

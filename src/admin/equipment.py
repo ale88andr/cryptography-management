@@ -1,15 +1,19 @@
-from datetime import datetime
 from typing import Optional
 from fastapi import APIRouter, Request, Depends, responses, status
 
 from admin.constants import (
-    EQ_ADD_PAGE_HEADER as add_page_header,
-    EQ_EDIT_PAGE_HEADER as edit_page_header,
-    EQ_HELP_TEXT as hepl_text,
-    EQ_INDEX_PAGE_HEADER as index_page_header,
+    ADMIN_EQUIPMENT_ADD_HEADER as add_page_header,
+    ADMIN_EQUIPMENT_EDIT_HEADER as edit_page_header,
+    ADMIN_EQUIPMENT_DESCRIPTION as hepl_text,
+    ADMIN_EQUIPMENT_INDEX_HEADER as index_page_header,
+    ADMIN_EQUIPMENT as app_prefix,
+    ADMIN_EQUIPMENT_FORM_TPL as form_template,
+    ADMIN_EQUIPMENT_DETAIL_TPL as detail_template,
+    ADMIN_EQUIPMENT_HW_FORM_TPL as hw_form_template,
+    ADMIN_EQUIPMENT_LIST_TPL as list_template,
 )
 from core.config import templates
-from core.utils import create_breadcrumbs, create_file_response
+from core.utils import create_breadcrumbs, create_file_response, redirect
 from core.templater import LogbookTemplatesEnum
 from dependencies.auth import get_current_admin
 from forms.equipment import EquipmentForm
@@ -21,12 +25,6 @@ from models.logbook import RECORD_TYPES, HardwareLogbookRecordType
 from models.users import User
 from utils.formatting import format_date
 
-
-app_prefix = "/admin/equipments"
-form_teplate = f"{app_prefix}/form.html"
-detail_teplate = f"{app_prefix}/detail.html"
-hw_form_teplate = f"{app_prefix}/hw_form.html"
-list_teplate = f"{app_prefix}/index.html"
 
 router = APIRouter(prefix=app_prefix, tags=[hepl_text])
 
@@ -65,7 +63,7 @@ async def get_equipments_admin(
         ),
         "user": user
     }
-    return templates.TemplateResponse(list_teplate, context)
+    return templates.TemplateResponse(list_template, context)
 
 
 @router.get("/add")
@@ -81,7 +79,7 @@ async def add_equipment_admin(request: Request, user: User = Depends(get_current
         ),
         "user": user
     }
-    return templates.TemplateResponse(form_teplate, context)
+    return templates.TemplateResponse(form_template, context)
 
 
 @router.post("/add")
@@ -96,11 +94,10 @@ async def create_equipment_admin(request: Request, user: User = Depends(get_curr
                 description=form.description,
                 sticker=form.sticker,
             )
-            redirect_url = request.url_for("get_equipments_admin").include_query_params(
+            return redirect(
+                request=request,
+                endpoint="get_equipments_admin",
                 msg=f"Оборудование '{obj}' добавлено!"
-            )
-            return responses.RedirectResponse(
-                redirect_url, status_code=status.HTTP_303_SEE_OTHER
             )
         except Exception as e:
             form.__dict__.get("errors").setdefault("non_field_error", e)
@@ -117,7 +114,7 @@ async def create_equipment_admin(request: Request, user: User = Depends(get_curr
     }
     context.update(form.__dict__)
     context.update(form.fields)
-    return templates.TemplateResponse(form_teplate, context)
+    return templates.TemplateResponse(form_template, context)
 
 
 @router.get("/{equipment_id}")
@@ -137,7 +134,7 @@ async def detail_equipment_admin(equipment_id: str, request: Request, user: User
         ),
         "user": user
     }
-    return templates.TemplateResponse(detail_teplate, context)
+    return templates.TemplateResponse(detail_template, context)
 
 
 @router.get("/{equipment_id}/edit")
@@ -155,7 +152,7 @@ async def edit_equipment_admin(equipment_id: str, request: Request, user: User =
         "user": user
     }
     context.update(obj.__dict__)
-    return templates.TemplateResponse(form_teplate, context)
+    return templates.TemplateResponse(form_template, context)
 
 
 @router.post("/{equipment_id}/edit")
@@ -170,11 +167,10 @@ async def update_equipment_admin(equipment_id: str, request: Request, user: User
                 serial=form.serial,
                 sticker=form.sticker,
             )
-            redirect_url = request.url_for("get_equipments_admin").include_query_params(
+            return redirect(
+                request=request,
+                endpoint="get_equipments_admin",
                 msg=f"Оборудование '{obj}' обновлено!"
-            )
-            return responses.RedirectResponse(
-                redirect_url, status_code=status.HTTP_303_SEE_OTHER
             )
         except Exception as e:
             form.errors.setdefault("non_field_error", e)
@@ -192,7 +188,7 @@ async def update_equipment_admin(equipment_id: str, request: Request, user: User
     }
     context.update(form.__dict__)
     context.update(form.fields)
-    return templates.TemplateResponse(form_teplate, context)
+    return templates.TemplateResponse(form_template, context)
 
 
 @router.get("/{equipment_id}/delete")
@@ -231,7 +227,7 @@ async def add_hardware_logbook_admin(equipment_id: str, request: Request, user: 
         ),
         "user": user
     }
-    return templates.TemplateResponse(hw_form_teplate, context)
+    return templates.TemplateResponse(hw_form_template, context)
 
 
 @router.post("/{equipment_id}/hw/add")
@@ -247,13 +243,10 @@ async def add_hardware_logbook_admin(equipment_id: str, request: Request, user: 
                 happened_at=format_date(form.happened_at),
                 cryptography_version_id=int(form.cryptography_version_id),
             )
-
-            redirect_url = request.url_for(
-                "detail_equipment_admin", equipment_id=equipment_id
-            ).include_query_params(msg="Запись аппаратного журнала добавлена!")
-
-            return responses.RedirectResponse(
-                redirect_url, status_code=status.HTTP_303_SEE_OTHER
+            return redirect(
+                request=request,
+                endpoint="detail_equipment_admin",
+                msg=f"Запись аппаратного журнала добавлена!"
             )
         except Exception as e:
             form.__dict__.get("errors").setdefault("non_field_error", e)
@@ -273,7 +266,7 @@ async def add_hardware_logbook_admin(equipment_id: str, request: Request, user: 
     }
     context.update(form.__dict__)
     context.update(form.fields)
-    return templates.TemplateResponse(hw_form_teplate, context)
+    return templates.TemplateResponse(hw_form_template, context)
 
 
 @router.get("/{equipment_id}/hw/doc")

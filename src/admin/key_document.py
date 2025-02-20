@@ -2,13 +2,19 @@ from typing import Optional
 from fastapi import APIRouter, Request, Depends, responses, status
 
 from admin.constants import (
-    KD_HELP_TEXT as hepl_text,
-    KD_INDEX_PAGE_HEADER as index_page_header,
-    KD_DESTRUCTION_PAGE_HEADER as destruction_page_header,
-    KD_C_DESTRUCTION_PAGE_HEADER as c_destruction_page_header,
+    ADMIN_KEYDOC_DESCRIPTION as hepl_text,
+    ADMIN_KEYDOC_INDEX_HEADER as index_page_header,
+    ADMIN_KEYDOC_DESTRUCT_HEADER as destruction_page_header,
+    ADMIN_KEYDOC_DESTRUCT_CRYPTO_HEADER as c_destruction_page_header,
+    ADMIN_KEYDOC as app_prefix,
+    ADMIN_KEYDOC_FORM_TPL as form_teplate,
+    ADMIN_KEYDOC_DETAIL_TPL as detail_tepmlate,
+    ADMIN_KEYDOC_DESTRUCT_TPL as destruction_tepmlate,
+    ADMIN_KEYDOC_DESTRUCT_CRYPTO_TPL as c_destruction_tepmlate,
+    ADMIN_KEYDOC_LIST_TPL as list_template,
 )
 from core.config import templates
-from core.utils import create_breadcrumbs
+from core.utils import create_breadcrumbs, redirect
 from dependencies.auth import get_current_admin
 from forms.destruction import DestructionForm
 from models.logbook import ActRecordTypes
@@ -22,12 +28,6 @@ from models.cryptography import CPRODUCT_GRADES
 from models.users import User
 from utils.formatting import format_date
 
-app_prefix = "/admin/cryptography/keys"
-form_teplate = f"{app_prefix}/form.html"
-detail_tepmlate = f"{app_prefix}/detail.html"
-destruction_tepmlate = f"{app_prefix}/destruction.html"
-c_destruction_tepmlate = f"{app_prefix}/c_destruction.html"
-list_teplate = f"{app_prefix}/index.html"
 
 router = APIRouter(prefix=app_prefix, tags=[hepl_text])
 
@@ -98,7 +98,7 @@ async def get_key_documents_admin(
         "user": user
     }
 
-    return templates.TemplateResponse(list_teplate, context)
+    return templates.TemplateResponse(list_template, context)
 
 
 @router.get("/{pk}")
@@ -167,11 +167,10 @@ async def destruct_key_document_admin(pk: int, request: Request, user: User = De
             # Внесение данных об изъятии в журналы
             await KeyDocumentServise.destruct_key(key, log_action, happenned_at)
 
-            redirect_url = request.url_for(
-                "get_key_documents_admin"
-            ).include_query_params(msg=f"Ключевой документ выведен из эксплуатации!")
-            return responses.RedirectResponse(
-                redirect_url, status_code=status.HTTP_303_SEE_OTHER
+            return redirect(
+                request=request,
+                endpoint="get_key_documents_admin",
+                msg="Ключевой документ выведен из эксплуатации!"
             )
         except Exception as e:
             form.errors.setdefault("non_field_error", e)
@@ -263,11 +262,10 @@ async def destruct_key_cversion_admin(pk: int, request: Request, user: User = De
                 action_date=action_date,
             )
 
-            redirect_url = request.url_for(
-                "get_key_documents_admin"
-            ).include_query_params(msg=f"СКЗИ выведено из эксплуатации!")
-            return responses.RedirectResponse(
-                redirect_url, status_code=status.HTTP_303_SEE_OTHER
+            return redirect(
+                request=request,
+                endpoint="get_key_documents_admin",
+                msg="СКЗИ выведено из эксплуатации!"
             )
         except Exception as e:
             print("-------------------------------")

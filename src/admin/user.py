@@ -2,13 +2,16 @@ from typing import Optional
 from fastapi import APIRouter, Request, Depends, responses, status
 
 from admin.constants import (
-    USR_ADD_PAGE_HEADER as add_page_header,
-    USR_EDIT_PAGE_HEADER as edit_page_header,
-    USR_HELP_TEXT as hepl_text,
-    USR_INDEX_PAGE_HEADER as index_page_header,
+    ADMIN_USER_ADD_HEADER as add_page_header,
+    ADMIN_USER_EDIT_HEADER as edit_page_header,
+    ADMIN_USER_DESCRIPTION as hepl_text,
+    ADMIN_USER_INDEX_HEADER as index_page_header,
+    ADMIN_USER as app_prefix,
+    ADMIN_USER_FORM_TPL as form_teplate,
+    ADMIN_USER_LIST_TPL as list_teplate,
 )
 from core.config import templates
-from core.utils import create_breadcrumbs, get_bool_from_checkbox
+from core.utils import create_breadcrumbs, get_bool_from_checkbox, redirect
 from dependencies.auth import get_current_user
 from forms.user import UserForm
 from services.auth import get_password_hash
@@ -16,11 +19,6 @@ from services.users import UsersDAO
 from services.employee import EmployeeServise
 from models.users import User
 
-
-app_prefix = "/admin/users"
-form_teplate = f"{app_prefix}/form.html"
-detail_teplate = f"{app_prefix}/detail.html"
-list_teplate = f"{app_prefix}/index.html"
 
 router = APIRouter(prefix=app_prefix, tags=[hepl_text])
 
@@ -98,11 +96,10 @@ async def create_user_admin(request: Request, user: User = Depends(get_current_u
                 is_password_temporary=True
             )
 
-            redirect_url = request.url_for("get_users_admin").include_query_params(
+            return redirect(
+                request=request,
+                endpoint="get_users_admin",
                 msg=f"Пользователь '{user}' добавлен!"
-            )
-            return responses.RedirectResponse(
-                redirect_url, status_code=status.HTTP_303_SEE_OTHER
             )
         except Exception as e:
             form.__dict__.get("errors").setdefault("non_field_error", e)
@@ -166,11 +163,11 @@ async def update_user_admin(pk: int, request: Request, user: User = Depends(get_
                     hashed_password=get_password_hash(form.password),
                     is_password_temporary=True,
                 )
-            redirect_url = request.url_for("get_users_admin").include_query_params(
+
+            return redirect(
+                request=request,
+                endpoint="get_users_admin",
                 msg=f"Данные пользователя '{obj}' обновлены!"
-            )
-            return responses.RedirectResponse(
-                redirect_url, status_code=status.HTTP_303_SEE_OTHER
             )
         except Exception as e:
             form.errors.setdefault("non_field_error", e)
