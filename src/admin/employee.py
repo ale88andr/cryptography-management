@@ -16,7 +16,7 @@ from admin.constants import (
     ADMIN_EMPLOYEE_WITH_CRYPTOGRAPY_TPL
 )
 from core.config import templates
-from core.utils import create_breadcrumbs, create_file_response, redirect_with_message
+from core.utils import create_breadcrumbs, create_file_response, redirect
 from core.templater import LogbookTemplatesEnum
 from dependencies.auth import get_current_admin
 from models.logbook import ActRecordTypes
@@ -34,6 +34,8 @@ from forms.employee import EmployeeForm
 from forms.destruction import DestructionForm
 from utils.formatting import get_str_now_date, format_date
 
+
+redirect_endpoint = "get_employees_admin"
 router = APIRouter(prefix=app_prefix, tags=[hepl_text])
 
 
@@ -200,11 +202,8 @@ async def create_employee_admin(request: Request, user: User = Depends(get_curre
                 location_id=int(form.location_id),
                 organisation_id=organisation.id,
             )
-            return redirect_with_message(
-                request=request,
-                endpoint="get_employees_admin",
-                msg=f"Сотрудник '{emp.short_name}' добавлен!"
-            )
+            msg=f"Сотрудник '{emp.short_name}' добавлен!"
+            return redirect(request, redirect_endpoint, msg)
         except Exception as e:
             form.__dict__.get("errors").setdefault("non_field_error", e)
 
@@ -309,11 +308,8 @@ async def update_employee_admin(employee_id: int, request: Request, user: User =
                     location_id=int(form.location_id),
                     is_security_staff=True if form.is_security_staff == "on" else False,
                 )
-            return redirect_with_message(
-                request=request,
-                endpoint="get_employees_admin",
-                msg=f"Данные сотрудника '{obj}' обновлены!"
-            )
+            msg=f"Данные сотрудника '{obj}' обновлены!"
+            return redirect(request, redirect_endpoint, msg)
         except Exception as e:
             form.errors.setdefault("non_field_error", e)
 
@@ -370,7 +366,7 @@ async def terminate_employee_admin(pk: int, request: Request, user: User = Depen
 
     if key_count == 0:
         await EmployeeServise.update(employee.id, is_worked=False)
-        return redirect_with_message(
+        return redirect(
             request, "get_employees_admin", "Сотрудник уволен!"
         )
     else:
@@ -397,7 +393,7 @@ async def terminate_employee_admin(pk: int, request: Request, user: User = Depen
                     act_record=log_action,
                     action_date=action_date,
                 )
-                return redirect_with_message(
+                return redirect(
                     request=request,
                     endpoint="get_employees_admin",
                     msg="Сотрудник уволен, ключевая информация изъята(уничтожена)!"
