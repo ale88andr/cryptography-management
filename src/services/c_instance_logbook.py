@@ -18,17 +18,11 @@ class CInstanceLogbookServise(BaseRepository):
             joinedload(cls.model.cryptography_version).options(
                 joinedload(Version.model)
             ),
-            joinedload(cls.model.key_document).options(
-                joinedload(KeyDocument.key_carrier).joinedload(KeyCarrier.carrier_type)
-            ),
-            joinedload(cls.model.responsible_user),
-            joinedload(cls.model.install_action).options(
-                joinedload(ActRecord.performer)
-            ),
-            joinedload(cls.model.remove_action).options(
-                joinedload(ActRecord.performer)
-            ),
-            joinedload(cls.model.remove_action),
+            joinedload(cls.model.key_carrier).options(joinedload(KeyCarrier.carrier_type)),
+            joinedload(cls.model.equipment),
+            joinedload(cls.model.owner),
+            joinedload(cls.model.install_act).options(joinedload(ActRecord.performer)),
+            joinedload(cls.model.remove_act).options(joinedload(ActRecord.performer)),
         )
 
         if sort and sort != "null":
