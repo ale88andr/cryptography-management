@@ -1,7 +1,8 @@
 from datetime import date, datetime
 from functools import lru_cache
+import logging
 import math
-from typing import Optional
+from typing import List, Optional
 from sqlalchemy import select, text, func, extract
 from sqlalchemy.orm import joinedload, selectinload, load_only
 
@@ -13,6 +14,8 @@ from services.base import BaseRepository
 from services.key_document import KeyDocumentServise
 
 # EMPLOYEE_CACHE_EXPIRE_IN_SECONDS = 60 * 5  # 5 минут
+
+logger = logging.getLogger(__name__)
 
 
 class EmployeeServise(BaseRepository):
@@ -199,27 +202,53 @@ class EmployeeServise(BaseRepository):
         result = await db.execute(query)
         return result.scalars().all()
 
+    # @classmethod
+    # async def terminate_employee(
+    #     cls, employee: Employee, keys: list[KeyDocument], act_record: ActRecord, action_date: date
+    # ):
+    #     try:
+    #         await cls.update(employee.id, is_worked=False)
+    #         for key in keys:
+    #             await KeyDocumentServise.remove_key(
+    #                 key_id=key.id, act_record_id=act_record.id, action_date=action_date
+    #             )
+    #         await cls.db.commit()
+    #         await cls.db.session.flush()
+    #     except Exception as e:
+    #         print(
+    #             f"--------- Exception in {cls.__name__}.terminate_employee() ---------"
+    #         )
+    #         print(e)
+    #         print(
+    #             f"--------- Exception in {cls.__name__}.terminate_employee() ---------"
+    #         )
+    #         await cls.db.rollback()
+
     @classmethod
     async def terminate_employee(
-        cls, employee: Employee, keys: list[KeyDocument], act_record: ActRecord, action_date: date
+        cls,
+        employee: Employee,
+        keys: List[KeyDocument],
+        act_record: ActRecord,
+        action_date: date
     ):
         try:
             await cls.update(employee.id, is_worked=False)
-            for key in keys:
-                await KeyDocumentServise.remove_key(
-                    key_id=key.id, act_record_id=act_record.id, action_date=action_date
-                )
+            await cls.remove_keys(keys, act_record.id, action_date)
             await cls.db.commit()
-            await cls.db.session.flush()
+
+            # Принудительный сброс состояния сессии
+            cls.db.session.expire_all()
         except Exception as e:
-            print(
-                f"--------- Exception in {cls.__name__}.terminate_employee() ---------"
-            )
-            print(e)
-            print(
-                f"--------- Exception in {cls.__name__}.terminate_employee() ---------"
-            )
+            logger.error(f"Exception in {cls.__name__}.terminate_employee(): {e}")
             await cls.db.rollback()
+
+    @classmethod
+    async def remove_keys(cls, keys: List[KeyDocument], act_record_id: int, action_date: date):
+        for key in keys:
+            await KeyDocumentServise.remove_key(
+                key_id=key.id, act_record_id=act_record_id, action_date=action_date
+            )
 
     # @classmethod
     # async def add(

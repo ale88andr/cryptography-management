@@ -193,6 +193,7 @@ class KeyDocumentServise(BaseRepository):
                 action_date=action_date,
             )
             await cls.db.commit()
+            await cls.db.refresh(key_document)
             await cls.db.session.flush()
         except Exception as e:
             print(f"--------- Exception in {cls.__name__}.destruct_key() ---------")
@@ -362,16 +363,12 @@ class KeyDocumentServise(BaseRepository):
                         # TODO update key values !!!
 
             await cls.db.commit()
-            await cls.db.session.flush()
+
+            # Принудительный сброс состояния сессии
+            cls.db.session.expire_all()
         except Exception as e:
-            print(
-                f"--------- Exception in {cls.__name__}.add_personal_keys() ---------"
-            )
-            print(e)
-            print(
-                f"--------- Exception in {cls.__name__}.add_personal_keys() ---------"
-            )
             await cls.db.rollback()
+            raise e
 
     @classmethod
     async def count_keys(cls):

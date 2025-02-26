@@ -1,4 +1,4 @@
-{% from "admin/common/macros.html" import format_date, empty_value, print_default %}
+{% from "admin/common/macros.html" import format_date, empty_value, print_default, no_data %}
 
 <table class="table table-hover align-middle logbook">
     <thead>
@@ -78,7 +78,7 @@
                 <td>{{ print_default(log.comment, "") }}</td>
             </tr>
         {% else %}
-            <tr class="text-center"><td colspan="10"><strong class="text-body-tertiary">Нет данных!</strong></td></tr>
+            {{ no_data(10) }}
         {% endfor %}
     </tbody>
 </table>
