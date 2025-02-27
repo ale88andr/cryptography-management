@@ -1,5 +1,6 @@
 from forms.base import Form
 from services.key_document import KeyDocumentServise
+from admin.constants import ADMIN_CILOG_CHANGE_REASONS as reasons
 
 
 class CInstanceLogbookAdd(Form):
@@ -191,6 +192,100 @@ class CInstanceLogbookAdd(Form):
             self.errors.setdefault(
                 "key_document",
                 "Установка СКЗИ без набора ключей не имеет смысла, укажите хотя бы один ключевой набор!",
+            )
+
+        if not self.errors:
+            return True
+
+        return False
+
+
+class CInstanceLogbookChange(Form):
+
+    async def is_valid(self):
+
+        if self.is_invalid_id(self.remove_key_document_id):
+            self.errors.setdefault("remove_key_document_id", self.REQUIRED_ERROR)
+
+        if not self.happened_at:
+            self.errors.setdefault("happened_at", self.REQUIRED_ERROR)
+
+        if not int(self.reason_id) in range(len(reasons)):
+            self.errors.setdefault("reason_id", self.REQUIRED_ERROR)
+
+        if self.is_invalid_id(self.head_commision_member_id):
+            self.errors.setdefault("head_commision_member_id", self.REQUIRED_ERROR)
+
+        if self.is_invalid_id(self.commision_member_id):
+            self.errors.setdefault("commision_member_id", self.REQUIRED_ERROR)
+
+        if self.is_invalid_id(self.performer_id):
+            self.errors.setdefault("performer_id", self.REQUIRED_ERROR)
+
+        if self.responsible_user_id in [
+            self.head_commision_member_id,
+            self.commision_member_id,
+            self.performer_id,
+        ]:
+            self.errors.setdefault(
+                "responsible_user_id",
+                "Пользователь СКЗИ не может быть в составе комиссии",
+            )
+
+        if self.head_commision_member_id in [
+            self.commision_member_id,
+            self.performer_id,
+        ]:
+            self.errors.setdefault(
+                "head_commision_member_id",
+                "Председатель комиссии не может быть указан в комисии повторно!",
+            )
+
+        if self.commision_member_id in [
+            self.head_commision_member_id,
+            self.performer_id,
+        ]:
+            self.errors.setdefault(
+                "commision_member_id",
+                "Участник комиссии не может быть указан в комисии повторно!",
+            )
+
+        if self.performer_id in [
+            self.head_commision_member_id,
+            self.commision_member_id,
+        ]:
+            self.errors.setdefault(
+                "performer_id", "Исполнитель не может быть в составе комисии повторно!"
+            )
+
+        if self.new_key_document_serial:
+            is_exists = await KeyDocumentServise.get_one_or_none(
+                serial=self.new_key_document_serial
+            )
+            if is_exists:
+                self.errors.setdefault(
+                    "key_document_unexpired_serial",
+                    f"Ключевой документ с серийным номером '{self.new_key_document_serial}' уже существует!",
+                )
+
+        if not self.new_key_document_serial:
+            self.errors.setdefault(
+                "new_key_document_serial", self.REQUIRED_ERROR
+            )
+
+        if self.is_invalid_id(self.new_key_document_carrier_id):
+            self.errors.setdefault(
+                "new_key_document_carrier_id", self.REQUIRED_ERROR
+            )
+
+        if not self.new_key_document_received_from:
+            self.errors.setdefault(
+                "new_key_document_received_from", self.REQUIRED_ERROR
+            )
+
+        if not self.new_key_document_received_at:
+            self.errors.setdefault(
+                "new_key_document_received_at", self.REQUIRED_ERROR
             )
 
         if not self.errors:

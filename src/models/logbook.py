@@ -25,10 +25,13 @@ class ActRecordTypes(enum.Enum):
 
     С_INSTALL = 0
     C_DESTRUCTION = 1
-    I_INSTALL = 2
     I_REMOVE = "c_remove.docx"
-    KD_INSTALL = 4
+    KD_INSTALL = "kd_install.docx"
     KD_REMOVE = "kd_remove.docx"
+    KD_REPLACE = "kd_replace.docx"
+
+    # оставлено для совместимости
+    I_INSTALL = "kd_install.docx"
 
 
 class ActRecord(Base):

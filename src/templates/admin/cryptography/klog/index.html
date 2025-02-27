@@ -13,14 +13,25 @@
         <p class="fw-normal card-subtitle text-muted">
             Показано элементов: <span class="badge bg-success">{{ counter * (page+1) }}</span> из <span class="badge bg-success">{{ total_records }}</span>
         </p>
-        <p class="mb-2">
-            <a href="{{ url_for('add_cilogbook_admin') }}" class="btn btn-outline-success">
-                <i class="bi bi-plus-lg me-1"></i>{{ add_page_header }}
-            </a>
-            <a href="{{ url_for('download_cilogbook_admin') }}" class="btn btn-outline-info">
-                <i class="bi bi-filetype-docx me-1"></i> Скачать журнал
-            </a>
-        </p>
+
+        <div class="btn-group me-1" role="group">
+            <button type="button" class="btn btn-success"><i class="bi bi-three-dots-vertical me-1"></i> Действия</button>
+            <div class="btn-group" role="group">
+                <button id="btnGroupDrop2" type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
+                <div class="dropdown-menu" aria-labelledby="btnGroupDrop2">
+                    <a href="{{ url_for('add_cilogbook_admin') }}" class="dropdown-item">
+                        <i class="bi bi-plus-square me-1"></i> Ввод в действие ключевых документов
+                    </a>
+                    <a href="{{ url_for('change_cilogbook_admin') }}" class="dropdown-item">
+                        <i class="bi bi-arrow-left-right me-1"></i> Смена ключевых документов
+                    </a>
+                    <a href="{{ url_for('download_cilogbook_admin') }}" class="dropdown-item">
+                        <i class="bi bi-filetype-docx me-1"></i> Скачать журнал
+                    </a>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     {{ pagination_page_info(page, total_pages) }}

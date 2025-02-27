@@ -1,0 +1,137 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}{{ page_header }}{% endblock %}
+{% block breadcrumb %}{% include 'admin/common/breadcrumbs.html' %}{% endblock %}
+{% block page_header_text %}{{ page_header }}{% endblock %}
+{% block page_header_help_text %}{{ page_header_help }}{% endblock %}
+
+{% from "admin/common/form_macros.html" import input_field, date_field, select_field %}
+
+{% block content %}
+    {% if not performer_id %}
+        {% set performer_id=user.employee_id %}
+    {% endif %}
+    {% if not new_key_document_received_from %}
+        {% set new_key_document_received_from='Изготовлены самостоятельно' %}
+    {% endif %}
+    <form method="POST" class="custom">
+        <div class="card">
+            <div class="card-body">
+                <fieldset>
+                    <legend class="text-success">
+                        <strong>Сведения о ключевом документе выводимого из эксплуатации</strong>
+                    </legend>
+                    <hr class="mt-0 mb-4">
+
+                    <div class="row mb-3">
+                        <div class="col-lg-5">
+                            <label for="remove_key_document_id" class="form-label mb-4">Ключевой документ выводимый из эксплуатации:</label>
+                            <select class="form-select {% if 'remove_key_document_id' in errors %}is-invalid{% endif %}" id="remove_key_document_id" name="remove_key_document_id" {% if disabled %}disabled{% endif %}>
+                                <option value="0">--- Выберите значение ---</option>
+                                {% for item in key_document_set %}
+                                    <option value="{{ item.id }}" {% if remove_key_document_id|default(0)|int == item.id %}selected{% endif %}>{{ item.serial }} ({{ item.owner }})</option>
+                                {% endfor %}
+                            </select>
+                            {% if 'remove_key_document_id' in errors %}
+                                <div class="text-danger font-weight-bold">{{ errors['remove_key_document_id'] }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-lg-5">
+                            <label for="reason_id" class="form-label mb-4">Причина смены:</label>
+                            <select
+                                class="form-select {% if 'reason_id' in errors %}is-invalid{% endif %}"
+                                id="reason_id"
+                                name="reason_id"
+                                {% if remove_action %}disabled{% endif %}
+                            >
+                                {% for reason in replace_reasons %}
+                                    <option value="{{ loop.index-1 }}" {% if loop.index-1 == reason_id|default(0)|int %}selected{% endif %}>{{ reason }}</option>
+                                {% endfor %}
+                            </select>
+                            {% if "reason_id" in errors %}
+                                <div class="text-danger font-weight-bold">{{ errors["reason_id"] }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-lg-2">
+                            {{ date_field("happened_at", "Дата смены:", errors, happened_at) }}
+                        </div>
+                    </div>
+
+                    <legend class="text-success">
+                        <strong>Сведения о ключевом документе вводимого в эксплуатацию</strong>
+                    </legend>
+                    <hr class="mt-0 mb-4">
+
+                    <div class="row mb-3">
+                        <div id="kd-expired-form">
+                            <h6 class="text-success">Новый ключевой документ</h6>
+
+                            <div class="mt-3" id="kd-new-form">
+                                <div class="row">
+                                    <div class="col-lg-3">
+                                        {{ input_field("new_key_document_serial", "Серийный номер:", errors, new_key_document_serial, "Серийный номер") }}
+                                    </div>
+
+                                    <div class="col-lg-3">
+                                        {{ select_field("new_key_document_carrier_id", "Ключевой носитель:", carriers, errors, new_key_document_carrier_id) }}
+                                    </div>
+
+                                    <div class="col-lg-3">
+                                        {{ input_field("new_key_document_received_from", "От кого получены:", errors, new_key_document_received_from) }}
+                                    </div>
+
+                                    <div class="col-lg-3">
+                                        {{ date_field("new_key_document_received_at", "Дата изготовления:", errors, new_key_document_received_at) }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <legend class="text-success">
+                        <strong>Сведения о комиссии</strong>
+                    </legend>
+                    <hr class="mt-0 mb-4">
+
+                    <div class="row mb-3">
+                        <div class="col-lg-4">
+                            {{ select_field("head_commision_member_id", "Председатель комиссии:", security_staff_members, errors, head_commision_member_id) }}
+                        </div>
+
+                        <div class="col-lg-4">
+                            {{ select_field("commision_member_id", "Член комиссии:", leadership_members, errors, commision_member_id) }}
+                        </div>
+
+                        <div class="col-lg-4">
+                            {{ select_field("performer_id", "Исполнитель:", security_staff_members, errors, performer_id) }}
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-lg-12">
+                            {{ input_field("comment", "Примечание:", errors, comment, "Дополнительные сведения о замене") }}
+                        </div>
+                    </div>
+                </fieldset>
+            </div>
+        </div>
+
+        {% if remove_action %}
+            <div class="card mt-4 mb-4">
+                <div class="card-body">
+                    <a href="{{ request.headers.referer }}" class="btn btn-secondary">&#10060; Отменить</a>
+                </div>
+            </div>
+        {% else %}
+            {% include 'admin/common/form_buttons.html' %}
+        {% endif %}
+    </form>
+
+    <script>
+        document.getElementById("happened_at").valueAsDate = new Date();
+        document.getElementById("new_key_document_received_at").valueAsDate = new Date();
+    </script>
+
+{% endblock %}

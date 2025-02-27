@@ -12,6 +12,7 @@ from models.logbook import (
     HardwareLogbook,
     HardwareLogbookRecordType,
 )
+from admin.constants import ADMIN_CILOG_CHANGE_REASONS as replace_reasons
 from models.staff import Employee
 from services.base import BaseRepository
 from models.cryptography import KeyCarrier, KeyDocument, Version
@@ -133,6 +134,25 @@ class KeyDocumentServise(BaseRepository):
         records = (await db.execute(query)).scalars().all()
 
         return records, len(records), total_records, total_pages
+
+    @classmethod
+    async def all_expired(cls):
+        query = (
+            select(cls.model)
+            .options(
+                joinedload(cls.model.cryptography_version),
+                joinedload(cls.model.cryptography_version).options(
+                    joinedload(Version.model)
+                ),
+                joinedload(cls.model.key_carrier).options(
+                    joinedload(KeyCarrier.carrier_type)
+                ),
+                joinedload(cls.model.owner)
+            )
+            .filter_by(is_unexpired=False, remove_act_record_id=None)
+        )
+        result = await cls.db.execute(query)
+        return result.scalars().all()
 
     @classmethod
     async def get_by_id(cls, model_id: int):
@@ -309,7 +329,7 @@ class KeyDocumentServise(BaseRepository):
         try:
             # Создание актовой записи
             install_act_record = await CActionServise.add(
-                action_type=ActRecordTypes.I_INSTALL,
+                action_type=ActRecordTypes.KD_INSTALL,
                 number=await CActionServise.get_free_action_number(action_date),
                 reason=form_data.reason,
                 reason_date=format_date(form_data.reason_date),
@@ -361,6 +381,52 @@ class KeyDocumentServise(BaseRepository):
                             int(form_data.key_document_id)
                         )
                         # TODO update key values !!!
+
+            await cls.db.commit()
+
+            # Принудительный сброс состояния сессии
+            cls.db.session.expire_all()
+        except Exception as e:
+            await cls.db.rollback()
+            raise e
+
+    @classmethod
+    async def replace_personal_keys(cls, form_data):
+        action_date = format_date(form_data.happened_at)
+
+        try:
+            # Создание актовой записи
+            act_record = await CActionServise.add(
+                action_type=ActRecordTypes.KD_REPLACE,
+                number=await CActionServise.get_free_action_number(action_date),
+                reason=replace_reasons[int(form_data.reason_id)],
+                reason_date=format_date(form_data.reason_date),
+                performer_id=int(form_data.performer_id),
+                action_date=action_date,
+                head_commision_member_id=int(form_data.head_commision_member_id),
+                commision_member_id=int(form_data.commision_member_id),
+            )
+
+            # Выводимый ключевой документ
+            remove_key_document = await KeyDocumentServise.get_by_id(
+                int(form_data.remove_key_document_id)
+            )
+
+            # Создание ключевого документа
+            new_key_document = await KeyDocumentServise.add_expired_key(
+                serial=form_data.new_key_document_serial,
+                cryptography_version_id=remove_key_document.cryptography_version_id,
+                carrier_id=int(form_data.new_key_document_carrier_id),
+                owner_id=remove_key_document.owner_id,
+                equipment_id=remove_key_document.equipment_id,
+                received_from=form_data.new_key_document_received_from,
+                received_date=format_date(form_data.new_key_document_received_at),
+                install_act_record=act_record,
+                comment=form_data.comment,
+            )
+
+            # Вывод ключевого документа из эксплуатации
+            await cls.remove_key(remove_key_document.id, act_record.id, action_date)
 
             await cls.db.commit()
 

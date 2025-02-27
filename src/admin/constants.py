@@ -88,6 +88,7 @@ ADMIN_CILOG_DESCRIPTION             = "Администрироваие журн
 ADMIN_CILOG_INDEX_HEADER            = "Журнал поэкземплярного учёта (учёт ключей электронной подписи)"
 ADMIN_CILOG_EDIT_HEADER             = "Редактирование записи журнала поэкземплярного учета СКЗИ"
 ADMIN_CILOG_ADD_HEADER              = "Добавить запись об установке СКЗИ"
+ADMIN_CILOG_CHANGE_HEADER           = "Смена ключевого документа"
 
 
 # ========= Журнал СКЗИ (CLogbook)  =========
@@ -210,6 +211,9 @@ ADMIN_CVERSION_DECOMIS_TPL          = f"{ADMIN_CVERSION}/decommissioning.html"
 ADMIN_CILOG                         = f"{ADMIN}/cryptography/klog"
 ADMIN_CILOG_FORM_TPL                = f"{ADMIN_CILOG}/form.html"
 ADMIN_CILOG_LIST_TPL                = f"{ADMIN_CILOG}/index.html"
+ADMIN_CILOG_CHANGE_FORM_TPL         = f"{ADMIN_CILOG}/change_form.html"
+ADMIN_CILOG_CHANGE_REASONS          = ["Плановая смена ключевой информации",
+                                       "Компроментация ключевой информации"]
 
 
 # ========= Журнал СКЗИ (CLogbook)  =========

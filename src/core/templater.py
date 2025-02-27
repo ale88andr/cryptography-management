@@ -4,6 +4,9 @@ from datetime import date
 
 from docxtpl import DocxTemplate
 
+from models.cryptography import KeyDocument
+from models.staff import Organisation
+
 
 class LogbookTemplatesEnum(enum.Enum):
     LOGBOOK = "logbook.docx"
@@ -120,3 +123,22 @@ class UninstallKeyActDocumentContext(ActDocument, CommisionMembersContext):
 
     location: str
     equipment: str
+
+@dataclass
+class ReplaceKeyActDocumentContext(ActDocument, CommisionMembersContext):
+    reason_num: str
+    reason_date: date
+
+    owner: str
+    owner_full_name: str
+    owner_position: str
+    owner_organisation: str
+
+    cryptography: str
+
+    add_key_document: KeyDocument
+    remove_key_document: KeyDocument
+
+    location: str
+    equipment: str
+    org: Organisation
