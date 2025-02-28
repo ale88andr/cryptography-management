@@ -11,11 +11,11 @@
 
     <div class="d-flex justify-content-between align-items-center mb-2 text-body">
         <p class="fw-normal card-subtitle text-muted">
-            Показано элементов: <span class="badge bg-success">{{ counter * (page+1) }}</span> из <span class="badge bg-success">{{ total_records }}</span>
+            Показано элементов: <span class="badge bg-success">{{ counter + limit * page }}</span> из <span class="badge bg-success">{{ total_records }}</span>
         </p>
 
         <div class="btn-group me-1" role="group">
-            <button type="button" class="btn btn-success"><i class="bi bi-three-dots-vertical me-1"></i> Действия</button>
+            <button type="button" class="btn btn-success"><i class="bi bi-grid-fill me-1"></i> Действия</button>
             <div class="btn-group" role="group">
                 <button id="btnGroupDrop2" type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
                 <div class="dropdown-menu" aria-labelledby="btnGroupDrop2">
@@ -23,10 +23,11 @@
                         <i class="bi bi-plus-square me-1"></i> Ввод в действие ключевых документов
                     </a>
                     <a href="{{ url_for('change_cilogbook_admin') }}" class="dropdown-item">
-                        <i class="bi bi-arrow-left-right me-1"></i> Смена ключевых документов
+                        <i class="bi bi-arrow-repeat me-1"></i> Смена ключевых документов
                     </a>
+                    <div class="dropdown-divider"></div>
                     <a href="{{ url_for('download_cilogbook_admin') }}" class="dropdown-item">
-                        <i class="bi bi-filetype-docx me-1"></i> Скачать журнал
+                        <i class="bi bi-filetype-docx me-1"></i> Выгрузить журнал
                     </a>
                 </div>
             </div>
@@ -162,6 +163,8 @@
         </tbody>
     </table>
 
-    {{ display_pagination_pages(limit, page, total_pages, sort) }}
+    {% if counter + limit * page >= limit %}
+        {{ display_pagination_pages(limit, page, total_pages, sort) }}
+    {% endif %}
 
 {% endblock %}

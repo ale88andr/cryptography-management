@@ -78,8 +78,6 @@ class KeyDocumentServise(BaseRepository):
         sort: str = None,
         q: str = None,
         filters: Optional[dict] = None,
-        is_removed: Optional[bool] = None,
-        is_installed: Optional[bool] = None,
     ):
         query = (
             select(cls.model)
@@ -102,15 +100,17 @@ class KeyDocumentServise(BaseRepository):
             .join(ActRecord, cls.model.install_act)
         )
 
-        # if is_removed:
-        #     query.filter(cls.model.log.has(CryptographyInstanceLogbook.remove_action_id.is_not(None)))
+        if filters.get("is_active"):
+            query = query.filter(cls.model.remove_act_record_id.is_(None))
 
-        # if is_installed:
-        #     query.filter(CryptographyInstanceLogbook.remove_action_id.is_(None))
+        if filters.get("is_disable"):
+            query = query.filter(cls.model.remove_act_record_id.is_not(None))
 
-        # Filter rows
-        if filters:
-            query = query.filter_by(**filters)
+        if filters.get("owner_id"):
+            query = query.filter(cls.model.owner_id==filters["owner_id"])
+
+        if filters.get("carrier_id"):
+            query = query.filter(cls.model.carrier_id==filters["carrier_id"])
 
         if not sort and sort != "null":
             query = query.order_by(
@@ -121,7 +121,7 @@ class KeyDocumentServise(BaseRepository):
             query = query.order_by(text(sort))
 
         if q:
-            query = query.filter(cls.model.surname.ilike(f"%{text(q)}%"))
+            query = query.filter(cls.model.serial.ilike(f"%{text(q)}%"))
 
         if limit:
             query = query.offset(page * limit).limit(limit)
@@ -132,6 +132,10 @@ class KeyDocumentServise(BaseRepository):
         total_pages = math.ceil(total_records / limit) if limit else 0
 
         records = (await db.execute(query)).scalars().all()
+
+        print("SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS")
+        print(query.compile(compile_kwargs={"literal_binds": True}))
+        print("SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS")
 
         return records, len(records), total_records, total_pages
 

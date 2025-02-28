@@ -260,7 +260,10 @@ class KeyDocument(Base):
         back_populates="install_object",
         uselist=False,
         foreign_keys=[install_act_record_id],
-        order_by="desc(ActRecord.action_date)",
+        # order_by=[
+        #     "desc(ActRecord.action_date)",
+        #     "desc(KeyDocument.install_act_record_id)",
+        # ]
     )
 
     remove_act: Mapped["ActRecord"] = relationship(

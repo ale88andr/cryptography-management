@@ -11,7 +11,7 @@
 {% block content %}
     <div class="d-flex justify-content-between align-items-center mb-2 text-body">
         <p class="fw-normal card-subtitle text-muted">
-            Показано элементов: <span class="badge bg-success">{{ counter * (page+1) }}</span> из <span class="badge bg-success">{{ total_records }}</span>
+            Показано элементов: <span class="badge bg-success">{{ counter + limit * page }}</span> из <span class="badge bg-success">{{ total_records }}</span>
         </p>
         <p class="mb-2">
             Cтраница <span class="badge bg-info">{{ page+1 }}</span> из <span class="badge bg-info">{{ total_pages }}</span>
@@ -37,19 +37,19 @@
                     <td scope="col"></td>
                     <td scope="col">{{ search_field(value=q) }}</td>
                     <td scope="col">
-                        {{ select_filter("filter_type_id", carrier_types, filter_type_id) }}
+                        {{ select_filter("filter_carrier", key_carriers, filter_carrier) }}
                     </td>
                     <td scope="col">
                         <select class="form-select" name="status">
-                            <option value="">Все</option>
-                            <option value="installed" {% if status == 'installed' %}selected{% endif %}>Действующие</option>
+                            <option value="">-- Все --</option>
+                            <option value="installed" {% if status == 'installed' %}selected{% endif %}>Используемые</option>
                             <option value="removed" {% if status == 'removed' %}selected{% endif %}>Изъятые</option>
                         </select>
                     </td>
                     <td></td>
                     <td></td>
                     <td scope="col">
-                        {{ select_filter("filter_owner_id", employees, filter_owner_id) }}
+                        {{ select_filter("filter_owner", employees, filter_owner) }}
                     </td>
                     <td scope="col">
                         <a href="{{ url_for('get_key_documents_admin') }}" class="btn btn-sm btn-outline-danger me-1"><i class="bi bi-x-lg"></i></a>
@@ -63,7 +63,7 @@
             {% for object in objects %}
                 <tr>
                     <th scope="col" width="1px" class="{% if object.remove_act_record_id %} table-danger {% endif %}"></th>
-                    <th scope="row">{{ loop.index }}</th>
+                    <th scope="row">{{ loop.index + page * limit }}</th>
                     <td>
                         <div class="d-flex align-items-center">
                             <img
@@ -89,7 +89,7 @@
                         {% if object.remove_act_record_id %}
                             <span class="badge bg-danger">Изъят</span>
                         {% else %}
-                            <span class="badge bg-primary">Введен в действие</span>
+                            <span class="badge bg-success">Используется</span>
                         {% endif %}
                     </td>
                     <td>
@@ -145,6 +145,8 @@
         </tbody>
     </table>
 
-    {{ display_pagination_pages(limit, page, total_pages, sort) }}
+    {% if counter + limit * page >= limit %}
+        {{ display_pagination_pages(limit, page, total_pages, sort) }}
+    {% endif %}
 
 {% endblock %}

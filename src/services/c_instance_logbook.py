@@ -61,7 +61,7 @@ class CInstanceLogbookServise(BaseRepository):
         if not sort:
             query = query.order_by(
                 cls.model.install_act.action_date.desc(),
-                cls.model.install_act_record_id.decs()
+                cls.model.install_act_record_id.desc()
             )
         else:
             query = query.order_by(text(sort))

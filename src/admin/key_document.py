@@ -1,5 +1,5 @@
-from typing import Optional
-from fastapi import APIRouter, Request, Depends, responses, status
+from typing import Any, Dict, Optional
+from fastapi import APIRouter, Request, Depends, responses
 
 from admin.constants import (
     ADMIN_KEYDOC_DESCRIPTION as hepl_text,
@@ -32,6 +32,24 @@ from utils.formatting import format_date
 router = APIRouter(prefix=app_prefix, tags=[hepl_text])
 
 
+# Создание фильтров сотрудников для методов: get_employees_admin, get_cusers_admin
+def create_kd_filters(
+    owner: Optional[int] = None,
+    carrier: Optional[int] = None,
+    status: Optional[str] = None,
+) -> Dict[str, Any]:
+    return {
+        key: value
+        for key, value in {
+            "owner_id": owner,
+            "carrier_id": carrier,
+            "is_active": status == "installed",
+            "is_disable": status == "removed"
+        }.items()
+        if value is not None and value > 0
+    }
+
+
 # ========= Key Documents =========
 @router.get("/", response_class=responses.HTMLResponse)
 async def get_key_documents_admin(
@@ -41,23 +59,12 @@ async def get_key_documents_admin(
     limit: int = 20,
     sort: Optional[str] = None,
     q: Optional[str] = None,
-    filter_type_id: Optional[int] = None,
-    filter_owner_id: Optional[int] = None,
+    filter_carrier: Optional[int] = None,
+    filter_owner: Optional[int] = None,
     status: Optional[str] = None,
     user: User = Depends(get_current_admin)
 ):
-    filters = {}
-    if filter_type_id and filter_type_id > 0:
-        filters["type_id"] = filter_type_id
-
-    if filter_owner_id and filter_owner_id > 0:
-        filters["owner_id"] = filter_owner_id
-
-    filter_removed, filter_installed = None, None
-    if status == "installed":
-        filter_installed = True
-    elif status == "removed":
-        filter_removed = True
+    filters = create_kd_filters(filter_owner, filter_carrier, status)
 
     objects, counter, total_records, total_pages = (
         await KeyDocumentServise.all_with_pagination(
@@ -66,8 +73,6 @@ async def get_key_documents_admin(
             page=page,
             limit=limit,
             filters=filters,
-            is_removed=filter_removed,
-            is_installed=filter_installed,
         )
     )
     key_carriers, _ = await KeyCarrierServise.all()
@@ -82,8 +87,8 @@ async def get_key_documents_admin(
         "employees": employees,
         "total_records": total_records,
         "total_pages": total_pages,
-        "filter_type_id": filter_type_id,
-        "filter_owner_id": filter_owner_id,
+        "filter_carrier": filter_carrier,
+        "filter_owner": filter_owner,
         "page_header": index_page_header,
         "page_header_help": hepl_text,
         "page": page,

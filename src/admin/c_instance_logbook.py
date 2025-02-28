@@ -63,7 +63,7 @@ async def get_cilogbook_admin(
 
     records, counter, total_records, total_pages = (
         await KeyDocumentServise.all_with_pagination(
-            sort=sort, q=q, page=page, limit=limit
+            sort=sort, q=q, page=page, limit=limit, filters={}
         )
     )
 
