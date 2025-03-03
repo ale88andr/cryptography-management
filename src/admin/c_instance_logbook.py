@@ -192,6 +192,34 @@ async def change_cilogbook_admin(request: Request, user: User = Depends(get_curr
     return templates.TemplateResponse(change_form_template, context)
 
 
+@router.get("/replace/{pk}")
+async def change_current_cilogbook_admin(pk: int, request: Request, user: User = Depends(get_current_admin)):
+    key_document_set = await KeyDocumentServise.all_expired()
+    employees = await EmployeeServise.get_short_list()
+    security_staff_members = await EmployeeServise.get_short_list(is_staff=True)
+    leadership_members = await EmployeeServise.get_short_list(is_leadership=True)
+    carriers, _ = await KeyCarrierServise.all()
+    context = {
+        "request": request,
+        "page_header": change_page_header,
+        "page_header_help": hepl_text,
+        "key_document_set": key_document_set,
+        "remove_key_document_id": pk,
+        "carriers": carriers,
+        "employees": employees,
+        "leadership_members": leadership_members,
+        "security_staff_members": security_staff_members,
+        "replace_reasons": replace_reasons,
+        "breadcrumbs": create_breadcrumbs(
+            router,
+            [index_page_header, change_page_header],
+            ["get_cilogbook_admin", "change_cilogbook_admin"],
+        ),
+        "user": user,
+    }
+    return templates.TemplateResponse(change_form_template, context)
+
+
 @router.post("/replace")
 async def change_cilogbook_admin(request: Request, user: User = Depends(get_current_admin)):
     form = CInstanceLogbookChange(request)

@@ -18,6 +18,13 @@ form.custom label:not(.btn, .form-check-label) {
     margin-bottom:1rem;
     background-color:#f8f9fa;
     border-radius:0.35rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.breadcrumb-item +
+.breadcrumb-item::before {
+    content: ">";
 }
 
 .gradient-custom {
@@ -168,4 +175,52 @@ a:hover {
     color: #696cff !important;
     font-size: larger;
     font-weight: bolder;
+}
+
+.badge-custom {
+    --bs-badge-padding-x: 1.2em;
+    --bs-badge-padding-y: 0.6em;
+    --bs-badge-font-size: 0.75em;
+    --bs-badge-font-weight: 400;
+    --bs-badge-color: #fff;
+    --bs-badge-border-radius: var(--bs-border-radius);
+    display: inline-block;
+    padding: var(--bs-badge-padding-y) var(--bs-badge-padding-x);
+    font-size: var(--bs-badge-font-size);
+    font-weight: var(--bs-badge-font-weight);
+    line-height: 1;
+    color: var(--bs-badge-color);
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: var(--bs-badge-border-radius);
+}
+
+.bg-warning-custom {
+    background-color: rgba(240, 173, 78) !important;
+}
+
+.bg-info-custom {
+    background-color: rgba(23, 162, 184) !important;
+}
+
+.bg-success-custom {
+    background-color: rgba(2, 184, 117) !important;
+}
+
+.bg-primary-custom {
+    background-color: rgba(69, 130, 236) !important;
+}
+
+.bg-danger-custom {
+    background-color: rgba(217, 83, 79) !important;
+}
+
+.bg-light-custom {
+    color: #343a40 !important;
+    background-color: rgba(248, 249, 250) !important;
+}
+
+.bg-dark-custom {
+    background-color: rgba(52, 58, 64) !important;
 }

@@ -106,6 +106,12 @@ class KeyDocumentServise(BaseRepository):
         if filters.get("is_disable"):
             query = query.filter(cls.model.remove_act_record_id.is_not(None))
 
+        if filters.get("is_unexpired"):
+            query = query.filter(cls.model.is_unexpired.is_(True))
+
+        if filters.get("is_expired"):
+            query = query.filter(cls.model.is_unexpired.is_(False))
+
         if filters.get("owner_id"):
             query = query.filter(cls.model.owner_id==filters["owner_id"])
 
@@ -132,10 +138,6 @@ class KeyDocumentServise(BaseRepository):
         total_pages = math.ceil(total_records / limit) if limit else 0
 
         records = (await db.execute(query)).scalars().all()
-
-        print("SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS")
-        print(query.compile(compile_kwargs={"literal_binds": True}))
-        print("SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS")
 
         return records, len(records), total_records, total_pages
 

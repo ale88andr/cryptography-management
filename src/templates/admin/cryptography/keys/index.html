@@ -25,11 +25,12 @@
                 <th scope="col">#</th>
                 <th scope="col">Серийный номер</th>
                 <th scope="col">Ключевой носитель</th>
-                <th scope="col">Статус</th>
+                <th scope="col">Сменяемый</th>
                 <th scope="col">АРМ</th>
                 <th scope="col">Получен</th>
                 <th scope="col">Владелец</th>
-                <th scope="col" class="col-2">Действия</th>
+                <th scope="col">Статус</th>
+                <th scope="col" class="col-2 text-end">Действия</th>
             </tr>
             <tr>
                 <form method="get">
@@ -39,11 +40,11 @@
                     <td scope="col">
                         {{ select_filter("filter_carrier", key_carriers, filter_carrier) }}
                     </td>
-                    <td scope="col">
-                        <select class="form-select" name="status">
+                    <td scope="col" class="col-1">
+                        <select class="form-select" name="term">
                             <option value="">-- Все --</option>
-                            <option value="installed" {% if status == 'installed' %}selected{% endif %}>Используемые</option>
-                            <option value="removed" {% if status == 'removed' %}selected{% endif %}>Изъятые</option>
+                            <option value="expired" {% if term == 'expired' %}selected{% endif %}>Да</option>
+                            <option value="unexpired" {% if term == 'unexpired' %}selected{% endif %}>Нет</option>
                         </select>
                     </td>
                     <td></td>
@@ -52,6 +53,13 @@
                         {{ select_filter("filter_owner", employees, filter_owner) }}
                     </td>
                     <td scope="col">
+                        <select class="form-select" name="status">
+                            <option value="">-- Все --</option>
+                            <option value="installed" {% if status == 'installed' %}selected{% endif %}>Используемые</option>
+                            <option value="removed" {% if status == 'removed' %}selected{% endif %}>Изъятые</option>
+                        </select>
+                    </td>
+                    <td scope="col" class="text-end">
                         <a href="{{ url_for('get_key_documents_admin') }}" class="btn btn-sm btn-outline-danger me-1"><i class="bi bi-x-lg"></i></a>
                         <button type="submit" class="btn btn-sm btn-outline-success"><i class="bi bi-check-lg"></i></button>
                     </td>
@@ -72,7 +80,12 @@
                                 style="width: 32px; height: 32px"
                                 />
                             <div class="ms-3">
-                                <p class="fw-bold mb-1">{{ object.serial }}</p>
+                                <a
+                                    href="{{ url_for('detail_key_document_admin', pk=object.id) }}"
+                                    title="Детализация"
+                                >
+                                    <span class="fw-bold mb-1">{{ object.serial }}</span>
+                                </a>
                                 <p class="text-muted mb-0">{{ object.received_from }}</p>
                             </div>
                         </div>
@@ -81,15 +94,15 @@
                         <div>
                             <p class="fw-bold mb-1">{{ object.key_carrier.serial }}</p>
                             <p class="text-muted mb-0">
-                                <span class="badge bg-info">{{ object.key_carrier.carrier_type }}</span>
+                                <span class="badge-custom bg-light-custom">{{ object.key_carrier.carrier_type }}</span>
                             </p>
                         </div>
                     </td>
                     <td>
-                        {% if object.remove_act_record_id %}
-                            <span class="badge bg-danger">Изъят</span>
+                        {% if object.is_unexpired %}
+                            <span class="badge-custom bg-dark-custom">Нет</span>
                         {% else %}
-                            <span class="badge bg-success">Используется</span>
+                            <span class="badge-custom bg-light-custom">Да</span>
                         {% endif %}
                     </td>
                     <td>
@@ -103,13 +116,20 @@
                             {{ object.owner.short_name }}
                         </a>
                     </td>
+                    <td>
+                        {% if object.remove_act_record_id %}
+                            <span class="badge-custom bg-danger-custom">Изъят</span>
+                        {% else %}
+                            <span class="badge-custom bg-success-custom">Используется</span>
+                        {% endif %}
+                    </td>
                     <td class="text-end">
                         <a
                             href="{{ url_for('detail_key_document_admin', pk=object.id) }}"
                             class="btn btn-sm btn-outline-info me-1"
                             title="Просмотр"
                         >
-                            <i class="bi bi-three-dots"></i>
+                            <i class="bi bi-card-text"></i>
                         </a>
                         {% if not object.remove_act_record_id %}
                             {% if object.is_unexpired %}
@@ -121,13 +141,13 @@
                                     <i class="bi bi-shield-x"></i>
                                 </a>
                             {% else %}
-                                <!-- <a
-                                    href="{{ url_for('destruction_key_document_admin', pk=object.id) }}"
+                                <a
+                                    href="{{ url_for('change_current_cilogbook_admin', pk=object.id) }}"
                                     class="btn btn-sm btn-outline-success me-1"
                                     title="Заменить ключевой документ"
                                 >
-                                    <i class="bi bi-file-earmark-x"></i>
-                                </a> -->
+                                    <i class="bi bi-reply-all"></i>
+                                </a>
                                 <a
                                     href="{{ url_for('destruction_key_document_admin', pk=object.id) }}"
                                     class="btn btn-sm btn-outline-danger"

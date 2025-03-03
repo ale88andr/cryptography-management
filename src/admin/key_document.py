@@ -37,6 +37,7 @@ def create_kd_filters(
     owner: Optional[int] = None,
     carrier: Optional[int] = None,
     status: Optional[str] = None,
+    term: Optional[str] = None,
 ) -> Dict[str, Any]:
     return {
         key: value
@@ -44,7 +45,9 @@ def create_kd_filters(
             "owner_id": owner,
             "carrier_id": carrier,
             "is_active": status == "installed",
-            "is_disable": status == "removed"
+            "is_disable": status == "removed",
+            "is_expired": term == "expired",
+            "is_unexpired": term == "unexpired",
         }.items()
         if value is not None and value > 0
     }
@@ -61,10 +64,11 @@ async def get_key_documents_admin(
     q: Optional[str] = None,
     filter_carrier: Optional[int] = None,
     filter_owner: Optional[int] = None,
+    term: Optional[str] = None,
     status: Optional[str] = None,
     user: User = Depends(get_current_admin)
 ):
-    filters = create_kd_filters(filter_owner, filter_carrier, status)
+    filters = create_kd_filters(filter_owner, filter_carrier, status, term)
 
     objects, counter, total_records, total_pages = (
         await KeyDocumentServise.all_with_pagination(
@@ -96,6 +100,7 @@ async def get_key_documents_admin(
         "msg": msg,
         "sort": sort,
         "status": status,
+        "term": term,
         "q": q,
         "breadcrumbs": create_breadcrumbs(
             router, [index_page_header], ["get_cversions_admin"]
