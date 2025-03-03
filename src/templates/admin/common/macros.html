@@ -55,11 +55,11 @@
 {% endmacro %}
 
 {% macro pagination_page_info(page=1, total_pages=1) %}
-    <p class="text-center text-body-tertiary">
+    <p class="text-center text-body-tertiary mt-3 mb-3">
         Cтраница
-        <span class="badge bg-info">{{ page+1 }}</span>
+        <span class="badge-custom bg-dark-custom">{{ page+1 }}</span>
         из
-        <span class="badge bg-info">{{ total_pages }}</span>
+        <span class="badge-custom bg-dark-custom">{{ total_pages }}</span>
     </p>
 {% endmacro %}
 
@@ -98,7 +98,7 @@
                 </a>
 
                 {% for pg in range(total_pages) %}
-                    <a class="btn btn-{% if page == pg %}info{% else %}secondary{% endif %}" href="?{% if sort %}sort={{ sort }}{% endif %}&page={{ pg }}&limit={{ limit }}">
+                    <a class="btn btn-{% if page == pg %}dark{% else %}secondary{% endif %}" href="?{% if sort %}sort={{ sort }}{% endif %}&page={{ pg }}&limit={{ limit }}">
                         {{ pg + 1 }}
                     </a>
                 {% endfor %}

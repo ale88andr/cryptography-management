@@ -118,6 +118,18 @@ class KeyDocumentServise(BaseRepository):
         if filters.get("carrier_id"):
             query = query.filter(cls.model.carrier_id==filters["carrier_id"])
 
+        if filters.get("version_id"):
+            query = query.filter(cls.model.cryptography_version_id==filters["version_id"])
+
+        if filters.get("performer_id"):
+            query = query.filter(ActRecord.performer_id==filters["performer_id"])
+
+        if filters.get("date_from"):
+            query = query.filter(func.date(ActRecord.action_date)>=filters["date_from"])
+
+        if filters.get("date_to"):
+            query = query.filter(func.date(ActRecord.action_date)<=filters["date_to"])
+
         if not sort and sort != "null":
             query = query.order_by(
                 ActRecord.action_date.desc(),

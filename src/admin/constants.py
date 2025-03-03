@@ -84,7 +84,7 @@ ADMIN_CVERSION_DECOMIS_HEADER       = "Редактирование экземп
 
 
 # ========= Журнал поэкземплярного СКЗИ (CInstanceLogbook) =========
-ADMIN_CILOG_DESCRIPTION             = "Администрироваие журнала поэкземплярного учета СКЗИ"
+ADMIN_CILOG_DESCRIPTION             = "Поэкземплярный учёт ключевой информации"
 ADMIN_CILOG_INDEX_HEADER            = "Журнал поэкземплярного учёта (учёт ключей электронной подписи)"
 ADMIN_CILOG_EDIT_HEADER             = "Редактирование записи журнала поэкземплярного учета СКЗИ"
 ADMIN_CILOG_ADD_HEADER              = "Добавить запись об установке СКЗИ"

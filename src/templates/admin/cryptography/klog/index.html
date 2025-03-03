@@ -6,12 +6,13 @@
 {% block page_header_help_text %}{{ page_header_help }}{% endblock %}
 
 {% from "admin/common/macros.html" import no_data, shortener, pagination_page_info, display_pagination_pages, print_default, empty_value, format_date %}
+{% from "admin/common/form_macros.html" import select_field, input_field, date_field %}
 
 {% block content %}
 
     <div class="d-flex justify-content-between align-items-center mb-2 text-body">
         <p class="fw-normal card-subtitle text-muted">
-            Показано элементов: <span class="badge bg-success">{{ counter + limit * page }}</span> из <span class="badge bg-success">{{ total_records }}</span>
+            Показано элементов: <span class="badge-custom bg-dark-custom">{{ counter + limit * page }}</span> из <span class="badge-custom bg-dark-custom">{{ total_records }}</span>
         </p>
 
         <div class="btn-group me-1" role="group">
@@ -33,6 +34,61 @@
             </div>
         </div>
 
+    </div>
+
+    <div class="accordion mt-2 mb-2" id="filters">
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="head">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                    <strong><i class="bi bi-funnel me-1"></i>Фильтры</strong>
+                </button>
+            </h2>
+            <div id="collapseThree" class="accordion-collapse collapse show" aria-labelledby="head" data-bs-parent="#accordionExample" style="">
+                <div class="accordion-body">
+                    <form method="get" class="custom">
+                        <fieldset>
+                            <div class="row mb-3">
+                                <div class="col-3">
+                                    {{ input_field("q", "Серийный номер", errors, q, "Поиск") }}
+                                </div>
+                                <div class="col-3">
+                                    {{ select_field("filter_carrier", "Ключевой носитель", key_carriers, errors, filter_carrier) }}
+                                </div>
+                                <div class="col-3">
+                                    {{ select_field("filter_owner", "Владелец ключевой имформации", employees, errors, filter_owner) }}
+                                </div>
+                                <div class="col-3">
+                                    {{ select_field("filter_version", "Версия СКЗИ", cryptography_versions, errors, filter_version) }}
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-3">
+                                    {{ select_field("filter_performer", "Исполнитель", security_staff_members, errors, filter_performer) }}
+                                </div>
+                                <div class="col-3">
+                                    {{ date_field("filter_date_from", "Дата события с", errors, filter_date_from) }}
+                                </div>
+                                <div class="col-3">
+                                    {{ date_field("filter_date_to", "Дата события по", errors, filter_date_to) }}
+                                </div>
+                                <div class="col-3">
+                                    <label for="filter_status" class="form-label mb-4">Статус</label>
+                                    <select class="form-select" name="status" id="filter_status">
+                                        <option value="">--- Все ---</option>
+                                        <option value="installed" {% if status == 'installed' %}selected{% endif %}>Только используемые</option>
+                                        <option value="removed" {% if status == 'removed' %}selected{% endif %}>Только изъятые</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <a href="{{ url_for('get_cilogbook_admin') }}" class="btn btn btn-secondary me-1"><i class="bi bi-x-lg"></i> Сбросить</a>
+                        <button type="submit" class="btn btn btn-outline-dark"><i class="bi bi-check-lg"></i> Применить</button>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
 
     {{ pagination_page_info(page, total_pages) }}
@@ -70,8 +126,8 @@
                                 </a>
                             </li>
                             <li class="mb-1">
-                                <span class="badge bg-light">{{ object.key_carrier.carrier_type }}</span>
-                                <span class="badge bg-dark">{{ object.key_carrier.serial }}</span>
+                                <span class="badge-custom bg-warning-custom mb-1">{{ object.key_carrier.carrier_type }}</span>
+                                <span class="badge-custom bg-dark-custom">{{ object.key_carrier.serial }}</span>
                             </li>
                         </ul>
                     </td>
@@ -81,10 +137,10 @@
                                 <p class="fw-bold mb-0">
                                     <ul class="list-unstyled mb-0">
                                         <li class="mb-1">
-                                            <span class="badge bg-success">СКЗИ:</span> <span class="text-muted">{{ object.cryptography_version.serial }}</span>
+                                            <span class="badge-custom bg-light-custom">СКЗИ:</span> <span class="text-muted">{{ object.cryptography_version.serial }}</span>
                                         </li>
                                         <li class="mb-1">
-                                            <span class="badge bg-success">№ дист:</span> <span class="text-muted">{{ object.cryptography_version.dist_num }}</span>
+                                            <span class="badge-custom bg-light-custom">№ дист:</span> <span class="text-muted">{{ object.cryptography_version.dist_num }}</span>
                                         </li>
                                         <li class="mb-1">
                                             <a href="{{ url_for('detail_key_document_admin', pk=object.id) }}">

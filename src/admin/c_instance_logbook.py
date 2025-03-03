@@ -1,5 +1,6 @@
 from dataclasses import asdict
-from typing import Optional
+from datetime import date, datetime
+from typing import Any, Dict, Optional
 from fastapi import APIRouter, Request, Depends, HTTPException, responses, status
 
 from admin.constants import (
@@ -29,6 +30,7 @@ from models.users import User
 from services.c_action import CActionServise
 from services.c_instance_logbook import CInstanceLogbookServise
 from services.c_version import CVersionServise
+from services.carrier_types import CarrierTypesServise
 from services.employee import EmployeeServise
 from services.equipment import EquipmentServise
 from services.key_carrier import KeyCarrierServise
@@ -40,6 +42,45 @@ from utils.formatting import format_date_to_str, get_date_tuple, get_str_now_dat
 router = APIRouter(prefix=app_prefix, tags=[hepl_text])
 
 
+# Преобразование строковых параметров даты в объекты date
+def parse_date(date_str: Optional[str]) -> Optional[date]:
+    if date_str:
+        try:
+            return datetime.strptime(date_str, "%Y-%m-%d").date()
+        except ValueError:
+            raise HTTPException(status_code=400, detail=f"Invalid date format for {date_str}")
+    return None
+
+
+# Создание фильтров
+def create_logbook_filters(
+    owner: Optional[int] = None,
+    carrier: Optional[int] = None,
+    version: Optional[int] = None,
+    performer: Optional[int] = None,
+    date_from: Optional[date] = None,
+    date_to: Optional[date] = None,
+    status: Optional[str] = None,
+    term: Optional[str] = None,
+) -> Dict[str, Any]:
+    return {
+        key: value
+        for key, value in {
+            "owner_id": owner,
+            "carrier_id": carrier,
+            "version_id": version,
+            "performer_id": performer,
+            "date_from": date_from,
+            "date_to": date_to,
+            "is_active": status == "installed",
+            "is_disable": status == "removed",
+            "is_expired": term == "expired",
+            "is_unexpired": term == "unexpired",
+        }.items()
+        if value is not None and (value > 0 if value is int else value != "")
+    }
+
+
 # ========= Cryptography Models Versions =========
 @router.get("/", response_class=responses.HTMLResponse)
 async def get_cilogbook_admin(
@@ -49,23 +90,40 @@ async def get_cilogbook_admin(
     limit: int = 20,
     sort: Optional[str] = None,
     q: Optional[str] = None,
-    filter_model_id: Optional[int] = None,
-    filter_grade: Optional[int] = None,
+    filter_carrier: Optional[int] = None,
+    filter_owner: Optional[int] = None,
+    filter_version: Optional[int] = None,
+    filter_performer: Optional[int] = None,
+    filter_date_from: Optional[str] = None,
+    filter_date_to: Optional[str] = None,
+    term: Optional[str] = None,
+    status: Optional[str] = None,
     user: User = Depends(get_current_admin)
 ):
-    # filters = {}
+    filter_date_from = parse_date(filter_date_from)
+    filter_date_to = parse_date(filter_date_to)
 
-    # if filter_model_id and filter_model_id > 0:
-    #     filters["model_id"] = filter_model_id
-
-    # if filter_grade:
-    #     filters["grade"] = filter_grade
+    filters = create_logbook_filters(
+        filter_owner,
+        filter_carrier,
+        filter_version,
+        filter_performer,
+        filter_date_from,
+        filter_date_to,
+        status,
+        term
+    )
 
     records, counter, total_records, total_pages = (
         await KeyDocumentServise.all_with_pagination(
-            sort=sort, q=q, page=page, limit=limit, filters={}
+            sort=sort, q=q, page=page, limit=limit, filters=filters
         )
     )
+
+    key_carrier_set, _ = await KeyCarrierServise.all()
+    employee_set = await EmployeeServise.all()
+    version_set = await CVersionServise.all_used()
+    security_staff_members = await EmployeeServise.get_short_list(is_staff=True)
 
     context = {
         "request": request,
@@ -78,11 +136,21 @@ async def get_cilogbook_admin(
         "page": page,
         "limit": limit,
         "page_header_help": hepl_text,
-        "filter_model_id": filter_model_id,
-        "filter_grade": filter_grade,
         "msg": msg,
+        "filter_carrier": filter_carrier,
+        "filter_owner": filter_owner,
+        "filter_version": filter_version,
+        "filter_performer": filter_performer,
+        "filter_date_from": filter_date_from,
+        "filter_date_to": filter_date_to,
         "sort": sort,
+        "status": status,
+        "term": term,
         "q": q,
+        "key_carriers": key_carrier_set,
+        "security_staff_members": security_staff_members,
+        "cryptography_versions": version_set,
+        "employees": employee_set,
         "breadcrumbs": create_breadcrumbs(
             router, [index_page_header], ["get_clogbook_admin"]
         ),
