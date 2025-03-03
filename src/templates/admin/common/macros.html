@@ -111,6 +111,12 @@
     {% endif %}
 {% endmacro %}
 
+{% macro items_counter(total, current) %}
+    <p class="fw-normal card-subtitle text-muted">
+        Показано элементов: {% if current %}<span class="badge-custom bg-dark-custom">{{ current }}</span> из {% endif %}<span class="badge-custom bg-dark-custom">{{ total }}</span>
+    </p>
+{% endmacro %}
+
 {% macro print_default(value, default_value='---') %}
     {% if value %}
         {{ value }}

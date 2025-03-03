@@ -11,10 +11,10 @@
 {% block content %}
     <div class="d-flex justify-content-between align-items-center mb-2 text-body">
         <p class="fw-normal card-subtitle text-muted">
-            Показано элементов: <span class="badge bg-success">{{ counter + limit * page }}</span> из <span class="badge bg-success">{{ total_records }}</span>
+            Показано элементов: <span class="badge-custom bg-dark-custom">{{ counter + limit * page }}</span> из <span class="badge-custom bg-dark-custom">{{ total_records }}</span>
         </p>
         <p class="mb-2">
-            Cтраница <span class="badge bg-info">{{ page+1 }}</span> из <span class="badge bg-info">{{ total_pages }}</span>
+            Cтраница <span class="badge-custom bg-dark-custom">{{ page+1 }}</span> из <span class="badge-custom bg-dark-custom">{{ total_pages }}</span>
         </p>
     </div>
 
@@ -94,7 +94,7 @@
                         <div>
                             <p class="fw-bold mb-1">{{ object.key_carrier.serial }}</p>
                             <p class="text-muted mb-0">
-                                <span class="badge-custom bg-light-custom">{{ object.key_carrier.carrier_type }}</span>
+                                <span class="badge-custom bg-info-custom">{{ object.key_carrier.carrier_type }}</span>
                             </p>
                         </div>
                     </td>
@@ -120,7 +120,7 @@
                         {% if object.remove_act_record_id %}
                             <span class="badge-custom bg-danger-custom">Изъят</span>
                         {% else %}
-                            <span class="badge-custom bg-success-custom">Используется</span>
+                            <span class="badge-custom bg-light-custom">Используется</span>
                         {% endif %}
                     </td>
                     <td class="text-end">

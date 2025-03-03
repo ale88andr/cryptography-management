@@ -5,14 +5,12 @@
 {% block page_header_text %}{{ page_header }}{% endblock %}
 {% block page_header_help_text %}{{ page_header_help }}{% endblock %}
 
-{% from "admin/common/macros.html" import no_data %}
+{% from "admin/common/macros.html" import no_data, items_counter %}
 {% from "admin/common/form_macros.html" import select_filter, search_field %}
 
 {% block content %}
     <div class="d-flex justify-content-between align-items-center mb-2 text-body">
-        <p class="fw-normal card-subtitle text-muted">
-            Показано элементов: <span class="badge bg-success">{{ counter }}</span>
-        </p>
+        {{ items_counter(counter) }}
         <p class="mb-2">
             <a href="{{ url_for('add_position_admin') }}" class="btn btn-success">
                 <i class="bi bi-plus-lg"></i> Добавить должность
@@ -65,7 +63,7 @@
                         </div>
                     </td>
                     <td>
-                        <span class="badge bg-{%if position.is_leadership%}success{%else%}light{%endif%}">
+                        <span class="badge-custom bg-{%if position.is_leadership%}success{%else%}light{%endif%}-custom">
                             {{ "Да" if position.is_leadership else "Нет" }}
                         </span>
                     </td>

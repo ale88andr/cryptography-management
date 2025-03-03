@@ -5,15 +5,13 @@
 {% block page_header_text %}{{ page_header }}{% endblock %}
 {% block page_header_help_text %}{{ page_header_help }}{% endblock %}
 
-{% from "admin/common/macros.html" import no_data, shortener, pagination_page_info, display_pagination_pages, print_default, empty_value, format_date %}
+{% from "admin/common/macros.html" import no_data, shortener, pagination_page_info, display_pagination_pages, print_default, empty_value, format_date, items_counter %}
 {% from "admin/common/form_macros.html" import select_field, input_field, date_field %}
 
 {% block content %}
 
     <div class="d-flex justify-content-between align-items-center mb-2 text-body">
-        <p class="fw-normal card-subtitle text-muted">
-            Показано элементов: <span class="badge-custom bg-dark-custom">{{ counter + limit * page }}</span> из <span class="badge-custom bg-dark-custom">{{ total_records }}</span>
-        </p>
+        {{ items_counter(total_records, counter + limit * page) }}
 
         <div class="btn-group me-1" role="group">
             <button type="button" class="btn btn-success"><i class="bi bi-grid-fill me-1"></i> Действия</button>

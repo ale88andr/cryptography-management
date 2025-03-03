@@ -5,16 +5,14 @@
 {% block page_header_text %}{{ page_header }}{% endblock %}
 {% block page_header_help_text %}{{ page_header_help }}{% endblock %}
 
-{% from "admin/common/macros.html" import no_data %}
+{% from "admin/common/macros.html" import no_data, items_counter %}
 
 {% block content %}
 
     <div class="d-flex justify-content-between align-items-center mb-2 text-body">
-        <p class="fw-normal card-subtitle text-muted">
-            Показано элементов: <span class="badge bg-success">{{ counter }}</span>
-        </p>
+        {{ items_counter(counter) }}
         <p class="mb-2">
-            <a href="{{ url_for('download_clogbook_admin') }}" class="btn btn-outline-info">
+            <a href="{{ url_for('download_clogbook_admin') }}" class="btn btn-outline-dark">
                 <i class="bi bi-filetype-docx"></i> Скачать журнал
             </a>
             <a href="{{ url_for('add_cversion_admin') }}" class="btn btn-success">
@@ -23,7 +21,7 @@
         </p>
     </div>
 
-    <div class="col-12">
+    <div class="col-12 mt-2">
         <table class="table table-hover align-middle logbook">
             <thead>
                 <tr class="table-light">
@@ -66,9 +64,9 @@
                             </a>
                         </td>
                         <td class="text-nowrap text-muted">
-                            <span class="badge bg-success">СКЗИ:</span> {{ object.serial }}
+                            <span class="badge-custom bg-warning-custom">СКЗИ:</span> {{ object.serial }}
                             <br>
-                            <span class="badge bg-success">Дист:</span> {{ object.dist_num }}
+                            <span class="badge-custom bg-dark-custom mt-1">Дист:</span> {{ object.dist_num }}
                         </td>
                         {% include 'admin/cryptography/vlog/row.html' %}
                         <td rowspan="{{rowspan}}" class="align-middle">{{ object.comment }}</td>

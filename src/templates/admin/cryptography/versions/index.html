@@ -5,14 +5,12 @@
 {% block page_header_text %}{{ page_header }}{% endblock %}
 {% block page_header_help_text %}{{ page_header_help }}{% endblock %}
 
-{% from "admin/common/macros.html" import no_data %}
+{% from "admin/common/macros.html" import no_data, items_counter %}
 {% from "admin/common/form_macros.html" import select_filter %}
 
 {% block content %}
     <div class="d-flex justify-content-between align-items-center mb-2 text-body">
-        <p class="fw-normal card-subtitle text-muted">
-            Показано элементов: <span class="badge bg-success">{{ counter }}</span>
-        </p>
+        {{ items_counter(counter) }}
         <p class="mb-2">
             <a href="{{ url_for('add_cversion_admin') }}" class="btn btn-success">
                 <i class="bi bi-plus-lg"></i> Добавить экземпляр СКЗИ
@@ -86,7 +84,7 @@
                             </div>
                         </div>
                     </td>
-                    <td><span class="badge bg-light">{{ grades[version.grade.value] }}</span></td>
+                    <td><span class="badge-custom bg-info-custom">{{ grades[version.grade.value] }}</span></td>
                     <td>
                         <div class="ms-3">
                             <p class="fw-bold mb-1">

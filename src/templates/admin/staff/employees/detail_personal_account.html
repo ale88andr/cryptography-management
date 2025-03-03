@@ -28,8 +28,8 @@
                             </a>
                         </li>
                         <li class="mb-1">
-                            <span class="badge bg-light">{{ key.key_carrier.carrier_type }}</span>
-                            <span class="badge bg-dark">{{ key.key_carrier.serial }}</span>
+                            <span class="badge-custom bg-warning-custom">{{ key.key_carrier.carrier_type }}</span>
+                            <span class="badge-custom bg-dark-custom">{{ key.key_carrier.serial }}</span>
                         </li>
                     </ul>
                 </td>
@@ -37,10 +37,10 @@
                     <p class="fw-bold mb-0">
                         <ul class="list-unstyled mb-0">
                             <li class="mb-1">
-                                <span class="badge bg-success">СКЗИ:</span> <span class="text-muted">{{ key.cryptography_version.serial }}</span>
+                                <span class="badge-custom bg-info-custom">СКЗИ:</span> <span class="text-muted">{{ key.cryptography_version.serial }}</span>
                             </li>
                             <li class="mb-1">
-                                <span class="badge bg-success">№ дист:</span> <span class="text-muted">{{ key.cryptography_version.dist_num }}</span>
+                                <span class="badge-custom bg-info-custom">№ дист:</span> <span class="text-muted">{{ key.cryptography_version.dist_num }}</span>
                             </li>
                             <li class="mb-1">
                                 <a href="{{ url_for('detail_key_document_admin', pk=key.id) }}">

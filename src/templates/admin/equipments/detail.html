@@ -40,7 +40,7 @@
                             {% if equipment.sticker %}
                                 {{ equipment.sticker }}
                             {% else %}
-                                <span class="badge bg-danger">Нет данных</span>
+                                <span class="badge-custom bg-danger-custom">Нет данных</span>
                             {% endif %}
                         </p>
                     </div>
@@ -69,22 +69,22 @@
                                 Аппаратный журнал учета СКЗИ
                             </p>
                             <p class="mb-0">
-                                <a href="{{ url_for('add_hardware_logbook_admin', equipment_id=equipment.id) }}" class="btn btn-info ms-2">
+                                <a href="{{ url_for('add_hardware_logbook_admin', equipment_id=equipment.id) }}" class="btn btn-outline-success ms-2">
                                     <i class="bi bi-plus-lg"></i> Добавить запись
                                 </a>
-                                <a href="{{ url_for('download_hardware_logbook_admin', equipment_id=equipment.id) }}" class="btn btn-success ms-2">
+                                <a href="{{ url_for('download_hardware_logbook_admin', equipment_id=equipment.id) }}" class="btn btn-outline-dark ms-2">
                                     <i class="bi bi-download"></i> Скачать
                                 </a>
                             </p>
                         </div>
-                        <hr class="mt-0 mb-1">
+                        <hr class="mt-3 mb-1">
                         <div class="d-flex justify-content-between align-items-center mt-2 text-body">
-                            <p class="fw-normal text-body-tertiary mb-0">
-                                <strong>Оборудование инв.№ {{ equipment.id }}</strong>
+                            <p class="fw-normal text-body-tertiary mt-1 mb-0">
+                                <strong>Оборудование <span class="badge-custom bg-info-custom">{{ equipment.id }}</span></strong>
                             </p>
                             <p class="mb-0">
                                 <span class="text-body-tertiary">Показано элементов:</span>
-                                <span class="badge bg-success">
+                                <span class="badge-custom bg-dark-custom">
                                     {{ equipment.hw_logs|length }}
                                 </span>
                             </p>

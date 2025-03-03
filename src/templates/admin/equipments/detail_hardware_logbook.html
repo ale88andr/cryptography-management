@@ -32,19 +32,19 @@
                             </a>
                         </li>
                         <li class="mb-1">
-                            <span class="badge bg-info">СКЗИ:</span> <span class="text-muted">{{ log.cryptography_version.serial }}</span>
+                            <span class="badge-custom bg-light-custom">СКЗИ:</span> <span class="text-muted">{{ log.cryptography_version.serial }}</span>
                         </li>
                         <li class="mb-1 text-nowrap">
-                            <span class="badge bg-info">№ дист:</span> <span class="text-muted">{{ log.cryptography_version.dist_num }}</span>
+                            <span class="badge-custom bg-light-custom">№ дист:</span> <span class="text-muted">{{ log.cryptography_version.dist_num }}</span>
                         </li>
                     </ul>
                 </td>
                 <td class="text-muted">{{ hardware_logbook_record_types[log.record_type.value] }}</td>
                 <td>
                     {% if log.key_document %}
-                        <span class="badge bg-primary">{{ log.key_document.key_carrier.serial }}</span>
+                        <span class="badge-custom bg-warning-custom">{{ log.key_document.key_carrier.carrier_type }}</span>
                         <br>
-                        <span class="badge bg-success">{{ log.key_document.key_carrier.carrier_type }}</span>
+                        <span class="badge-custom bg-dark-custom mt-1">{{ log.key_document.key_carrier.serial }}</span>
                     {% else %}
                         {{ empty_value() }}
                     {% endif %}

@@ -5,17 +5,15 @@
 {% block page_header_text %}{{ page_header }}{% endblock %}
 {% block page_header_help_text %}{{ page_header_help }}{% endblock %}
 
-{% from "admin/common/macros.html" import no_data, format_date %}
+{% from "admin/common/macros.html" import no_data, format_date, items_counter %}
 {% from "admin/common/form_macros.html" import select_filter, search_field %}
 
 {% block content %}
 
     <div class="d-flex justify-content-between align-items-center mb-2 text-body">
-        <p class="fw-normal card-subtitle text-muted">
-            Показано элементов: <span class="badge bg-success">{{ total_users }}</span>
-        </p>
+        {{ items_counter(total_users) }}
         <p class="mb-2">
-            <a href="{{ url_for('download_cusers_admin') }}" class="btn btn-outline-info">
+            <a href="{{ url_for('download_cusers_admin') }}" class="btn btn-outline-dark">
                 <i class="bi bi-filetype-docx"></i> Список пользователей СКЗИ
             </a>
             <a href="{{ url_for('add_employee_admin') }}" class="btn btn-outline-success">
@@ -76,7 +74,7 @@
                         </div>
                     </td>
                     <td><strong>{{ employee.department }}</strong></td>
-                    <td class="text-center"><span class="badge rounded-pill bg-success">{{ employee.key_document_set|length }}</span></td>
+                    <td class="text-center"><span class="badge-custom rounded-pill bg-success-custom">{{ employee.key_document_set|length }}</span></td>
                     <td>
                         {% set versions = [] %}
 

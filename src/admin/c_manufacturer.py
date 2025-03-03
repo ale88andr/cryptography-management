@@ -7,8 +7,8 @@ from admin.constants import (
     ADMIN_CMANUFACTURER_DESCRIPTION as help_text,
     ADMIN_CMANUFACTURER_INDEX_HEADER as index_header,
     ADMIN_CMANUFACTURER as app_prefix,
-    ADMIN_CMANUFACTURER_LIST_TPL as form_template,
-    ADMIN_CMANUFACTURER_FORM_TPL as list_template,
+    ADMIN_CMANUFACTURER_LIST_TPL as list_template,
+    ADMIN_CMANUFACTURER_FORM_TPL as form_template,
 )
 from core.config import templates
 from core.utils import (
