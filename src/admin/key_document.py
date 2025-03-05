@@ -79,7 +79,7 @@ async def get_key_documents_admin(
             filters=filters,
         )
     )
-    key_carriers, _ = await KeyCarrierServise.all()
+    key_carriers, _ = await KeyCarrierServise.get_list()
     carrier_types, _ = await CarrierTypesServise.all()
     employees = await EmployeeServise.all()
     context = {
@@ -211,7 +211,7 @@ async def destruct_key_document_admin(pk: int, request: Request, user: User = De
 @router.get("/{pk}/c_destruction")
 async def destruct_employee_cversion_admin(pk: int, request: Request, user: User = Depends(get_current_admin)):
     key = await KeyDocumentServise.get_by_id(pk)
-    responsible_user_cryptography_keys, _ = await KeyDocumentServise.all(
+    responsible_user_cryptography_keys, _ = await KeyDocumentServise.get_list(
         filters={
             "owner_id": key.owner_id,
             "cryptography_version_id": key.cryptography_version_id,
@@ -242,7 +242,7 @@ async def destruct_employee_cversion_admin(pk: int, request: Request, user: User
 @router.post("/{pk}/c_destruction")
 async def destruct_key_cversion_admin(pk: int, request: Request, user: User = Depends(get_current_admin)):
     key = await KeyDocumentServise.get_by_id(pk)
-    user_cryptography_keys, _ = await KeyDocumentServise.all(
+    user_cryptography_keys, _ = await KeyDocumentServise.get_list(
         filters={
             "owner_id": key.owner_id,
             "cryptography_version_id": key.cryptography_version_id,

@@ -11,7 +11,7 @@ class CModelServise(BaseRepository):
     model = Model
 
     @classmethod
-    async def all(cls, sort: str = None, q: str = None, filters: Optional[dict] = None):
+    async def get_list(cls, sort: str = None, q: str = None, filters: Optional[dict] = None):
         query = select(cls.model).options(joinedload(cls.model.manufacturer))
 
         if sort and sort != "null":

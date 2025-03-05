@@ -26,7 +26,7 @@ class KeyDocumentServise(BaseRepository):
     model = KeyDocument
 
     @classmethod
-    async def all(cls, sort: str = None, q: str = None, filters: Optional[dict] = None):
+    async def get_list(cls, sort: str = None, q: str = None, filters: Optional[dict] = None):
         query = select(cls.model).options(
             joinedload(cls.model.key_carrier).options(
                 joinedload(KeyCarrier.carrier_type)

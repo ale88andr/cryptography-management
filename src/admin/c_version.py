@@ -63,8 +63,8 @@ async def get_cversions_admin(
 ):
     filters = create_filters(filter_model_id, filter_grade_id)
 
-    records, counter = await CVersionServise.all(sort=sort, q=q, filters=filters)
-    models, _ = await CModelServise.all()
+    records, counter = await CVersionServise.get_list(sort=sort, q=q, filters=filters)
+    models, _ = await CModelServise.get_list()
     cryptography_grades = await CryptographyGradeServise.all()
 
     # Создаем базовый контекст
@@ -89,7 +89,7 @@ async def get_cversions_admin(
 
 @router.get("/add")
 async def add_cversion_admin(request: Request, user: User = Depends(get_current_admin)):
-    models, _ = await CModelServise.all()
+    models, _ = await CModelServise.get_list()
     responsible_users = await EmployeeServise.get_short_list(is_staff=True)
     cryptography_grades = await CryptographyGradeServise.all()
 
@@ -147,7 +147,7 @@ async def create_cversion_admin(
         except Exception as e:
             form.__dict__.get("errors").setdefault("non_field_error", e)
 
-    models, _ = await CModelServise.all()
+    models, _ = await CModelServise.get_list()
     responsible_users = await EmployeeServise.get_short_list(is_staff=True)
     cryptography_grades = await CryptographyGradeServise.all()
 
@@ -176,7 +176,7 @@ async def edit_cversion_admin(
 ):
     obj = await CVersionServise.get_by_id(pk)
     responsible_users = await EmployeeServise.get_short_list(is_staff=True)
-    models, _ = await CModelServise.all()
+    models, _ = await CModelServise.get_list()
     cryptography_grades = await CryptographyGradeServise.all()
 
     # Создаем базовый контекст
@@ -228,7 +228,7 @@ async def update_cversion_admin(
         except Exception as e:
             form.errors.setdefault("non_field_error", e)
 
-    models, _ = await CModelServise.all()
+    models, _ = await CModelServise.get_list()
     responsible_users = await EmployeeServise.get_short_list(is_staff=True)
     cryptography_grades = await CryptographyGradeServise.all()
 
@@ -317,21 +317,3 @@ async def set_decommissioning_cversion_admin(
     context.update(form.__dict__)
     context.update(form.fields)
     return templates.TemplateResponse(decommissioning_form_template, context)
-
-
-@router.get("/{pk}/delete")
-async def delete_cversion_admin(
-    pk: int, request: Request, user: User = Depends(get_current_admin)
-):
-    redirect_url = request.url_for("get_cversions_admin")
-    redirect_code = status.HTTP_303_SEE_OTHER
-    try:
-        log = await CLogbookServise.get_one_or_none(cryptography_version_id=pk)
-        if log:
-            raise LogbookOnDeleteException
-        await CVersionServise.delete(pk)
-        redirect_url = redirect_url.include_query_params(msg="Версия СКЗИ удалена!")
-    except Exception as e:
-        redirect_url = redirect_url.include_query_params(error=e)
-
-    return responses.RedirectResponse(redirect_url, status_code=redirect_code)

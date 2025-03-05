@@ -80,7 +80,7 @@ ADMIN_CVERSION_DESCRIPTION          = "Администрироваие экзе
 ADMIN_CVERSION_INDEX_HEADER         = "Экземпляры СКЗИ"
 ADMIN_CVERSION_ADD_HEADER           = "Добавление экземпляра СКЗИ"
 ADMIN_CVERSION_EDIT_HEADER          = "Редактирование экземпляра СКЗИ"
-ADMIN_CVERSION_DECOMIS_HEADER       = "Редактирование экземпляра СКЗИ"
+ADMIN_CVERSION_DECOMIS_HEADER       = "Вывод экземпляра СКЗИ из эксплуатации"
 
 
 # ========= Журнал поэкземплярного СКЗИ (CInstanceLogbook) =========

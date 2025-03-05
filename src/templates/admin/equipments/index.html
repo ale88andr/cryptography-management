@@ -5,7 +5,7 @@
 {% block page_header_text %}{{ page_header }}{% endblock %}
 {% block page_header_help_text %}{{ page_header_help }}{% endblock %}
 
-{% from "admin/common/macros.html" import no_data, pagination_page_info, display_pagination_pages, items_counter %}
+{% from "admin/common/macros.html" import no_data, pagination_page_info, display_pagination_pages, items_counter, delete_canvas %}
 {% from "admin/common/form_macros.html" import select_filter, search_field %}
 
 {% block content %}
@@ -76,7 +76,7 @@
                     </td>
                     <td>
                         <a href="{{ url_for('detail_equipment_admin', equipment_id=object.id) }}" class="btn btn-sm btn-outline-dark me-1" title="Подробнее"><i class="bi bi-card-text"></i></a>
-                        <a href="{{ url_for('delete_equipment_admin', equipment_id=object.id) }}" class="btn btn-sm btn-outline-danger" title="Удалить"><i class="bi bi-trash"></i></a>
+                        {{ delete_canvas(url_for('delete_equipment_admin', pk=object.id), object.id) }}
                     </td>
                 </tr>
             {% else %}

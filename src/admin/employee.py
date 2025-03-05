@@ -135,7 +135,7 @@ async def get_cusers_admin(
     )
 
     departments, _ = await DepartmentServise.all()
-    versions, _ = await CVersionServise.all()
+    versions, _ = await CVersionServise.get_list()
 
     return templates.TemplateResponse(
         ADMIN_EMPLOYEE_WITH_CRYPTOGRAPY_TPL,
@@ -360,7 +360,7 @@ async def termination_employee_admin(pk: int, request: Request, user: User = Dep
 @router.post("/{pk}/termination")
 async def terminate_employee_admin(pk: int, request: Request, user: User = Depends(get_current_admin)):
     employee = await EmployeeServise.get_by_id(pk)
-    user_cryptography_keys, key_count = await KeyDocumentServise.all(
+    user_cryptography_keys, key_count = await KeyDocumentServise.get_list(
         filters={"owner_id": employee.id, "remove_act_record_id": None}
     )
 

@@ -5,7 +5,7 @@
 {% block page_header_text %}{{ page_header }}{% endblock %}
 {% block page_header_help_text %}{{ page_header_help }}{% endblock %}
 
-{% from "admin/common/macros.html" import no_data, items_counter %}
+{% from "admin/common/macros.html" import no_data, items_counter, delete_canvas %}
 {% from "admin/common/form_macros.html" import select_filter, search_field %}
 
 {% block content %}
@@ -75,7 +75,7 @@
                     <td><span class="badge-custom bg-dark-custom">{{ types[object.type.value] }}</span></td>
                     <td>
                         <a href="{{ url_for('edit_cmodel_admin', pk=object.id) }}" class="btn btn-sm btn-outline-primary me-1" title="Редактировать"><i class="bi bi-pencil-square"></i></a>
-                        <a href="{{ url_for('delete_cmodel_admin', pk=object.id) }}" class="btn btn-sm btn-outline-danger" title="Удалить"><i class="bi bi-trash"></i></a>
+                        {{ delete_canvas(url_for('delete_cmodel_admin', pk=object.id), object.id) }}
                     </td>
                 </tr>
             {% else %}

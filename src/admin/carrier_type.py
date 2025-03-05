@@ -11,13 +11,15 @@ from admin.constants import (
     ADMIN_CTYPE_LIST_TPL as list_template
 )
 from core.config import templates
-from core.utils import add_breadcrumb, redirect
+from core.utils import add_breadcrumb, redirect, redirect_with_error, redirect_with_message
 from dependencies.auth import get_current_admin
 from models.users import User
 from services.carrier_types import CarrierTypesServise
+from services.key_carrier import KeyCarrierServise
 
 
 router = APIRouter(prefix=app_prefix, tags=[ADMIN_CTYPE_DESCRIPTION])
+index_url = "get_ctypes_admin"
 
 
 # ========= Carrier types =========
@@ -27,6 +29,7 @@ async def get_ctypes_admin(
     msg: str = None,
     sort: Optional[str] = None,
     q: Optional[str] = None,
+    error: Optional[str] = None,
     user: User = Depends(get_current_admin),
 ):
     records, counter = await CarrierTypesServise.all(sort=sort, q=q)
@@ -39,13 +42,14 @@ async def get_ctypes_admin(
             "page_header": ADMIN_CTYPE_INDEX_HEADER,
             "page_header_help": ADMIN_CTYPE_DESCRIPTION,
             "msg": msg,
+            "error": error,
             "sort": sort,
             "q": q,
             "breadcrumbs": [
                 add_breadcrumb(
                     router,
                     ADMIN_CTYPE_INDEX_HEADER,
-                    "get_ctypes_admin",
+                    index_url,
                     is_active=True,
                 )
             ],
@@ -63,7 +67,7 @@ async def add_ctype_admin(request: Request, user: User = Depends(get_current_adm
             "page_header": ADMIN_CTYPE_ADD_HEADER,
             "page_header_help": ADMIN_CTYPE_DESCRIPTION,
             "breadcrumbs": [
-                add_breadcrumb(router, ADMIN_CTYPE_INDEX_HEADER, "get_ctypes_admin"),
+                add_breadcrumb(router, ADMIN_CTYPE_INDEX_HEADER, index_url),
                 add_breadcrumb(
                     router, ADMIN_CTYPE_ADD_HEADER, "add_ctype_admin", is_active=True
                 ),
@@ -83,7 +87,7 @@ async def create_ctype_admin(request: Request, user: User = Depends(get_current_
 
             return redirect(
                 request=request,
-                endpoint="get_ctypes_admin",
+                endpoint=index_url,
                 msg=f"Тип ключевого носителя '{obj.name}' создан!"
             )
         except Exception as e:
@@ -111,7 +115,7 @@ async def edit_ctype_admin(
             "page_header": ADMIN_CTYPE_EDIT_HEADER,
             "page_header_help": ADMIN_CTYPE_DESCRIPTION,
             "breadcrumbs": [
-                add_breadcrumb(router, ADMIN_CTYPE_INDEX_HEADER, "get_ctypes_admin"),
+                add_breadcrumb(router, ADMIN_CTYPE_INDEX_HEADER, index_url),
                 add_breadcrumb(
                     router, ADMIN_CTYPE_EDIT_HEADER, "edit_ctype_admin", is_active=True
                 ),
@@ -133,7 +137,7 @@ async def update_ctype_admin(
 
             return redirect(
                 request=request,
-                endpoint="get_ctypes_admin",
+                endpoint=index_url,
                 msg=f"Тип ключевого носителя '{obj.name}' обновлен!"
             )
         except Exception as e:
@@ -148,21 +152,34 @@ async def update_ctype_admin(
     return templates.TemplateResponse(form_template, context)
 
 
-@router.get("/{ctype_id}/delete")
+@router.get("/{pk}/delete")
 async def delete_ctype_admin(
-    ctype_id: int, request: Request, user: User = Depends(get_current_admin)
+    pk: int, request: Request, user: User = Depends(get_current_admin)
 ):
-    redirect_url = request.url_for("get_ctypes_admin")
-    redirect_code = status.HTTP_307_TEMPORARY_REDIRECT
-    try:
-        await CarrierTypesServise.delete(ctype_id)
-        redirect_url = redirect_url.include_query_params(
-            msg="Тип ключевого носителя удален!"
-        )
-    except Exception as e:
-        redirect_url = redirect_url.include_query_params(errors={"non_field_error": e})
+    ct = await CarrierTypesServise.get_by_id(pk)
 
-    return responses.RedirectResponse(redirect_url, status_code=redirect_code)
+    if not ct:
+        return redirect_with_error(request, index_url, "Тип ключевого носителя не найден.")
+
+    carriers = await KeyCarrierServise.all(carrier_type_id=ct.id)
+
+    if carriers:
+        versions_names = "; ".join([str(item) for item in carriers])
+        return redirect_with_error(
+            request,
+            index_url,
+            f"Невозможно удалить тип ключевого носителя '{ct}', так как от неё зависят версии СКЗИ: {versions_names}"
+        )
+
+    try:
+        await CarrierTypesServise.delete(pk)
+        return redirect_with_message(request, index_url, "Тип ключевого носителя удален!")
+    except Exception as e:
+        return redirect_with_error(
+            request,
+            index_url,
+            f"Необработанная ошибка удаления типа ключевого носителя '{ct}': {e}"
+        )
 
 
 class CtypeForm:

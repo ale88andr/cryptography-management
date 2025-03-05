@@ -23,9 +23,11 @@ from services.c_model import CModelServise
 from services.c_manufacturer import CManufacturerServise
 from models.cryptography import CRYPTO_MODEL_TYPES, ModelTypes
 from models.users import User
+from services.c_version import CVersionServise
 
 
 router = APIRouter(prefix=app_prefix, tags=[help_text])
+index_url = "get_cmodels_admin"
 
 
 def create_filters(
@@ -48,11 +50,12 @@ async def get_cmodels_admin(
     q: Optional[str] = None,
     filter_manufacturer_id: Optional[int] = None,
     filter_type: Optional[int] = None,
+    error: Optional[str] = None,
     user: User = Depends(get_current_admin),
 ):
     filters = create_filters(filter_manufacturer_id, filter_type)
 
-    records, counter = await CModelServise.all(sort=sort, q=q, filters=filters)
+    records, counter = await CModelServise.get_list(sort=sort, q=q, filters=filters)
     manufacturers, _ = await CManufacturerServise.all()
 
     # Создаем базовый контекст
@@ -66,10 +69,11 @@ async def get_cmodels_admin(
             "filter_type": filter_type,
             "types": CRYPTO_MODEL_TYPES,
             "msg": msg,
+            "error": error,
             "sort": sort,
             "q": q,
             "breadcrumbs": create_breadcrumbs(
-                router, [index_header], ["get_cmodels_admin"]
+                router, [index_header], [index_url]
             ),
         }
     )
@@ -91,7 +95,7 @@ async def add_cmodel_admin(request: Request, user: User = Depends(get_current_ad
             "breadcrumbs": create_breadcrumbs(
                 router,
                 [index_header, add_header],
-                ["get_cmodels_admin", "add_cmodel_admin"],
+                [index_url, "add_cmodel_admin"],
             ),
         }
     )
@@ -115,7 +119,7 @@ async def create_cmodel_admin(
             )
             return redirect_with_message(
                 request,
-                "get_cmodels_admin",
+                index_url,
                 msg=f"Модель СКЗИ '{obj.name}' создана!",
                 status=status.HTTP_303_SEE_OTHER,
             )
@@ -135,7 +139,7 @@ async def create_cmodel_admin(
             "breadcrumbs": create_breadcrumbs(
                 router,
                 [index_header, add_header],
-                ["get_cmodels_admin", "add_cmodel_admin"],
+                [index_url, "add_cmodel_admin"],
             ),
         }
     )
@@ -160,7 +164,7 @@ async def edit_cmodel_admin(
             "breadcrumbs": create_breadcrumbs(
                 router,
                 [index_header, edit_header],
-                ["get_cmodels_admin", "edit_cmodel_admin"],
+                [index_url, "edit_cmodel_admin"],
             ),
             **vars(obj),
         }
@@ -186,7 +190,7 @@ async def update_cmodel_admin(
             )
             return redirect_with_message(
                 request,
-                "get_cmodels_admin",
+                index_url,
                 msg=f"Модель СКЗИ обновлена!",
                 status=status.HTTP_303_SEE_OTHER,
             )
@@ -203,7 +207,7 @@ async def update_cmodel_admin(
             "breadcrumbs": create_breadcrumbs(
                 router,
                 [index_header, edit_header],
-                ["get_cmodels_admin", "edit_cmodel_admin"],
+                [index_url, "edit_cmodel_admin"],
             ),
         }
     )
@@ -216,12 +220,27 @@ async def update_cmodel_admin(
 async def delete_cmodel_admin(
     pk: int, request: Request, user: User = Depends(get_current_admin)
 ):
-    try:
-        await CModelServise.delete(pk)
-        return redirect_with_message(
-            request, "get_cmodels_admin", msg="Модель СКЗИ удалена!"
+    model = await CModelServise.get_by_id(pk)
+
+    if not model:
+        return redirect_with_error(request, index_url, "Модель СКЗИ не найдена.")
+
+    versions = await CVersionServise.all(model_id=model.id)
+
+    if versions:
+        versions_names = "; ".join([str(item) for item in versions])
+        return redirect_with_error(
+            request,
+            index_url,
+            f"Невозможно удалить модель СКЗИ '{model}', так как от неё зависят версии СКЗИ: {versions_names}"
         )
+
+    try:
+        await CManufacturerServise.delete(pk)
+        return redirect_with_message(request, index_url, "Модель СКЗИ удалена!")
     except Exception as e:
         return redirect_with_error(
-            request, "get_cmodels_admin", errors={"non_field_error": str(e)}
+            request,
+            index_url,
+            f"Необработанная ошибка удаления модели СКЗИ '{model}': {e}"
         )

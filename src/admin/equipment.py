@@ -13,7 +13,7 @@ from admin.constants import (
     ADMIN_EQUIPMENT_LIST_TPL as list_template,
 )
 from core.config import templates
-from core.utils import create_breadcrumbs, create_file_response, redirect
+from core.utils import create_breadcrumbs, create_file_response, redirect, redirect_with_error, redirect_with_message
 from core.templater import LogbookTemplatesEnum
 from dependencies.auth import get_current_admin
 from forms.equipment import EquipmentForm
@@ -23,10 +23,12 @@ from services.equipment import EquipmentServise
 from services.c_hardware_logbook import CHardwareLogbookServise
 from models.logbook import RECORD_TYPES, HardwareLogbookRecordType
 from models.users import User
+from services.key_document import KeyDocumentServise
 from utils.formatting import format_date
 
 
 router = APIRouter(prefix=app_prefix, tags=[hepl_text])
+index_url = "get_equipments_admin"
 
 
 # ========= Equipments =========
@@ -38,6 +40,7 @@ async def get_equipments_admin(
     limit: int = 20,
     sort: Optional[str] = None,
     q: Optional[str] = None,
+    error: Optional[str] = None,
     user: User = Depends(get_current_admin)
 ):
     records, counter, total_records, total_pages = (
@@ -56,10 +59,11 @@ async def get_equipments_admin(
         "total_records": total_records,
         "total_pages": total_pages,
         "msg": msg,
+        "error": error,
         "sort": sort,
         "q": q,
         "breadcrumbs": create_breadcrumbs(
-            router, [index_page_header], ["get_cversions_admin"]
+            router, [index_page_header], [index_url]
         ),
         "user": user
     }
@@ -75,7 +79,7 @@ async def add_equipment_admin(request: Request, user: User = Depends(get_current
         "breadcrumbs": create_breadcrumbs(
             router,
             [index_page_header, add_page_header],
-            ["get_equipments_admin", "add_equipment_admin"],
+            [index_url, "add_equipment_admin"],
         ),
         "user": user
     }
@@ -96,7 +100,7 @@ async def create_equipment_admin(request: Request, user: User = Depends(get_curr
             )
             return redirect(
                 request=request,
-                endpoint="get_equipments_admin",
+                endpoint=index_url,
                 msg=f"Оборудование '{obj}' добавлено!"
             )
         except Exception as e:
@@ -108,7 +112,7 @@ async def create_equipment_admin(request: Request, user: User = Depends(get_curr
         "breadcrumbs": create_breadcrumbs(
             router,
             [index_page_header, add_page_header],
-            ["get_equipments_admin", "add_equipment_admin"],
+            [index_url, "add_equipment_admin"],
         ),
         "user": user
     }
@@ -130,7 +134,7 @@ async def detail_equipment_admin(equipment_id: str, request: Request, user: User
         "breadcrumbs": create_breadcrumbs(
             router,
             [index_page_header, equipment.id],
-            ["get_equipments_admin", "detail_equipment_admin"],
+            [index_url, "detail_equipment_admin"],
         ),
         "user": user
     }
@@ -147,7 +151,7 @@ async def edit_equipment_admin(equipment_id: str, request: Request, user: User =
         "breadcrumbs": create_breadcrumbs(
             router,
             [index_page_header, edit_page_header],
-            ["get_equipments_admin", "edit_equipment_admin"],
+            [index_url, "edit_equipment_admin"],
         ),
         "user": user
     }
@@ -169,7 +173,7 @@ async def update_equipment_admin(equipment_id: str, request: Request, user: User
             )
             return redirect(
                 request=request,
-                endpoint="get_equipments_admin",
+                endpoint=index_url,
                 msg=f"Оборудование '{obj}' обновлено!"
             )
         except Exception as e:
@@ -182,7 +186,7 @@ async def update_equipment_admin(equipment_id: str, request: Request, user: User
         "breadcrumbs": create_breadcrumbs(
             router,
             [index_page_header, edit_page_header],
-            ["get_equipments_admin", "add_equipment_admin"],
+            [index_url, "add_equipment_admin"],
         ),
         "user": user
     }
@@ -191,23 +195,38 @@ async def update_equipment_admin(equipment_id: str, request: Request, user: User
     return templates.TemplateResponse(form_template, context)
 
 
-@router.get("/{equipment_id}/delete")
-async def delete_equipment_admin(equipment_id: str, request: Request, user: User = Depends(get_current_admin)):
-    redirect_url = request.url_for("get_equipments_admin")
-    redirect_code = status.HTTP_307_TEMPORARY_REDIRECT
-    try:
-        await EquipmentServise.delete(equipment_id)
-        redirect_url = redirect_url.include_query_params(msg="Оборудование удалено!")
-    except Exception as e:
-        redirect_url = redirect_url.include_query_params(errors={"non_field_error": e})
+@router.get("/{pk}/delete")
+async def delete_equipment_admin(pk: str, request: Request, user: User = Depends(get_current_admin)):
+    equipment = await EquipmentServise.get_by_id(pk)
 
-    return responses.RedirectResponse(redirect_url, status_code=redirect_code)
+    if not equipment:
+        return redirect_with_error(request, index_url, "Оборудование не найдено.")
+
+    keys = await KeyDocumentServise.all(equipment_id=equipment.id)
+
+    if keys:
+        key_serials = "; ".join([item.serial for item in keys])
+        return redirect_with_error(
+            request,
+            index_url,
+            f"Невозможно удалить оборудование '{equipment.id}', так как на нём зарегистрирована ключевая информация: {key_serials}, которая была учтена ранее!"
+        )
+
+    try:
+        await EquipmentServise.delete(pk)
+        return redirect_with_message(request, index_url, "Оборудование удалено!")
+    except Exception as e:
+        return redirect_with_error(
+            request,
+            index_url,
+            f"Необработанная ошибка удаления модели СКЗИ '{equipment.id}': {e}"
+        )
 
 
 @router.get("/{equipment_id}/hw/add")
 async def add_hardware_logbook_admin(equipment_id: str, request: Request, user: User = Depends(get_current_admin)):
     equipment = await EquipmentServise.get_by_id(equipment_id)
-    versions, _ = await CVersionServise.all()
+    versions, _ = await CVersionServise.get_list()
     add_hw_page_header = (
         f"Добавление записи аппаратного журнала оборудования '{equipment.id}'"
     )
@@ -223,7 +242,7 @@ async def add_hardware_logbook_admin(equipment_id: str, request: Request, user: 
         "breadcrumbs": create_breadcrumbs(
             router,
             [index_page_header, add_hw_page_header],
-            ["get_equipments_admin", "add_hardware_logbook_admin"],
+            [index_url, "add_hardware_logbook_admin"],
         ),
         "user": user
     }
@@ -251,7 +270,7 @@ async def add_hardware_logbook_admin(equipment_id: str, request: Request, user: 
         except Exception as e:
             form.__dict__.get("errors").setdefault("non_field_error", e)
 
-    versions, _ = await CVersionServise.all()
+    versions, _ = await CVersionServise.get_list()
     context = {
         "page_header": f"Добавление записи аппаратного журнала оборудования '{equipment_id}'",
         "page_header_help": hepl_text,
@@ -260,7 +279,7 @@ async def add_hardware_logbook_admin(equipment_id: str, request: Request, user: 
         "breadcrumbs": create_breadcrumbs(
             router,
             [index_page_header, add_page_header],
-            ["get_equipments_admin", "add_equipment_admin"],
+            [index_url, "add_equipment_admin"],
         ),
         "user": user
     }

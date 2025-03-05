@@ -120,7 +120,7 @@ async def get_cilogbook_admin(
         )
     )
 
-    key_carrier_set, _ = await KeyCarrierServise.all()
+    key_carrier_set, _ = await KeyCarrierServise.get_list()
     employee_set = await EmployeeServise.all()
     version_set = await CVersionServise.all_used()
     security_staff_members = await EmployeeServise.get_short_list(is_staff=True)
@@ -166,7 +166,7 @@ async def add_cilogbook_admin(request: Request, user: User = Depends(get_current
     employees = await EmployeeServise.get_short_list()
     security_staff_members = await EmployeeServise.get_short_list(is_staff=True)
     leadership_members = await EmployeeServise.get_short_list(is_leadership=True)
-    carriers, _ = await KeyCarrierServise.all()
+    carriers, _ = await KeyCarrierServise.get_list()
     context = {
         "request": request,
         "page_header": add_page_header,
@@ -204,12 +204,12 @@ async def create_cilogbook_admin(request: Request, user: User = Depends(get_curr
         except Exception as e:
             form.__dict__.get("errors").setdefault("non_field_error", e)
 
-    versions, _ = await CVersionServise.all()
+    versions, _ = await CVersionServise.get_list()
     equipments = await EquipmentServise.get_short_list()
     employees = await EmployeeServise.get_short_list()
     leadership_members = await EmployeeServise.get_short_list(is_leadership=True)
     security_staff_members = await EmployeeServise.get_short_list(is_staff=True)
-    carriers, _ = await KeyCarrierServise.all()
+    carriers, _ = await KeyCarrierServise.get_list()
     context = {
         "request": request,
         "page_header": add_page_header,
@@ -239,7 +239,7 @@ async def change_cilogbook_admin(request: Request, user: User = Depends(get_curr
     employees = await EmployeeServise.get_short_list()
     security_staff_members = await EmployeeServise.get_short_list(is_staff=True)
     leadership_members = await EmployeeServise.get_short_list(is_leadership=True)
-    carriers, _ = await KeyCarrierServise.all()
+    carriers, _ = await KeyCarrierServise.get_list()
     context = {
         "request": request,
         "page_header": change_page_header,
@@ -266,7 +266,7 @@ async def change_current_cilogbook_admin(pk: int, request: Request, user: User =
     employees = await EmployeeServise.get_short_list()
     security_staff_members = await EmployeeServise.get_short_list(is_staff=True)
     leadership_members = await EmployeeServise.get_short_list(is_leadership=True)
-    carriers, _ = await KeyCarrierServise.all()
+    carriers, _ = await KeyCarrierServise.get_list()
     context = {
         "request": request,
         "page_header": change_page_header,
@@ -309,7 +309,7 @@ async def change_cilogbook_admin(request: Request, user: User = Depends(get_curr
     employees = await EmployeeServise.get_short_list()
     security_staff_members = await EmployeeServise.get_short_list(is_staff=True)
     leadership_members = await EmployeeServise.get_short_list(is_leadership=True)
-    carriers, _ = await KeyCarrierServise.all()
+    carriers, _ = await KeyCarrierServise.get_list()
     context = {
         "request": request,
         "page_header": change_page_header,
@@ -386,7 +386,7 @@ async def __create_context_for_install_act_admin(key: KeyDocument):
     """
     _, month, year = get_date_tuple(key.install_act.action_date)
 
-    all_act_keys, _ = await KeyDocumentServise.all(
+    all_act_keys, _ = await KeyDocumentServise.get_list(
         filters={"install_act_record_id": key.install_act_record_id}
     )
 
@@ -420,7 +420,7 @@ async def __create_context_for_destruction_act_admin(key: KeyDocument):
     """
     Логика создания контекста для акта удаления КИ
     """
-    all_act_keys, _ = await KeyDocumentServise.all(
+    all_act_keys, _ = await KeyDocumentServise.get_list(
         filters={"remove_act_record_id": key.remove_act_record_id}
     )
     _, month, year = get_date_tuple(key.remove_act.action_date)

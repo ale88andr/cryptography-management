@@ -21,9 +21,11 @@ from dependencies.auth import get_current_admin
 from forms.cryptography_manufacturer import CryptographyManufacturerForm
 from services.c_manufacturer import CManufacturerServise
 from models.users import User
+from services.c_model import CModelServise
 
 
 router = APIRouter(prefix=app_prefix, tags=[help_text])
+index_url = "get_cmanufacturers_admin"
 
 
 # ========= Cryptography Manufacturers =========
@@ -33,6 +35,7 @@ async def get_cmanufacturers_admin(
     msg: str = None,
     sort: Optional[str] = None,
     q: Optional[str] = None,
+    error: Optional[str] = None,
     user: User = Depends(get_current_admin),
 ):
     records, counter = await CManufacturerServise.all(sort=sort, q=q)
@@ -44,6 +47,7 @@ async def get_cmanufacturers_admin(
             "objects": records,
             "counter": counter,
             "msg": msg,
+            "error": error,
             "sort": sort,
             "q": q,
             "breadcrumbs": create_breadcrumbs(
@@ -66,7 +70,7 @@ async def add_cmanufacturer_admin(
             "breadcrumbs": create_breadcrumbs(
                 router,
                 [index_header, add_header],
-                ["get_cmanufacturers_admin", "add_cmanufacturer_admin"],
+                [index_url, "add_cmanufacturer_admin"],
             ),
         }
     )
@@ -84,7 +88,7 @@ async def create_cmanufacturer_admin(
             obj = await CManufacturerServise.add(name=form.name)
             return redirect_with_message(
                 request,
-                "get_cmanufacturers_admin",
+                index_url,
                 msg=f"Производитель СКЗИ '{obj.name}' создан!",
                 status=status.HTTP_303_SEE_OTHER,
             )
@@ -99,7 +103,7 @@ async def create_cmanufacturer_admin(
             "breadcrumbs": create_breadcrumbs(
                 router,
                 [index_header, add_header],
-                ["get_cmanufacturers_admin", "add_cmanufacturer_admin"],
+                [index_url, "add_cmanufacturer_admin"],
             ),
         }
     )
@@ -121,7 +125,7 @@ async def edit_cmanufacturer_admin(
             "breadcrumbs": create_breadcrumbs(
                 router,
                 [index_header, edit_header],
-                ["get_cmanufacturers_admin", "edit_cmanufacturer_admin"],
+                [index_url, "edit_cmanufacturer_admin"],
             ),
             **vars(manufacturer),
         }
@@ -141,7 +145,7 @@ async def update_carrier_admin(
             obj = await CManufacturerServise.update(pk, name=form.name)
             return redirect_with_message(
                 request,
-                "get_cmanufacturers_admin",
+                index_url,
                 msg=f"Тип ключевого носителя '{obj.name}' обновлен!",
                 status=status.HTTP_303_SEE_OTHER,
             )
@@ -156,7 +160,7 @@ async def update_carrier_admin(
             "breadcrumbs": create_breadcrumbs(
                 router,
                 [index_header, edit_header],
-                ["get_cmanufacturers_admin", "edit_cmanufacturer_admin"],
+                [index_url, "edit_cmanufacturer_admin"],
             ),
         }
     )
@@ -169,12 +173,27 @@ async def update_carrier_admin(
 async def delete_cmanufacturer_admin(
     pk: int, request: Request, user: User = Depends(get_current_admin)
 ):
+    manufacturer = await CManufacturerServise.get_by_id(pk)
+
+    if not manufacturer:
+        return redirect_with_error(request, index_url, "Производитель не найден.")
+
+    models = await CModelServise.all(manufacturer_id=manufacturer.id)
+
+    if models:
+        models_names = ", ".join([item.name for item in models])
+        return redirect_with_error(
+            request,
+            index_url,
+            f"Невозможно удалить производителя '{manufacturer}', так как на нём зарегистрированы модели СКЗИ: {models_names}"
+        )
+
     try:
         await CManufacturerServise.delete(pk)
-        return redirect_with_message(
-            request, "get_cmanufacturers_admin", msg="Отдел удален!"
-        )
+        return redirect_with_message(request, index_url, "Производитель удален!")
     except Exception as e:
         return redirect_with_error(
-            request, "get_cmanufacturers_admin", errors={"non_field_error": str(e)}
+            request,
+            index_url,
+            f"Необработанная ошибка удаления производителя '{manufacturer}': {e}"
         )
