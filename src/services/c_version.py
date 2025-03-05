@@ -7,7 +7,7 @@ from db.connection import db
 from models.logbook import ActRecord, ActRecordTypes
 from models.staff import Employee
 from services.base import BaseRepository
-from models.cryptography import CryptographyGrade, KeyDocument, Model, Version
+from models.cryptography import KeyDocument, Model, Version
 from services.c_action import CActionServise
 
 
@@ -78,7 +78,7 @@ class CVersionServise(BaseRepository):
         cls,
         version: str,
         model_id: int,
-        grade: CryptographyGrade,
+        grade_id: int,
         serial: str,
         dist_num: str,
         certificate: str,
@@ -103,7 +103,7 @@ class CVersionServise(BaseRepository):
             await cls.add(
                 version=version,
                 model_id=model_id,
-                grade=grade.name,
+                grade_id=grade_id,
                 serial=serial,
                 dist_num=dist_num,
                 certificate=certificate,

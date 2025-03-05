@@ -50,11 +50,7 @@
                         {{ select_filter("filter_model_id", models, filter_model_id) }}
                     </td>
                     <td scope="col">
-                        <select class="form-select" id="filter_grade" name="filter_grade">
-                            {% for grade in grades %}
-                                <option value="{{ loop.index-1 }}" {% if loop.index-1 == filter_grade %}selected{% endif %}>{{ grade }}</option>
-                            {% endfor %}
-                        </select>
+                        {{ select_filter("filter_grade_id", grades, filter_grade_id) }}
                     </td>
                     <td scope="col"></td>
                     <td scope="col"></td>
@@ -84,7 +80,15 @@
                             </div>
                         </div>
                     </td>
-                    <td><span class="badge-custom bg-info-custom">{{ grades[version.grade.value] }}</span></td>
+                    <td class="col-2">
+                        <span
+                            class="badge-custom bg-info-custom"
+                            data-bs-toggle="tooltip"
+                            data-bs-placement="bottom"
+                            data-bs-original-title="{{ version.grade_class.description }}">
+                                {{ version.grade_class }}
+                        </span>
+                    </td>
                     <td>
                         <div class="ms-3">
                             <p class="fw-bold mb-1">

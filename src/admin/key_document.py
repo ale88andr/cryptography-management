@@ -23,8 +23,8 @@ from services.key_carrier import KeyCarrierServise
 from services.key_document import KeyDocumentServise
 from services.carrier_types import CarrierTypesServise
 from services.employee import EmployeeServise
+from services.c_grade import CryptographyGradeServise
 from models.cryptography import CRYPTO_MODEL_TYPES
-from models.cryptography import CPRODUCT_GRADES
 from models.users import User
 from utils.formatting import format_date
 
@@ -114,11 +114,12 @@ async def get_key_documents_admin(
 @router.get("/{pk}")
 async def detail_key_document_admin(pk: int, request: Request, user: User = Depends(get_current_admin)):
     key = await KeyDocumentServise.get_by_id(pk)
+    cryptography_grades = await CryptographyGradeServise.all()
     context = {
         "request": request,
         "key": key,
         "cryptography_types": CRYPTO_MODEL_TYPES,
-        "cryptography_grades": CPRODUCT_GRADES,
+        "cryptography_grades": cryptography_grades,
         "page_header": key.serial,
         "page_header_help": hepl_text,
         "breadcrumbs": create_breadcrumbs(

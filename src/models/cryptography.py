@@ -9,6 +9,17 @@ from db.connection import Base
 from models.common import fields
 
 
+class Grade(Base):
+    __tablename__ = "cryptography_grade"
+
+    id: Mapped[fields.pk]
+    value: Mapped[fields.title]
+    description: Mapped[str] = mapped_column(Text(), nullable=True)
+
+    def __str__(self) -> str:
+        return self.value
+
+
 class Manufacturer(Base):
     __tablename__ = "cryptography_manufacturer"
 
@@ -26,7 +37,7 @@ class Manufacturer(Base):
         json_dumps = orjson.dumps
 
 
-CRYPTO_MODEL_TYPES = ['Программный', 'Аппаратный', 'Аппаратно-программный']
+CRYPTO_MODEL_TYPES = ['Программный', 'Аппаратный', 'Программно-аппаратный']
 
 
 class ModelTypes(enum.Enum):
@@ -60,26 +71,11 @@ class Model(Base):
         json_dumps = orjson.dumps
 
 
-CPRODUCT_GRADES = ["КС1", "КС2", "КС3", "КВ1", "КВ2", "КА1"]
-
-
-class CryptographyGrade(enum.Enum):
-    """Enum исполнений СКЗИ"""
-
-    KC1 = 0
-    KC2 = 1
-    KC3 = 2
-    KB1 = 3
-    KB2 = 4
-    KA1 = 5
-
-
 class Version(Base):
     __tablename__ = "cryptography_version"
 
     id: Mapped[fields.pk]
     version: Mapped[str] = mapped_column(String(50), nullable=False)
-    grade: Mapped[CryptographyGrade]
     serial: Mapped[str] = mapped_column(String(50), nullable=False)
     dist_num: Mapped[str] = mapped_column(String(50), nullable=False)
     certificate: Mapped[str] = mapped_column(String(20), nullable=False)
@@ -101,6 +97,9 @@ class Version(Base):
     )
     remove_act_record_id: Mapped[int] = mapped_column(
         ForeignKey("cryptography_act_record.id", ondelete="CASCADE"), nullable=True
+    )
+    grade_id: Mapped[int] = mapped_column(
+        ForeignKey("cryptography_grade.id", ondelete="CASCADE"), nullable=True
     )
     created_at: Mapped[fields.created_at]
     updated_at: Mapped[fields.updated_at]
@@ -130,6 +129,8 @@ class Version(Base):
     remove_act: Mapped["ActRecord"] = relationship(
         uselist=False, foreign_keys=[remove_act_record_id]
     )
+
+    grade_class: Mapped["Grade"] = relationship()
 
     def is_certificate_expired(self):
         if self.certificate_expired_at:
@@ -260,10 +261,6 @@ class KeyDocument(Base):
         back_populates="install_object",
         uselist=False,
         foreign_keys=[install_act_record_id],
-        # order_by=[
-        #     "desc(ActRecord.action_date)",
-        #     "desc(KeyDocument.install_act_record_id)",
-        # ]
     )
 
     remove_act: Mapped["ActRecord"] = relationship(

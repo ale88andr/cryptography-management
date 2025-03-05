@@ -11,6 +11,9 @@ class CVersionForm(Form):
         if self.is_create and self.is_invalid_id(self.model_id):
             self.errors.setdefault("model_id", self.REQUIRED_ERROR)
 
+        if self.is_invalid_id(self.grade_id):
+            self.errors.setdefault("grade_id", self.REQUIRED_ERROR)
+
         if self.is_create and self.is_invalid_id(self.responsible_user_id):
             self.errors.setdefault("responsible_user_id", self.REQUIRED_ERROR)
 

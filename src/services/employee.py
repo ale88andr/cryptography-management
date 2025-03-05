@@ -202,28 +202,6 @@ class EmployeeServise(BaseRepository):
         result = await db.execute(query)
         return result.scalars().all()
 
-    # @classmethod
-    # async def terminate_employee(
-    #     cls, employee: Employee, keys: list[KeyDocument], act_record: ActRecord, action_date: date
-    # ):
-    #     try:
-    #         await cls.update(employee.id, is_worked=False)
-    #         for key in keys:
-    #             await KeyDocumentServise.remove_key(
-    #                 key_id=key.id, act_record_id=act_record.id, action_date=action_date
-    #             )
-    #         await cls.db.commit()
-    #         await cls.db.session.flush()
-    #     except Exception as e:
-    #         print(
-    #             f"--------- Exception in {cls.__name__}.terminate_employee() ---------"
-    #         )
-    #         print(e)
-    #         print(
-    #             f"--------- Exception in {cls.__name__}.terminate_employee() ---------"
-    #         )
-    #         await cls.db.rollback()
-
     @classmethod
     async def terminate_employee(
         cls,

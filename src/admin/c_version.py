@@ -1,4 +1,4 @@
-from typing import Dict, Optional
+from typing import Any, Dict, Optional
 from fastapi import APIRouter, Request, Depends, responses, status
 
 from admin.constants import (
@@ -25,7 +25,7 @@ from services.c_version import CVersionServise
 from services.c_model import CModelServise
 from services.c_logbook import CLogbookServise
 from services.employee import EmployeeServise
-from models.cryptography import CPRODUCT_GRADES, CryptographyGrade
+from services.c_grade import CryptographyGradeServise
 from models.users import User
 from core.exceptions import LogbookOnDeleteException
 from utils.formatting import format_date, format_string
@@ -34,16 +34,19 @@ from utils.formatting import format_date, format_string
 router = APIRouter(prefix=app_prefix, tags=[help_text])
 
 
+# Создание фильтров сотрудников для методов: get_employees_admin, get_cusers_admin
 def create_filters(
-    filter_model_id: Optional[int], filter_grade: Optional[int]
-) -> Dict[str, int]:
-    filters = {}
-    if filter_model_id and filter_model_id > 0:
-        filters["model_id"] = filter_model_id
-
-    if filter_grade:
-        filters["grade"] = CryptographyGrade(filter_grade)
-    return filters
+    filter_model_id: Optional[int] = None,
+    filter_grade_id: Optional[int] = None,
+) -> Dict[str, Any]:
+    return {
+        key: value
+        for key, value in {
+            "model_id": filter_model_id,
+            "grade_id": filter_grade_id,
+        }.items()
+        if value is not None and value > 0
+    }
 
 
 # ========= Cryptography Models Versions =========
@@ -55,23 +58,24 @@ async def get_cversions_admin(
     sort: Optional[str] = None,
     q: Optional[str] = None,
     filter_model_id: Optional[int] = None,
-    filter_grade: Optional[int] = None,
+    filter_grade_id: Optional[int] = None,
     user: User = Depends(get_current_admin),
 ):
-    filters = create_filters(filter_model_id, filter_grade)
+    filters = create_filters(filter_model_id, filter_grade_id)
 
     records, counter = await CVersionServise.all(sort=sort, q=q, filters=filters)
     models, _ = await CModelServise.all()
+    cryptography_grades = await CryptographyGradeServise.all()
 
     # Создаем базовый контекст
     context = create_base_admin_context(request, index_header, help_text, user)
     context.update({
         "versions": records,
         "counter": counter,
-        "grades": CPRODUCT_GRADES,
+        "grades": cryptography_grades,
         "models": models,
         "filter_model_id": filter_model_id,
-        "filter_grade": filter_grade,
+        "filter_grade_id": filter_grade_id,
         "msg": msg,
         "error": error,
         "sort": sort,
@@ -87,11 +91,12 @@ async def get_cversions_admin(
 async def add_cversion_admin(request: Request, user: User = Depends(get_current_admin)):
     models, _ = await CModelServise.all()
     responsible_users = await EmployeeServise.get_short_list(is_staff=True)
+    cryptography_grades = await CryptographyGradeServise.all()
 
     # Создаем базовый контекст
     context = create_base_admin_context(request, add_header, help_text, user)
     context.update({
-        "grades": CPRODUCT_GRADES,
+        "grades": cryptography_grades,
         "models": models,
         "model_id": None,
         "is_created": True,
@@ -118,7 +123,8 @@ async def create_cversion_admin(
             await CVersionServise.register(
                 version=format_string(form.version),
                 model_id=int(form.model_id),
-                grade=CryptographyGrade(int(form.grade)),
+                # grade=CryptographyGrade(int(form.grade)),
+                grade_id=int(form.grade_id),
                 serial=format_string(form.serial),
                 dist_num=format_string(form.dist_num),
                 certificate=format_string(form.certificate),
@@ -143,11 +149,12 @@ async def create_cversion_admin(
 
     models, _ = await CModelServise.all()
     responsible_users = await EmployeeServise.get_short_list(is_staff=True)
+    cryptography_grades = await CryptographyGradeServise.all()
 
     # Создаем базовый контекст
     context = create_base_admin_context(request, add_header, help_text, user)
     context.update({
-        "grades": CPRODUCT_GRADES,
+        "grades": cryptography_grades,
         "models": models,
         "is_created": True,
         "responsible_user_id": None,
@@ -170,11 +177,12 @@ async def edit_cversion_admin(
     obj = await CVersionServise.get_by_id(pk)
     responsible_users = await EmployeeServise.get_short_list(is_staff=True)
     models, _ = await CModelServise.all()
+    cryptography_grades = await CryptographyGradeServise.all()
 
     # Создаем базовый контекст
     context = create_base_admin_context(request, edit_header, help_text, user)
     context.update({
-        "grades": CPRODUCT_GRADES,
+        "grades": cryptography_grades,
         "models": models,
         "responsible_users": responsible_users,
         "happened_at": obj.install_act.action_date,
@@ -199,7 +207,7 @@ async def update_cversion_admin(
             obj = await CVersionServise.update(
                 pk,
                 version=format_string(form.version),
-                grade=CryptographyGrade(int(form.grade)),
+                grade_id=int(form.grade_id),
                 serial=format_string(form.serial),
                 dist_num=format_string(form.dist_num),
                 certificate=format_string(form.certificate),
@@ -222,11 +230,12 @@ async def update_cversion_admin(
 
     models, _ = await CModelServise.all()
     responsible_users = await EmployeeServise.get_short_list(is_staff=True)
+    cryptography_grades = await CryptographyGradeServise.all()
 
     # Создаем базовый контекст
     context = create_base_admin_context(request, edit_header, help_text, user)
     context.update({
-        "grades": CPRODUCT_GRADES,
+        "grades": cryptography_grades,
         "models": models,
         "responsible_users": responsible_users,
         "id": pk,

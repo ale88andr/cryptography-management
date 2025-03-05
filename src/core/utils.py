@@ -83,12 +83,13 @@ def redirect_with_message(
 def redirect_with_error(
     request: Request,
     endpoint: str,
-    errors: dict,
+    error: str,
     status: status=status.HTTP_307_TEMPORARY_REDIRECT
 ) -> responses.RedirectResponse:
     """Редирект с ошибкой"""
-    redirect_url = request.url_for(endpoint).include_query_params(errors=errors)
+    redirect_url = request.url_for(endpoint).include_query_params(error=error)
     return responses.RedirectResponse(redirect_url, status_code=status)
+
 
 def redirect(
     request: Request,

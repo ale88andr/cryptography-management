@@ -86,11 +86,11 @@
                             {{ version }}<br>
                         {% endfor %}
                     </td>
-                    <td>{{ format_date(employee.created_at) }}</td>
+                    <td><span class="badge-custom bg-light-custom">{{ format_date(employee.created_at) }}</span></td>
                     <td class="text-center">
                         <a
                             href="{{ url_for('detail_employee_admin', employee_id=employee.id) }}"
-                            class="btn btn-sm btn-outline-info"
+                            class="btn btn-sm btn-outline-primary"
                             title="Просмотр">
                             <i class="bi bi-person"></i>
                         </a>

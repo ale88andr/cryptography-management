@@ -25,6 +25,7 @@ from models.cryptography import (
     KeyCarrierType,
     KeyCarrier,
     KeyDocument,
+    Grade
 )
 from models.logbook import ActRecord, HardwareLogbook, CryptographyPersonalAccount
 from models.users import User

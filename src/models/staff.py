@@ -160,16 +160,16 @@ class Employee(Base):
         nullable=False, default=False, index=True
     )
     position_id: Mapped[int] = mapped_column(
-        ForeignKey("employee_position.id", ondelete="CASCADE")
+        ForeignKey("employee_position.id")
     )
     department_id: Mapped[int] = mapped_column(
-        ForeignKey("employee_department.id", ondelete="CASCADE")
+        ForeignKey("employee_department.id")
     )
     organisation_id: Mapped[int] = mapped_column(
-        ForeignKey("employee_organisation.id", ondelete="CASCADE")
+        ForeignKey("employee_organisation.id")
     )
     location_id: Mapped[int] = mapped_column(
-        ForeignKey("employee_location.id", ondelete="CASCADE")
+        ForeignKey("employee_location.id")
     )
 
     created_at: Mapped[fields.created_at]

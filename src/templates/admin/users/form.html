@@ -28,7 +28,7 @@
 
                         <div class="col-lg-4">
                             <div class="float-end">
-                                <a href="{{ url_for('add_position_admin') }}" class="btn btn-sm btn-success">&#10133; Добавить сотрудника</a>
+                                <a href="{{ url_for('add_employee_admin') }}" class="btn btn-success"><i class="bi bi-person-plus"></i></a>
                             </div>
                             {{ select_field("employee_id", "Профиль сотрудника:", employees, errors, employee_id) }}
                         </div>

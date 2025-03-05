@@ -1,5 +1,5 @@
 from typing import Dict, Optional
-from fastapi import APIRouter, Request, Depends, responses, status
+from fastapi import APIRouter, Request, Depends, responses
 
 from admin.constants import (
     ADMIN_POSITION_ADD_HEADER,
@@ -17,14 +17,18 @@ from core.utils import (
     create_breadcrumbs,
     get_bool_from_checkbox,
     redirect,
+    redirect_with_error,
+    redirect_with_message
 )
 from dependencies.auth import get_current_admin
 from forms.position import PositionForm
 from models.users import User
+from services.employee import EmployeeServise
 from services.position import PositionServise
 
 
 router = APIRouter(prefix=app_prefix, tags=["Должности сотрудников"])
+index_url = "get_positions_admin"
 
 
 def create_filters(is_leadership: Optional[str]) -> Dict[str, bool]:
@@ -43,6 +47,7 @@ async def get_positions_admin(
     q: Optional[str] = None,
     columns: str = None,
     is_leadership: Optional[str] = None,
+    error: Optional[str] = None,
     user: User = Depends(get_current_admin),
 ):
     filters = create_filters(is_leadership)
@@ -60,11 +65,12 @@ async def get_positions_admin(
             "positions": records,
             "counter": counter,
             "msg": msg,
+            "error": error,
             "is_leadership": is_leadership,
             "sort": sort,
             "q": q,
             "breadcrumbs": create_breadcrumbs(
-                router, [ADMIN_POSITION_INDEX_HEADER], ["get_positions_admin"]
+                router, [ADMIN_POSITION_INDEX_HEADER], [index_url]
             ),
         }
     )
@@ -83,7 +89,7 @@ async def add_position_admin(request: Request, user: User = Depends(get_current_
             "breadcrumbs": create_breadcrumbs(
                 router,
                 [ADMIN_POSITION_INDEX_HEADER, ADMIN_POSITION_ADD_HEADER],
-                ["get_positions_admin", "add_position_admin"],
+                [index_url, "add_position_admin"],
             ),
         }
     )
@@ -104,7 +110,7 @@ async def create_position_admin(
             )
             return redirect(
                 request=request,
-                endpoint="get_positions_admin",
+                endpoint=index_url,
                 msg=f"Должность '{position.name}' успешно создана!"
             )
         except Exception as e:
@@ -136,7 +142,7 @@ async def edit_position_admin(
             "breadcrumbs": create_breadcrumbs(
                 router,
                 [ADMIN_POSITION_INDEX_HEADER, ADMIN_POSITION_EDIT_HEADER],
-                ["get_positions_admin", "edit_position_admin"],
+                [index_url, "edit_position_admin"],
             ),
             **vars(position),
         }
@@ -160,7 +166,7 @@ async def update_position_admin(
             )
             return redirect(
                 request=request,
-                endpoint="get_positions_admin",
+                endpoint=index_url,
                 msg=f"Должность '{position.name}' успешно обновлена!"
             )
         except Exception as e:
@@ -180,14 +186,28 @@ async def update_position_admin(
 async def delete_position_admin(
     pk: int, request: Request, user: User = Depends(get_current_admin)
 ):
-    redirect_url = request.url_for("get_positions_admin")
-    redirect_status = status.HTTP_307_TEMPORARY_REDIRECT
-    try:
-        await PositionServise.delete(pk)
-        redirect = request.url_for("get_positions_admin").include_query_params(
-            msg="Должность удалена!"
+    position = await PositionServise.get_by_id(pk)
+
+    if not position:
+        return redirect_with_error(request, index_url, "Должность не найдена")
+
+    employees = await EmployeeServise.all(position_id=position.id)
+
+    if employees:
+        employee_names = ", ".join([e.short_name for e in employees])
+        return redirect_with_error(
+            request,
+            index_url,
+            f"Невозможно удалить должность '{position}', сначала измените должности для связанных сотрудников: {employee_names}"
         )
-        return responses.RedirectResponse(redirect, status_code=redirect_status)
-    except Exception as e:
-        redirect_url.include_query_params(errors={"non_field_error": e})
-        return responses.RedirectResponse(redirect_url, status_code=redirect_status)
+
+    if position:
+        try:
+            await PositionServise.delete(pk)
+            return redirect_with_message(request, index_url, "Должность удалена!")
+        except Exception as e:
+            return redirect_with_error(
+                request,
+                index_url,
+                f"Необработанная ошибка удаления '{position}': {e}"
+            )

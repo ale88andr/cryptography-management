@@ -38,21 +38,21 @@
                     <div class="row mb-3">
                         <div class="col-lg-4">
                             <div class="float-end">
-                                <a href="{{ url_for('add_position_admin') }}" class="btn btn-sm btn-success">&#10133; Добавить должность</a>
+                                <a href="{{ url_for('add_position_admin') }}" class="btn btn-success"><i class="bi bi-plus-square"></i></a>
                             </div>
                             {{ select_field("position_id", "Должность:", positions, errors, position_id, disabled) }}
                         </div>
 
                         <div class="col-lg-4">
                             <div class="float-end">
-                                <a href="{{ url_for('add_department_admin') }}" class="btn btn-sm btn-success">&#10133; Добавить отдел</a>
+                                <a href="{{ url_for('add_department_admin') }}" class="btn btn-success"><i class="bi bi-node-plus"></i></a>
                             </div>
                             {{ select_field("department_id", "Отдел:", departments, errors, department_id, disabled) }}
                         </div>
 
                         <div class="col-lg-4">
                             <div class="float-end">
-                                <a href="{{ url_for('add_location_admin') }}" class="btn btn-sm btn-success">&#10133; Добавить рабочее место</a>
+                                <a href="{{ url_for('add_location_admin') }}" class="btn btn-success"><i class="bi bi-house-add"></i></a>
                             </div>
                             {{ select_field("location_id", "Рабочее место:", locations, errors, location_id, disabled) }}
                         </div>

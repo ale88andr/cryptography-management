@@ -50,20 +50,7 @@
                         </div>
 
                         <div class="col-lg-3 ">
-                            <label for="grade" class="form-label mb-4">Класс СКЗИ : </label>
-                            <select
-                                class="form-select {% if 'grade' in errors %}is-invalid{% endif %}"
-                                id="grade"
-                                name="grade"
-                                {% if remove_action %}disabled{% endif %}
-                            >
-                                {% for item in grades %}
-                                    <option value="{{ loop.index-1 }}" {% if grade and loop.index-1 == grade.value %}selected{% endif %}>{{ item }}</option>
-                                {% endfor %}
-                            </select>
-                            {% if "grade" in errors %}
-                                <div class="text-danger font-weight-bold">{{ errors["grade"] }}</div>
-                            {% endif %}
+                            {{ select_field("grade_id", "Класс СКЗИ:", grades, errors, grade_id) }}
                         </div>
                     </div>
 

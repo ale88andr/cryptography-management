@@ -86,7 +86,7 @@ async def create_position_admin(
             return redirect_with_message(
                 request,
                 "get_departments_admin",
-                msg=f"Отдел '{dept.name}' создан!",
+                msg=f"Подразделение '{dept.name}' создано.",
                 status=status.HTTP_303_SEE_OTHER,
             )
         except Exception as e:
@@ -128,7 +128,7 @@ async def update_position_admin(
             return redirect_with_message(
                 request,
                 "get_departments_admin",
-                msg=f"Отдел '{dept.name}' обновлен!",
+                msg=f"Подразделение '{dept.name}' обновлено.",
                 status=status.HTTP_303_SEE_OTHER,
             )
         except Exception as e:
