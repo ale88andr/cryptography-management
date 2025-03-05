@@ -5,7 +5,7 @@
 {% block page_header_text %}{{ page_header }}{% endblock %}
 {% block page_header_help_text %}{{ page_header_help }}{% endblock %}
 
-{% from "admin/common/macros.html" import no_data, pagination_page_info, display_pagination_pages, items_counter %}
+{% from "admin/common/macros.html" import no_data, pagination_page_info, display_pagination_pages, items_counter, delete_canvas %}
 {% from "admin/common/form_macros.html" import select_filter, search_field %}
 
 {% block content %}
@@ -13,7 +13,7 @@
     <div class="d-flex justify-content-between align-items-center mb-2 text-body">
         {{ items_counter(total_records, counter + limit * page) }}
         <p class="mb-2">
-            <a href="{{ url_for('add_employee_admin') }}" class="btn btn-success">
+            <a href="{{ url_for('add_employee_admin') }}" class="btn btn-outline-success">
                 <i class="bi bi-person-plus"></i> Добавить сотрудника
             </a>
         </p>
@@ -87,7 +87,9 @@
                     </td>
                     <td>
                         <a href="{{ url_for('detail_employee_admin', employee_id=employee.id) }}" class="btn btn-sm btn-outline-primary me-1" title="Редактировать"><i class="bi bi-pencil-square"></i></a>
-                        <a href="#" class="btn btn-sm btn-outline-warning" title="Удалить"><i class="bi bi-person-x-fill"></i></a>
+                        {% if employee.is_worked %}
+                            {{ delete_canvas(url_for('termination_employee_admin', pk=employee.id), employee.id, "Увольнение сотрудника", "Данное действие запустит процедуру увольнения сотрудника") }}
+                        {% endif %}
                     </td>
                 </tr>
             {% else %}
@@ -96,7 +98,7 @@
         </tbody>
     </table>
 
-    {% if counter + limit * page >= limit %}
+    {% if counter + limit * page > limit %}
         {{ display_pagination_pages(limit, page, total_pages, sort) }}
     {% endif %}
 

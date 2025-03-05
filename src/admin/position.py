@@ -27,7 +27,7 @@ from services.employee import EmployeeServise
 from services.position import PositionServise
 
 
-router = APIRouter(prefix=app_prefix, tags=["Должности сотрудников"])
+router = APIRouter(prefix=app_prefix, tags=[ADMIN_POSITION_INDEX_HEADER])
 index_url = "get_positions_admin"
 
 
@@ -201,13 +201,12 @@ async def delete_position_admin(
             f"Невозможно удалить должность '{position}', сначала измените должности для связанных сотрудников: {employee_names}"
         )
 
-    if position:
-        try:
-            await PositionServise.delete(pk)
-            return redirect_with_message(request, index_url, "Должность удалена!")
-        except Exception as e:
-            return redirect_with_error(
-                request,
-                index_url,
-                f"Необработанная ошибка удаления '{position}': {e}"
-            )
+    try:
+        await PositionServise.delete(pk)
+        return redirect_with_message(request, index_url, "Должность удалена!")
+    except Exception as e:
+        return redirect_with_error(
+            request,
+            index_url,
+            f"Необработанная ошибка удаления '{position}': {e}"
+        )

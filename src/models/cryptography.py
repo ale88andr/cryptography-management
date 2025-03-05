@@ -56,7 +56,7 @@ class Model(Base):
     description: Mapped[str] = mapped_column(Text(), nullable=True)
     type: Mapped[ModelTypes] = mapped_column(default=ModelTypes.PROGRAM)
     manufacturer_id: Mapped[int] = mapped_column(
-        ForeignKey("cryptography_manufacturer.id", ondelete="CASCADE")
+        ForeignKey("cryptography_manufacturer.id")
     )
 
     manufacturer: Mapped["Manufacturer"] = relationship(back_populates="models")
@@ -87,19 +87,19 @@ class Version(Base):
     license: Mapped[str] = mapped_column(String(150), nullable=True)
     comment: Mapped[str] = mapped_column(String(200), nullable=True)
     model_id: Mapped[int] = mapped_column(
-        ForeignKey("cryptography_model.id", ondelete="CASCADE")
+        ForeignKey("cryptography_model.id")
     )
     responsible_user_id: Mapped[int] = mapped_column(
-        ForeignKey("employee.id", ondelete="CASCADE")
+        ForeignKey("employee.id")
     )
     install_act_record_id: Mapped[int] = mapped_column(
-        ForeignKey("cryptography_act_record.id", ondelete="CASCADE")
+        ForeignKey("cryptography_act_record.id")
     )
     remove_act_record_id: Mapped[int] = mapped_column(
-        ForeignKey("cryptography_act_record.id", ondelete="CASCADE"), nullable=True
+        ForeignKey("cryptography_act_record.id"), nullable=True
     )
     grade_id: Mapped[int] = mapped_column(
-        ForeignKey("cryptography_grade.id", ondelete="CASCADE"), nullable=True
+        ForeignKey("cryptography_grade.id"), nullable=True
     )
     created_at: Mapped[fields.created_at]
     updated_at: Mapped[fields.updated_at]
@@ -195,7 +195,7 @@ class KeyCarrier(Base):
     id: Mapped[fields.pk]
     serial: Mapped[fields.title]
     carrier_type_id: Mapped[int] = mapped_column(
-        ForeignKey("cryptography_key_carrier_type.id", ondelete="CASCADE")
+        ForeignKey("cryptography_key_carrier_type.id")
     )
 
     carrier_type: Mapped["KeyCarrierType"] = relationship(back_populates="carriers")
@@ -223,20 +223,20 @@ class KeyDocument(Base):
     received_date: Mapped[fields.required_date]
     comment: Mapped[str] = mapped_column(String(200), nullable=True)
     cryptography_version_id: Mapped[int] = mapped_column(
-        ForeignKey("cryptography_version.id", ondelete="CASCADE")
+        ForeignKey("cryptography_version.id")
     )
     carrier_id: Mapped[int] = mapped_column(
-        ForeignKey("cryptography_key_carrier.id", ondelete="CASCADE")
+        ForeignKey("cryptography_key_carrier.id")
     )
-    owner_id: Mapped[int] = mapped_column(ForeignKey("employee.id", ondelete="CASCADE"))
+    owner_id: Mapped[int] = mapped_column(ForeignKey("employee.id"))
     equipment_id: Mapped[int] = mapped_column(
-        ForeignKey("equipment.id", ondelete="CASCADE")
+        ForeignKey("equipment.id")
     )
     install_act_record_id: Mapped[int] = mapped_column(
-        ForeignKey("cryptography_act_record.id", ondelete="CASCADE"),
+        ForeignKey("cryptography_act_record.id"),
     )
     remove_act_record_id: Mapped[int] = mapped_column(
-        ForeignKey("cryptography_act_record.id", ondelete="CASCADE"), nullable=True
+        ForeignKey("cryptography_act_record.id"), nullable=True
     )
     created_at: Mapped[fields.created_at]
     updated_at: Mapped[fields.updated_at]
