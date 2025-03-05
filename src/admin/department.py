@@ -21,9 +21,11 @@ from dependencies.auth import get_current_admin
 from forms.department import DepartmentForm
 from models.users import User
 from services.department import DepartmentServise
+from services.employee import EmployeeServise
 
 
 router = APIRouter(prefix=app_prefix, tags=[help_text])
+index_url = "get_departments_admin"
 
 
 # ========= Departments =========
@@ -33,6 +35,7 @@ async def get_departments_admin(
     msg: str = None,
     sort: Optional[str] = None,
     q: Optional[str] = None,
+    error: Optional[str] = None,
     user: User = Depends(get_current_admin),
 ):
     records, counter = await DepartmentServise.all(sort=sort, q=q)
@@ -44,10 +47,11 @@ async def get_departments_admin(
             "departments": records,
             "counter": counter,
             "msg": msg,
+            "error": error,
             "sort": sort,
             "q": q,
             "breadcrumbs": create_breadcrumbs(
-                router, [index_header], ["get_departments_admin"]
+                router, [index_header], [index_url]
             ),
         }
     )
@@ -66,7 +70,7 @@ async def add_department_admin(
             "breadcrumbs": create_breadcrumbs(
                 router,
                 [index_header, add_header],
-                ["get_departments_admin", "add_department_admin"],
+                [index_url, "add_department_admin"],
             ),
         }
     )
@@ -85,7 +89,7 @@ async def create_position_admin(
             dept = await DepartmentServise.add(name=form.name)
             return redirect_with_message(
                 request,
-                "get_departments_admin",
+                index_url,
                 msg=f"Подразделение '{dept.name}' создано.",
                 status=status.HTTP_303_SEE_OTHER,
             )
@@ -109,7 +113,7 @@ async def edit_department_admin(
         "breadcrumbs": create_breadcrumbs(
             router,
             [index_header, edit_header],
-            ["get_departments_admin", "edit_department_admin"],
+            [index_url, "edit_department_admin"],
         ),
         **vars(dept),
     })
@@ -127,7 +131,7 @@ async def update_position_admin(
             dept = await DepartmentServise().update(department_id, name=form.name)
             return redirect_with_message(
                 request,
-                "get_departments_admin",
+                index_url,
                 msg=f"Подразделение '{dept.name}' обновлено.",
                 status=status.HTTP_303_SEE_OTHER,
             )
@@ -139,7 +143,7 @@ async def update_position_admin(
         "breadcrumbs": create_breadcrumbs(
             router,
             [index_header, edit_header],
-            ["get_departments_admin", "edit_department_admin"],
+            [index_url, "edit_department_admin"],
         )
     })
     context.update(form.__dict__)
@@ -147,16 +151,32 @@ async def update_position_admin(
     return templates.TemplateResponse(form_template, context)
 
 
-@router.get("/{department_id}/delete")
+@router.get("/{pk}/delete")
 async def delete_department_admin(
-    department_id: int, request: Request, user: User = Depends(get_current_admin)
+    pk: int, request: Request, user: User = Depends(get_current_admin)
 ):
-    try:
-        await DepartmentServise.delete(department_id)
-        return redirect_with_message(
-            request, "get_departments_admin", msg="Отдел удален!"
-        )
-    except Exception as e:
+    dept = await DepartmentServise.get_by_id(pk)
+
+    if not dept:
+        return redirect_with_error(request, index_url, "Подразделение не найдено")
+
+    employees = await EmployeeServise.all(department_id=dept.id)
+
+    if employees:
+        employee_names = ", ".join([e.short_name for e in employees])
         return redirect_with_error(
-            request, "get_departments_admin", errors={"non_field_error": str(e)}
+            request,
+            index_url,
+            f"Невозможно удалить подразделение '{dept}', так как оно назначено следующим сотрудникам: {employee_names}"
         )
+
+    if dept:
+        try:
+            await DepartmentServise.delete(pk)
+            return redirect_with_message(request, index_url, "Подразделение удалено!")
+        except Exception as e:
+            return redirect_with_error(
+                request,
+                index_url,
+                f"Необработанная ошибка удаления подразделения '{dept}': {e}"
+            )

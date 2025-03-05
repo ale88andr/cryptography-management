@@ -21,10 +21,12 @@ from dependencies.auth import get_current_admin
 from forms.locations import LocationForm
 from models.users import User
 from services.building import BuildingServise
+from services.employee import EmployeeServise
 from services.location import LocationServise
 
 
 router = APIRouter(prefix=app_prefix, tags=[help_text])
+index_url = "get_locations_admin"
 
 
 def create_filters(filter_building_id: Optional[int]) -> Dict[str, int]:
@@ -42,11 +44,12 @@ async def get_locations_admin(
     sort: Optional[str] = None,
     q: Optional[str] = None,
     filter_building_id: Optional[int] = None,
+    error: Optional[str] = None,
     user: User = Depends(get_current_admin),
 ):
     filters = create_filters(filter_building_id)
 
-    records, counter = await LocationServise.all(sort=sort, q=q, filters=filters)
+    records, counter = await LocationServise.get_list(sort=sort, q=q, filters=filters)
 
     # Создаем базовый контекст
     context = create_base_admin_context(request, index_header, help_text, user)
@@ -57,10 +60,11 @@ async def get_locations_admin(
             "buildings": await BuildingServise.all(),
             "filter_building_id": filter_building_id,
             "msg": msg,
+            "error": error,
             "sort": sort,
             "q": q,
             "breadcrumbs": create_breadcrumbs(
-                router, [index_header], ["get_locations_admin"]
+                router, [index_header], [index_url]
             ),
         }
     )
@@ -77,7 +81,7 @@ async def add_location_admin(request: Request, user: User = Depends(get_current_
             "breadcrumbs": create_breadcrumbs(
                 router,
                 [index_header, add_header],
-                ["get_locations_admin", "add_location_admin"],
+                [index_url, "add_location_admin"],
             ),
         }
     )
@@ -95,7 +99,7 @@ async def create_loc_admin(request: Request, user: User = Depends(get_current_ad
             )
             return redirect_with_message(
                 request,
-                "get_locations_admin",
+                index_url,
                 msg=f"Рабочее место '{loc.name}' создано!",
                 status=status.HTTP_303_SEE_OTHER,
             )
@@ -122,7 +126,7 @@ async def edit_location_admin(
             "breadcrumbs": create_breadcrumbs(
                 router,
                 [index_header, edit_header],
-                ["get_locations_admin", "edit_locations_admin"],
+                [index_url, "edit_locations_admin"],
             ),
             "buildings": await BuildingServise.all(),
             **vars(loc),
@@ -145,7 +149,7 @@ async def update_location_admin(
             )
             return redirect_with_message(
                 request,
-                "get_locations_admin",
+                index_url,
                 msg=f"Рабочее место '{loc.name}' обновлено!",
                 status=status.HTTP_303_SEE_OTHER,
             )
@@ -158,7 +162,7 @@ async def update_location_admin(
             "breadcrumbs": create_breadcrumbs(
                 router,
                 [index_header, edit_header],
-                ["get_locations_admin", "edit_locations_admin"],
+                [index_url, "edit_locations_admin"],
             ),
             "buildings": await BuildingServise.all(),
         }
@@ -168,16 +172,31 @@ async def update_location_admin(
     return templates.TemplateResponse(form_template, context)
 
 
-@router.get("/{location_id}/delete")
+@router.get("/{pk}/delete")
 async def delete_location_admin(
-    location_id: int, request: Request, user: User = Depends(get_current_admin)
+    pk: int, request: Request, user: User = Depends(get_current_admin)
 ):
-    try:
-        await LocationServise.delete(location_id)
-        return redirect_with_message(
-            request, "get_locations_admin", msg="Рабочее место удалено!"
+    location = await LocationServise.get_by_id(pk)
+
+    if not location:
+        return redirect_with_error(request, index_url, "Рабочее место не найдено.")
+
+    employees = await EmployeeServise.all(location_id=location.id)
+
+    if employees:
+        employee_names = ", ".join([item.short_name for item in employees])
+        return redirect_with_error(
+            request,
+            index_url,
+            f"Невозможно удалить рабочее место '{location}', так как на нём зарегистрированы сотрудники: {employee_names}"
         )
+
+    try:
+        await LocationServise.delete(pk)
+        return redirect_with_message(request, index_url, "Рабочее место удалено!")
     except Exception as e:
         return redirect_with_error(
-            request, "get_locations_admin", errors={"non_field_error": str(e)}
+            request,
+            index_url,
+            f"Необработанная ошибка удаления филиала '{location}': {e}"
         )

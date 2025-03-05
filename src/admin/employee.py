@@ -85,7 +85,7 @@ async def get_employees_admin(
     )
     departments, _ = await DepartmentServise.all()
     positions, _ = await PositionServise.all()
-    locations, _ = await LocationServise.all()
+    locations, _ = await LocationServise.get_list()
 
     return templates.TemplateResponse(
         ADMIN_EMPLOYEE_LIST_TPL,
@@ -163,7 +163,7 @@ async def get_cusers_admin(
 async def add_employee_admin(request: Request, user: User = Depends(get_current_admin)):
     departments, _ = await DepartmentServise.all()
     positions, _ = await PositionServise.all()
-    locations, _ = await LocationServise.all(sort="name")
+    locations, _ = await LocationServise.get_list(sort="name")
     organisation = await OrganisationServise.all()
     return templates.TemplateResponse(
         ADMIN_EMPLOYEE_FORM_TPL,
@@ -209,7 +209,7 @@ async def create_employee_admin(request: Request, user: User = Depends(get_curre
 
     departments, _ = await DepartmentServise.all()
     positions, _ = await PositionServise.all()
-    locations, _ = await LocationServise.all()
+    locations, _ = await LocationServise.get_list()
     context = {
         "page_header": add_page_header,
         "page_header_help": hepl_text,
@@ -254,7 +254,7 @@ async def edit_employee_admin(employee_id: int, request: Request, user: User = D
     emp = await EmployeeServise.get_by_id(employee_id)
     departments, _ = await DepartmentServise.all()
     positions, _ = await PositionServise.all()
-    locations, _ = await LocationServise.all()
+    locations, _ = await LocationServise.get_list()
     organisation = await OrganisationServise.all()
     key_documents, _ = await EmployeePersonalAccountService.all()
     return templates.TemplateResponse(
@@ -315,7 +315,7 @@ async def update_employee_admin(employee_id: int, request: Request, user: User =
 
     departments, _ = await DepartmentServise.all()
     positions, _ = await PositionServise.all()
-    locations, _ = await LocationServise.all()
+    locations, _ = await LocationServise.get_list()
     organisation = await OrganisationServise.all()
     context = {
         "page_header_text": add_employee_admin,

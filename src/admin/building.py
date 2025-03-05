@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Request, Depends, responses, status
+from typing import Optional
+from fastapi import APIRouter, Request, Depends
 
 from admin.constants import (
     ADMIN_BUILD_DESCRIPTION,
@@ -10,20 +11,28 @@ from admin.constants import (
     ADMIN_BUILD_LIST_TPL as list_template,
 )
 from core.config import templates
-from core.utils import create_base_admin_context, create_breadcrumbs, redirect
+from core.utils import (
+    create_base_admin_context,
+    create_breadcrumbs,
+    redirect,
+    redirect_with_error,
+    redirect_with_message
+)
 from dependencies.auth import get_current_admin
 from forms.building import BuildingForm
 from models.users import User
 from services.building import BuildingServise
+from services.location import LocationServise
 
 
 router = APIRouter(prefix=app_prefix, tags=[ADMIN_BUILD_DESCRIPTION])
+index_url = "get_buildings_admin"
 
 
 # ========= Buildings =========
 @router.get("/")
 async def get_buildings_admin(
-    request: Request, msg: str = None, user: User = Depends(get_current_admin)
+    request: Request, msg: Optional[str] = None, error: Optional[str] = None, user: User = Depends(get_current_admin)
 ):
     records = await BuildingServise.all()
 
@@ -36,8 +45,9 @@ async def get_buildings_admin(
             "buildings": records,
             "counter": len(records),
             "msg": msg,
+            "error": error,
             "breadcrumbs": create_breadcrumbs(
-                router, [ADMIN_BUILD_INDEX_HEADER], ["get_buildings_admin"]
+                router, [ADMIN_BUILD_INDEX_HEADER], [index_url]
             ),
         }
     )
@@ -56,7 +66,7 @@ async def add_building_admin(request: Request, user: User = Depends(get_current_
             "breadcrumbs": create_breadcrumbs(
                 router,
                 [ADMIN_BUILD_INDEX_HEADER, ADMIN_BUILD_ADD_HEADER],
-                ["get_buildings_admin", "add_buildings_admin"],
+                [index_url, "add_buildings_admin"],
             ),
         }
     )
@@ -81,7 +91,7 @@ async def create_building_admin(
 
             return redirect(
                 request=request,
-                endpoint="get_buildings_admin",
+                endpoint=index_url,
                 msg=f"Филиал '{building.name}' добавлен!"
             )
         except Exception as e:
@@ -110,7 +120,7 @@ async def edit_building_admin(
             "breadcrumbs": create_breadcrumbs(
                 router,
                 [ADMIN_BUILD_INDEX_HEADER, ADMIN_BUILD_EDIT_HEADER],
-                ["get_buildings_admin", "edit_buildings_admin"],
+                [index_url, "edit_buildings_admin"],
             ),
             **vars(building),
         }
@@ -138,7 +148,7 @@ async def update_building_admin(
 
             return redirect(
                 request=request,
-                endpoint="get_buildings_admin",
+                endpoint=index_url,
                 msg=f"Данные '{building.name}' успешно обновлены!"
             )
         except Exception as e:
@@ -153,7 +163,7 @@ async def update_building_admin(
             "breadcrumbs": create_breadcrumbs(
                 router,
                 [ADMIN_BUILD_INDEX_HEADER, ADMIN_BUILD_EDIT_HEADER],
-                ["get_buildings_admin", "edit_buildings_admin"],
+                [index_url, "edit_buildings_admin"],
             ),
         }
     )
@@ -162,18 +172,32 @@ async def update_building_admin(
     return templates.TemplateResponse(form_template, context)
 
 
-@router.get("/{building_id}/delete")
+@router.get("/{pk}/delete")
 async def delete_building_admin(
-    building_id: int, request: Request, user: User = Depends(get_current_admin)
+    pk: int, request: Request, user: User = Depends(get_current_admin)
 ):
-    redirect_url = request.url_for("get_buildings_admin")
-    redirect_status = status.HTTP_307_TEMPORARY_REDIRECT
-    try:
-        await BuildingServise.delete(building_id)
-        redirect = request.url_for("get_buildings_admin").include_query_params(
-            msg="Филиал удален!"
+    building = await BuildingServise.get_by_id(pk)
+
+    if not building:
+        return redirect_with_error(request, index_url, "Филиал не найден.")
+
+    locations = await LocationServise.all(building_id=building.id)
+
+    if locations:
+        location_names = ", ".join([item.name for item in locations])
+        return redirect_with_error(
+            request,
+            index_url,
+            f"Невозможно удалить филиал '{building}', так как он связан с рабочими местами: {location_names}"
         )
-        return responses.RedirectResponse(redirect, status_code=redirect_status)
-    except Exception as e:
-        redirect_url.include_query_params(errors={"non_field_error": e})
-        return responses.RedirectResponse(redirect_url, status_code=redirect_status)
+
+    if building:
+        try:
+            await BuildingServise.delete(pk)
+            return redirect_with_message(request, index_url, "Филиал удален!")
+        except Exception as e:
+            return redirect_with_error(
+                request,
+                index_url,
+                f"Необработанная ошибка удаления филиала '{building}': {e}"
+            )
