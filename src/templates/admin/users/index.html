@@ -5,7 +5,7 @@
 {% block page_header_text %}{{ page_header }}{% endblock %}
 {% block page_header_help_text %}{{ page_header_help }}{% endblock %}
 
-{% from "admin/common/macros.html" import no_data, pagination_page_info, display_pagination_pages, print_default, format_dtime, items_counter %}
+{% from "admin/common/macros.html" import no_data, pagination_page_info, display_pagination_pages, print_default, format_dtime, items_counter, delete_canvas %}
 {% from "admin/common/form_macros.html" import select_filter, search_field %}
 
 {% block content %}
@@ -13,7 +13,7 @@
     <div class="d-flex justify-content-between align-items-center mb-2 text-body">
         {{ items_counter(total_records, counter + limit * page) }}
         <p class="mb-2">
-            <a href="{{ url_for('add_user_admin') }}" class="btn btn-success">
+            <a href="{{ url_for('add_user_admin') }}" class="btn btn-outline-success">
                 <i class="bi bi-person-plus"></i> Добавить пользователя
             </a>
         </p>
@@ -50,8 +50,8 @@
                     <td scope="col"></td>
                     <td scope="col"></td>
                     <td scope="col"></td>
-                    <td scope="col">
-                        <a href="{{ url_for('get_employees_admin') }}" class="btn btn-sm btn-outline-danger me-1"><i class="bi bi-x-lg"></i></a>
+                    <td scope="col" class="text-end">
+                        <a href="{{ url_for('get_users_admin') }}" class="btn btn-sm btn-outline-danger me-1"><i class="bi bi-x-lg"></i></a>
                         <button type="submit" class="btn btn-sm btn-outline-success"><i class="bi bi-check-lg"></i></button>
                     </td>
                 </form>
@@ -107,13 +107,13 @@
                             <span class="badge-custom bg-success-custom">Активен</span>
                         {%endif%}
                     </td>
-                    <td>
-                        <a href="{{ url_for('edit_user_admin', pk=user.id) }}" class="btn btn-sm btn-outline-primary ms-4" title="Редактировать"><i class="bi bi-pencil-square"></i></a>
-                        <!-- <a href="#" class="btn btn-sm btn-outline-danger" title="Удалить"><i class="bi bi-person-x-fill"></i></a> -->
+                    <td class="text-end">
+                        <a href="{{ url_for('edit_user_admin', pk=user.id) }}" class="btn btn-sm btn-outline-primary me-1" title="Редактировать"><i class="bi bi-pencil-square"></i></a>
+                        {{ delete_canvas(url_for('delete_user_admin', pk=user.id), user.id) }}
                     </td>
                 </tr>
             {% else %}
-                {{ no_data(8) }}
+                {{ no_data(10) }}
             {% endfor %}
         </tbody>
     </table>

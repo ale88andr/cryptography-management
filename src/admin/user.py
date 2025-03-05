@@ -11,8 +11,8 @@ from admin.constants import (
     ADMIN_USER_LIST_TPL as list_teplate,
 )
 from core.config import templates
-from core.utils import create_breadcrumbs, get_bool_from_checkbox, redirect
-from dependencies.auth import get_current_user
+from core.utils import create_breadcrumbs, get_bool_from_checkbox, redirect, redirect_with_error, redirect_with_message
+from dependencies.auth import get_current_admin, get_current_user
 from forms.user import UserForm
 from services.auth import get_password_hash
 from services.users import UsersDAO
@@ -21,6 +21,7 @@ from models.users import User
 
 
 router = APIRouter(prefix=app_prefix, tags=[hepl_text])
+index_url = "get_users_admin"
 
 
 # ========= Users =========
@@ -32,6 +33,7 @@ async def get_users_admin(
     limit: int = 20,
     sort: Optional[str] = None,
     q: Optional[str] = None,
+    error: Optional[str] = None,
     user: User = Depends(get_current_user)
 ):
     records, counter, total_records, total_pages = (
@@ -53,10 +55,11 @@ async def get_users_admin(
             "total_records": total_records,
             "total_pages": total_pages,
             "msg": msg,
+            "error": error,
             "sort": sort,
             "q": q,
             "breadcrumbs": create_breadcrumbs(
-                router, [index_page_header], ["get_users_admin"]
+                router, [index_page_header], [index_url]
             ),
             "user": user
         },
@@ -77,7 +80,7 @@ async def add_user_admin(request: Request, user: User = Depends(get_current_user
             "breadcrumbs": create_breadcrumbs(
                 router,
                 [index_page_header, add_page_header],
-                ["get_users_admin", "add_user_admin"],
+                [index_url, "add_user_admin"],
             ),
             "user": user
         },
@@ -98,7 +101,7 @@ async def create_user_admin(request: Request, user: User = Depends(get_current_u
 
             return redirect(
                 request=request,
-                endpoint="get_users_admin",
+                endpoint=index_url,
                 msg=f"Пользователь '{user}' добавлен!"
             )
         except Exception as e:
@@ -110,7 +113,7 @@ async def create_user_admin(request: Request, user: User = Depends(get_current_u
         "breadcrumbs": create_breadcrumbs(
             router,
             [index_page_header, add_page_header],
-            ["get_users_admin", "add_user_admin"],
+            [index_url, "add_user_admin"],
         ),
         "user": user
     }
@@ -137,7 +140,7 @@ async def edit_user_admin(pk: int, request: Request, user: User = Depends(get_cu
             "breadcrumbs": create_breadcrumbs(
                 router,
                 [index_page_header, edit_page_header],
-                ["get_users_admin", "edit_user_admin"],
+                [index_url, "edit_user_admin"],
             ),
             "user": user
         },
@@ -166,7 +169,7 @@ async def update_user_admin(pk: int, request: Request, user: User = Depends(get_
 
             return redirect(
                 request=request,
-                endpoint="get_users_admin",
+                endpoint=index_url,
                 msg=f"Данные пользователя '{obj}' обновлены!"
             )
         except Exception as e:
@@ -181,10 +184,27 @@ async def update_user_admin(pk: int, request: Request, user: User = Depends(get_
         "breadcrumbs": create_breadcrumbs(
             router,
             [index_page_header, edit_page_header],
-            ["get_users_admin", "edit_user_admin"],
+            [index_url, "edit_user_admin"],
         ),
         "user": user,
     }
     context.update(form.__dict__)
     context.update(form.fields)
     return templates.TemplateResponse(form_teplate, context)
+
+
+@router.get("/{pk}/delete")
+async def delete_user_admin(pk: int, request: Request, user: User = Depends(get_current_admin)):
+    user = await UsersDAO.get_by_id(pk)
+
+    if not user:
+        return redirect_with_error(request, index_url, "Пользователь не найден.")
+
+    if user.is_admin:
+        return redirect_with_error(request, index_url, "Удаление пользователей с ролью администратор запрещено!")
+
+    try:
+        await UsersDAO.delete(pk)
+        return redirect_with_message(request, index_url, "Пользователь удален!")
+    except Exception as e:
+        return redirect_with_error(request, index_url, f"Необработанная ошибка удаления пользователя '{user}': {e}")
