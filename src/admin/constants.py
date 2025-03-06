@@ -208,7 +208,7 @@ ADMIN_CVERSION_DECOMIS_TPL          = f"{ADMIN_CVERSION}/decommissioning.html"
 
 
 # ========= Журнал поэкземплярного СКЗИ (CInstanceLogbook) =========
-ADMIN_CILOG                         = f"{ADMIN}/cryptography/klog"
+ADMIN_CILOG                         = f"{ADMIN}/cryptography/log/key"
 ADMIN_CILOG_FORM_TPL                = f"{ADMIN_CILOG}/form.html"
 ADMIN_CILOG_LIST_TPL                = f"{ADMIN_CILOG}/index.html"
 ADMIN_CILOG_CHANGE_FORM_TPL         = f"{ADMIN_CILOG}/change_form.html"
@@ -217,7 +217,7 @@ ADMIN_CILOG_CHANGE_REASONS          = ["Плановая смена ключев
 
 
 # ========= Журнал СКЗИ (CLogbook)  =========
-ADMIN_CLOG                          = f"{ADMIN}/cryptography/vlog"
+ADMIN_CLOG                          = f"{ADMIN}/cryptography/log/ver"
 ADMIN_CLOG_FORM_TPL                 = f"{ADMIN_CLOG}/form.html"
 ADMIN_CLOG_LIST_TPL                 = f"{ADMIN_CLOG}/index.html"
 

@@ -1,5 +1,4 @@
 import datetime
-import enum
 import orjson
 
 from sqlalchemy import String, Text, Boolean, ForeignKey

@@ -68,7 +68,7 @@
                             <br>
                             <span class="badge-custom bg-dark-custom mt-1">Дист:</span> {{ object.dist_num }}
                         </td>
-                        {% include 'admin/cryptography/vlog/row.html' %}
+                        {% include 'admin/cryptography/log/ver/row.html' %}
                         <td rowspan="{{rowspan}}" class="align-middle">{{ object.comment }}</td>
                     </tr>
                     {% if object.form %}
@@ -81,7 +81,7 @@
                                 </a>
                             </td>
                             <td class="text-muted">{{ object.form }}</td>
-                            {% include 'admin/cryptography/vlog/row.html' %}
+                            {% include 'admin/cryptography/log/ver/row.html' %}
                         </tr>
                     {% endif %}
                     {% if object.license %}
@@ -94,7 +94,7 @@
                                 </a>
                             </td>
                             <td class="text-muted">{{ object.license }}</td>
-                            {% include 'admin/cryptography/vlog/row.html' %}
+                            {% include 'admin/cryptography/log/ver/row.html' %}
                         </tr>
                     {% endif %}
                 {% else %}

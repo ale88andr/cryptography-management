@@ -42,6 +42,7 @@ class IncorrectTokenException(CustomHTTPException):
 
 class UserDoesntExistsException(CustomHTTPException):
     status_code = status.HTTP_401_UNAUTHORIZED
+    detail = "Пользователя не существует"
 
 
 class UserActionForbiddenException(CustomHTTPException):
