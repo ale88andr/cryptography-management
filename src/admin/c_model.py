@@ -1,4 +1,4 @@
-from typing import Dict, Optional
+from typing import Any, Dict, Optional
 from fastapi import APIRouter, Request, Depends, responses, status
 
 from admin.constants import (
@@ -23,6 +23,7 @@ from services.c_model import CModelServise
 from services.c_manufacturer import CManufacturerServise
 from models.cryptography import CRYPTO_MODEL_TYPES, ModelTypes
 from models.users import User
+from services.c_product_type import CryptographyProductTypeServise
 from services.c_version import CVersionServise
 
 
@@ -31,14 +32,16 @@ index_url = "get_cmodels_admin"
 
 
 def create_filters(
-    filter_manufacturer_id: Optional[int], filter_type: Optional[int]
+    filter_manufacturer_id: Optional[int], filter_product_type_id: Optional[int]
 ) -> Dict[str, int]:
-    filters = {}
-    if filter_manufacturer_id and filter_manufacturer_id > 0:
-        filters["manufacturer_id"] = filter_manufacturer_id
-    if filter_type:
-        filters["type"] = ModelTypes(filter_type)
-    return filters
+    return {
+        key: value
+        for key, value in {
+            "manufacturer_id": filter_manufacturer_id,
+            "product_type_id": filter_product_type_id,
+        }.items()
+        if value is not None and value > 0
+    }
 
 
 # ========= Cryptography Models =========
@@ -49,14 +52,15 @@ async def get_cmodels_admin(
     sort: Optional[str] = None,
     q: Optional[str] = None,
     filter_manufacturer_id: Optional[int] = None,
-    filter_type: Optional[int] = None,
+    filter_product_type_id: Optional[int] = None,
     error: Optional[str] = None,
     user: User = Depends(get_current_admin),
 ):
-    filters = create_filters(filter_manufacturer_id, filter_type)
+    filters = create_filters(filter_manufacturer_id, filter_product_type_id)
 
     records, counter = await CModelServise.get_list(sort=sort, q=q, filters=filters)
     manufacturers, _ = await CManufacturerServise.all()
+    product_types = await CryptographyProductTypeServise.all()
 
     # Создаем базовый контекст
     context = create_base_admin_context(request, index_header, help_text, user)
@@ -66,8 +70,8 @@ async def get_cmodels_admin(
             "counter": counter,
             "manufacturers": manufacturers,
             "filter_manufacturer_id": filter_manufacturer_id,
-            "filter_type": filter_type,
-            "types": CRYPTO_MODEL_TYPES,
+            "filter_product_type_id": filter_product_type_id,
+            "types": product_types,
             "msg": msg,
             "error": error,
             "sort": sort,
@@ -83,6 +87,7 @@ async def get_cmodels_admin(
 @router.get("/add")
 async def add_cmodel_admin(request: Request, user: User = Depends(get_current_admin)):
     manufacturers, _ = await CManufacturerServise.all()
+    product_types = await CryptographyProductTypeServise.all()
 
     # Создаем базовый контекст
     context = create_base_admin_context(request, add_header, help_text, user)
@@ -91,7 +96,7 @@ async def add_cmodel_admin(request: Request, user: User = Depends(get_current_ad
             "manufacturers": manufacturers,
             "manufacturer_id": None,
             "type": None,
-            "types": CRYPTO_MODEL_TYPES,
+            "types": product_types,
             "breadcrumbs": create_breadcrumbs(
                 router,
                 [index_header, add_header],
@@ -114,7 +119,8 @@ async def create_cmodel_admin(
             obj = await CModelServise.add(
                 name=form.name,
                 manufacturer_id=int(form.manufacturer_id),
-                type=int(form.type),
+                #type=int(form.type),
+                product_type_id=int(form.product_type_id),
                 description=form.description,
             )
             return redirect_with_message(
@@ -127,6 +133,7 @@ async def create_cmodel_admin(
             form.__dict__.get("errors").setdefault("non_field_error", e)
 
     manufacturers, _ = await CManufacturerServise.all()
+    product_types = await CryptographyProductTypeServise.all()
 
     # Создаем базовый контекст
     context = create_base_admin_context(request, add_header, help_text, user)
@@ -135,7 +142,7 @@ async def create_cmodel_admin(
             "manufacturers": manufacturers,
             "manufacturer_id": None,
             "type": None,
-            "types": CRYPTO_MODEL_TYPES,
+            "types": product_types,
             "breadcrumbs": create_breadcrumbs(
                 router,
                 [index_header, add_header],
@@ -154,13 +161,14 @@ async def edit_cmodel_admin(
 ):
     obj = await CModelServise.get_by_id(pk)
     manufacturers, _ = await CManufacturerServise.all()
+    product_types = await CryptographyProductTypeServise.all()
 
     # Создаем базовый контекст
     context = create_base_admin_context(request, edit_header, help_text, user)
     context.update(
         {
             "manufacturers": manufacturers,
-            "types": CRYPTO_MODEL_TYPES,
+            "types": product_types,
             "breadcrumbs": create_breadcrumbs(
                 router,
                 [index_header, edit_header],
@@ -185,7 +193,8 @@ async def update_cmodel_admin(
                 pk,
                 name=form.name,
                 manufacturer_id=int(form.manufacturer_id),
-                type=ModelTypes(int(form.type)),
+                # type=ModelTypes(int(form.type)),
+                product_type_id=int(form.product_type_id),
                 description=form.description,
             )
             return redirect_with_message(

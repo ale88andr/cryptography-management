@@ -25,19 +25,7 @@
                             {{ select_field("manufacturer_id", "Производитель:", manufacturers, errors, manufacturer_id) }}
                         </div>
                         <div class="col-lg-4">
-                            <label for="type" class="form-label mb-4">Тип СКЗИ : </label>
-                            <select
-                                class="form-select {% if 'type' in errors %}is-invalid{% endif %}"
-                                id="type"
-                                name="type"
-                            >
-                                {% for obj in types %}
-                                    <option value="{{ loop.index-1 }}" {% if loop.index-1 == type.value %}selected{% endif %}>{{ obj }}</option>
-                                {% endfor %}
-                            </select>
-                            {% if "type" in errors %}
-                                <div class="text-danger font-weight-bold">{{ errors["type"] }}</div>
-                            {% endif %}
+                            {{ select_field("product_type_id", "Вид СКЗИ:", types, errors, product_type_id) }}
                         </div>
                     </div>
 

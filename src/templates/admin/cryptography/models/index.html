@@ -38,14 +38,10 @@
                         {{ select_filter("filter_manufacturer_id", manufacturers, manufacturers) }}
                     </td>
                     <td scope="col">
-                        <select class="form-select" id="filter_type" name="filter_type">
-                            {% for obj in types %}
-                                <option value="{{ loop.index-1 }}" {% if loop.index-1 == filter_type %}selected{% endif %}>{{ obj }}</option>
-                            {% endfor %}
-                        </select>
+                        {{ select_filter("filter_product_type_id", types, types) }}
                     </td>
                     <td scope="col">
-                        <a href="{{ url_for('get_cmanufacturers_admin') }}" class="btn btn-sm btn-outline-danger me-1"><i class="bi bi-x-lg"></i></a>
+                        <a href="{{ url_for('get_cmodels_admin') }}" class="btn btn-sm btn-outline-danger me-1"><i class="bi bi-x-lg"></i></a>
                         <button type="submit" class="btn btn-sm btn-outline-success"><i class="bi bi-check-lg"></i></button>
                     </td>
                 </form>
@@ -72,7 +68,15 @@
                             {{ object.manufacturer }}
                         </a>
                     </td>
-                    <td><span class="badge-custom bg-dark-custom">{{ types[object.type.value] }}</span></td>
+                    <td class="text-center">
+                        <span
+                            class="badge-custom bg-info-custom"
+                            data-bs-toggle="tooltip"
+                            data-bs-placement="bottom"
+                            data-bs-original-title="{{ object.product_type.description }}">
+                                {{ object.product_type }}
+                        </span>
+                    </td>
                     <td>
                         <a href="{{ url_for('edit_cmodel_admin', pk=object.id) }}" class="btn btn-sm btn-outline-primary me-1" title="Редактировать"><i class="bi bi-pencil-square"></i></a>
                         {{ delete_canvas(url_for('delete_cmodel_admin', pk=object.id), object.id) }}

@@ -20,6 +20,17 @@ class Grade(Base):
         return self.value
 
 
+class ProductType(Base):
+    __tablename__ = "cryptography_product_type"
+
+    id: Mapped[fields.pk]
+    value: Mapped[fields.title]
+    description: Mapped[str] = mapped_column(Text(), nullable=True)
+
+    def __str__(self) -> str:
+        return self.value
+
+
 class Manufacturer(Base):
     __tablename__ = "cryptography_manufacturer"
 
@@ -55,11 +66,15 @@ class Model(Base):
     name: Mapped[fields.title]
     description: Mapped[str] = mapped_column(Text(), nullable=True)
     type: Mapped[ModelTypes] = mapped_column(default=ModelTypes.PROGRAM)
+    product_type_id: Mapped[int] = mapped_column(
+        ForeignKey("cryptography_product_type.id"), nullable=True
+    )
     manufacturer_id: Mapped[int] = mapped_column(
         ForeignKey("cryptography_manufacturer.id")
     )
 
     manufacturer: Mapped["Manufacturer"] = relationship(back_populates="models")
+    product_type: Mapped["ProductType"] = relationship()
     versions: Mapped[list["Version"]] = relationship(back_populates="model")
 
     def __str__(self) -> str:
