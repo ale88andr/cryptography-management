@@ -15,7 +15,7 @@ from models.logbook import (
 from admin.constants import ADMIN_CILOG_CHANGE_REASONS as replace_reasons
 from models.staff import Employee
 from services.base import BaseRepository
-from models.cryptography import KeyCarrier, KeyDocument, Version
+from models.cryptography import KeyCarrier, KeyDocument, Model, Version
 from services.c_action import CActionServise
 from services.c_hardware_logbook import CHardwareLogbookServise
 from services.employee_personal_account import EmployeePersonalAccountService
@@ -180,7 +180,8 @@ class KeyDocumentServise(BaseRepository):
                 joinedload(cls.model.equipment),
                 joinedload(cls.model.cryptography_version),
                 joinedload(cls.model.cryptography_version).options(
-                    joinedload(Version.model)
+                    joinedload(Version.model).options(joinedload(Model.product_type)),
+                    joinedload(Version.grade_class)
                 ),
                 joinedload(cls.model.key_carrier).options(
                     joinedload(KeyCarrier.carrier_type)

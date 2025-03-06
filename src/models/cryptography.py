@@ -48,26 +48,14 @@ class Manufacturer(Base):
         json_dumps = orjson.dumps
 
 
-CRYPTO_MODEL_TYPES = ['Программный', 'Аппаратный', 'Программно-аппаратный']
-
-
-class ModelTypes(enum.Enum):
-    """Enum типов СКЗИ"""
-
-    PROGRAM = 0
-    HARDWARE = 1
-    HARDSOFT = 2
-
-
 class Model(Base):
     __tablename__ = "cryptography_model"
 
     id: Mapped[fields.pk]
     name: Mapped[fields.title]
     description: Mapped[str] = mapped_column(Text(), nullable=True)
-    type: Mapped[ModelTypes] = mapped_column(default=ModelTypes.PROGRAM)
     product_type_id: Mapped[int] = mapped_column(
-        ForeignKey("cryptography_product_type.id"), nullable=True
+        ForeignKey("cryptography_product_type.id")
     )
     manufacturer_id: Mapped[int] = mapped_column(
         ForeignKey("cryptography_manufacturer.id")

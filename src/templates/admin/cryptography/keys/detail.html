@@ -112,8 +112,12 @@
                             <p class="mb-0">Тип:</p>
                         </div>
                         <div class="col-sm-8">
-                            <span class="badge-custom bg-info-custom">
-                                {{ cryptography_types[key.cryptography_version.model.type.value] }}
+                            <span
+                                class="badge-custom bg-info-custom"
+                                data-bs-toggle="tooltip"
+                                data-bs-placement="bottom"
+                                data-bs-original-title="{{ key.cryptography_version.model.product_type.description }}">
+                                    {{ key.cryptography_version.model.product_type.value }}
                             </span>
                         </div>
                     </div>
@@ -123,8 +127,12 @@
                             <p class="mb-0">Класс:</p>
                         </div>
                         <div class="col-sm-8">
-                            <span class="badge-custom bg-info-custom">
-                                {{ cryptography_grades[key.cryptography_version.grade.value] }}
+                            <span
+                                class="badge-custom bg-info-custom"
+                                data-bs-toggle="tooltip"
+                                data-bs-placement="bottom"
+                                data-bs-original-title="{{ key.cryptography_version.grade_class.description }}">
+                                    {{ key.cryptography_version.grade_class.value }}
                             </span>
                         </div>
                     </div>

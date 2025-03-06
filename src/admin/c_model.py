@@ -21,7 +21,6 @@ from dependencies.auth import get_current_admin
 from forms.c_model import CModelForm
 from services.c_model import CModelServise
 from services.c_manufacturer import CManufacturerServise
-from models.cryptography import CRYPTO_MODEL_TYPES, ModelTypes
 from models.users import User
 from services.c_product_type import CryptographyProductTypeServise
 from services.c_version import CVersionServise
@@ -119,7 +118,6 @@ async def create_cmodel_admin(
             obj = await CModelServise.add(
                 name=form.name,
                 manufacturer_id=int(form.manufacturer_id),
-                #type=int(form.type),
                 product_type_id=int(form.product_type_id),
                 description=form.description,
             )
@@ -193,7 +191,6 @@ async def update_cmodel_admin(
                 pk,
                 name=form.name,
                 manufacturer_id=int(form.manufacturer_id),
-                # type=ModelTypes(int(form.type)),
                 product_type_id=int(form.product_type_id),
                 description=form.description,
             )
@@ -207,12 +204,14 @@ async def update_cmodel_admin(
             form.errors.setdefault("non_field_error", e)
 
     manufacturers, _ = await CManufacturerServise.all()
+    product_types = await CryptographyProductTypeServise.all()
+
     # Создаем базовый контекст
     context = create_base_admin_context(request, edit_header, help_text, user)
     context.update(
         {
             "manufacturers": manufacturers,
-            "types": CRYPTO_MODEL_TYPES,
+            "types": product_types,
             "breadcrumbs": create_breadcrumbs(
                 router,
                 [index_header, edit_header],

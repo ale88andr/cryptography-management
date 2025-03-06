@@ -23,10 +23,11 @@
             <tr>
                 <th scope="col">#</th>
                 <th scope="col">
-                    Производитель
+                    Модель
                     <a href="?sort=name" class="ms-1 text-decoration-none"><i class="bi bi-sort-alpha-down"></i></a>
                     <a href="?sort=name+desc" class="text-decoration-none"><i class="bi bi-sort-alpha-up"></i></a>
                 <th scope="col">Производитель</th>
+                <th scope="col">Версии</th>
                 <th scope="col" class="col-2">Тип</th>
                 <th scope="col" class="col-1">Действия</th>
             </tr>
@@ -37,6 +38,7 @@
                     <td scope="col">
                         {{ select_filter("filter_manufacturer_id", manufacturers, manufacturers) }}
                     </td>
+                    <td scope="col"></td>
                     <td scope="col">
                         {{ select_filter("filter_product_type_id", types, types) }}
                     </td>
@@ -68,7 +70,8 @@
                             {{ object.manufacturer }}
                         </a>
                     </td>
-                    <td class="text-center">
+                    <td><span class="badge-custom rounded-pill bg-success-custom">{{ object.versions|length }}</span></td>
+                    <td>
                         <span
                             class="badge-custom bg-info-custom"
                             data-bs-toggle="tooltip"
